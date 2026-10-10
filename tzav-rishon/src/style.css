@@ -246,6 +246,9 @@ kbd {
   left: 50%;
   bottom: 18px;
   width: min(760px, calc(100% - 24px));
+  max-height: calc(100% - 36px);
+  overflow-y: auto;
+  touch-action: pan-y;
   transform: translateX(-50%);
   padding: 18px 22px 16px;
   border-radius: 14px;
@@ -353,11 +356,18 @@ kbd {
 .panel-layer {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   padding: 16px;
   background: rgba(15, 18, 12, 0.55);
   overflow-y: auto;
+  touch-action: pan-y;
+}
+
+/* Centered when it fits; when it's taller than the screen it starts at the top and scrolls. */
+.panel-layer > * {
+  margin: auto;
 }
 
 .panel {
@@ -912,6 +922,60 @@ kbd {
   pointer-events: auto;
 }
 
+.fullscreen-button {
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--glass);
+  color: var(--khaki-100);
+  font-size: 1.3rem;
+  pointer-events: auto;
+}
+
+.rotate-hint {
+  display: none;
+  position: absolute;
+  bottom: 230px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--khaki-100);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  animation: hint-out 9s ease forwards;
+}
+
+@keyframes hint-out {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@media (orientation: portrait) {
+  .rotate-hint {
+    display: block;
+  }
+}
+
+/* While a dialogue or panel is open the joystick and buttons get out of the way. */
+.modal-open .touch-controls {
+  display: none;
+}
+
+/* The "לדבר עם…" prompt doubles as a button on touch screens. */
+.touch .prompt {
+  pointer-events: auto;
+  cursor: pointer;
+  bottom: auto;
+  top: calc(50% + 34px);
+  background: rgba(75, 83, 32, 0.92);
+}
+
 /* ---------- Fade & loading ---------- */
 
 .fade {
@@ -1039,6 +1103,237 @@ kbd {
 
   .panel {
     padding: 22px 18px 18px;
+  }
+}
+
+/* Phones held sideways: very little height, so everything gets compact. */
+@media (max-height: 500px) {
+  .objective {
+    top: 8px;
+    right: 8px;
+    max-width: min(320px, calc(100% - 150px));
+    padding: 6px 12px 8px;
+  }
+
+  .objective p {
+    font-size: 0.85rem;
+  }
+
+  .objective .objective-sub {
+    margin-top: 2px;
+    font-size: 0.75rem;
+  }
+
+  .status {
+    top: 8px;
+    left: 8px;
+    flex-direction: row;
+  }
+
+  .clock {
+    font-size: 1rem;
+    padding: 4px 10px;
+  }
+
+  .sticker canvas {
+    width: 80px;
+    height: 22px;
+  }
+
+  .sticker span {
+    font-size: 0.8rem;
+  }
+
+  .announcement {
+    top: 8px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+  }
+
+  .dialogue {
+    bottom: 8px;
+    max-height: calc(100% - 16px);
+    padding: 14px 16px 10px;
+  }
+
+  .dialogue-speaker {
+    position: static;
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.82rem;
+  }
+
+  .dialogue-text {
+    min-height: 0;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .dialogue-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .choice {
+    padding: 7px 10px;
+    font-size: 0.85rem;
+  }
+
+  .dialogue-continue {
+    margin-top: 6px;
+    padding: 5px 12px;
+  }
+
+  .panel-layer {
+    padding: 8px;
+  }
+
+  .panel {
+    padding: 16px 18px 14px;
+  }
+
+  .panel h2 {
+    font-size: 1.3rem;
+  }
+
+  .panel p {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .panel .actions {
+    margin-top: 10px;
+  }
+
+  .bag-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 8px 0 2px;
+  }
+
+  .bag-item {
+    padding: 7px 9px;
+    font-size: 0.82rem;
+  }
+
+  .fact ul {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .computer-header {
+    padding: 6px 12px;
+  }
+
+  .computer-body {
+    padding: 12px 16px 14px;
+  }
+
+  .computer-body h3 {
+    font-size: 1rem;
+  }
+
+  .computer-body .question {
+    margin: 6px 0 10px;
+    font-size: 1rem;
+  }
+
+  .computer-body .options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .computer-body .option {
+    min-height: 42px;
+    padding: 6px 10px;
+    font-size: 0.92rem;
+  }
+
+  .computer-body .progress {
+    margin-top: 8px;
+  }
+
+  .attention-area {
+    height: 150px;
+    margin: 6px 0;
+  }
+
+  .eye-chart {
+    height: 110px;
+    margin: 6px 0;
+  }
+
+  .arrow-pad {
+    grid-template-rows: repeat(2, 42px);
+  }
+
+  .plate {
+    width: 150px;
+    height: 150px;
+    margin: 4px auto 8px;
+  }
+
+  .readouts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 8px 0;
+  }
+
+  .readout strong {
+    font-size: 1.2rem;
+  }
+
+  .phone {
+    width: min(560px, 100%);
+    border-radius: 24px;
+  }
+
+  .phone-screen {
+    min-height: 0;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .result-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 10px 0;
+  }
+
+  .result-tile strong {
+    font-size: 1.5rem;
+  }
+
+  .joystick {
+    left: 16px;
+    bottom: 16px;
+    width: 104px;
+    height: 104px;
+  }
+
+  .action-button {
+    right: 16px;
+    bottom: 20px;
+    width: 78px;
+    height: 78px;
+  }
+
+  .touch-menu {
+    right: 104px;
+    bottom: 32px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .fullscreen-button {
+    top: auto;
+    bottom: 32px;
+    right: 158px;
+  }
+
+  .toast {
+    bottom: 22%;
   }
 }
 

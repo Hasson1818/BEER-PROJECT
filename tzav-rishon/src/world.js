@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { drawIsraeliFlag } from '../../shared/flag.js';
 import {
   canvasTexture,
@@ -37,6 +38,43 @@ export const ROOMS = {
   interview2: { name: 'ראיון אישי', room: 'חדר ראיונות 2', door: { x: 0, z: -30 }, inside: { x: 0, z: -31.2 } },
   interview3: { name: 'ראיון אישי', room: 'חדר ראיונות 3', door: { x: 9.4, z: -30 }, inside: { x: 9.4, z: -31.2 } },
 };
+
+/**
+ * Joins all non-moving meshes that share a material into one mesh each.
+ * The building has hundreds of boxes; drawing them separately is too slow on phones.
+ */
+function mergeStatic(scene, blockers) {
+  scene.updateMatrixWorld(true);
+  const blockerSet = new Set(blockers);
+  const buckets = new Map();
+  scene.traverse((obj) => {
+    if (!obj.isMesh || obj.isInstancedMesh || obj.userData.dynamic) return;
+    if (Array.isArray(obj.material) || obj.material.visible === false) return;
+    const key = `${obj.material.uuid}|${blockerSet.has(obj) ? 'block' : ''}`;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(obj);
+  });
+
+  for (const [key, meshes] of buckets) {
+    if (meshes.length < 2) continue;
+    const geometries = meshes.map((mesh) => {
+      const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+      for (const name of Object.keys(geometry.attributes)) {
+        if (!['position', 'normal', 'uv'].includes(name)) geometry.deleteAttribute(name);
+      }
+      return geometry.applyMatrix4(mesh.matrixWorld);
+    });
+    const merged = mergeGeometries(geometries);
+    if (!merged) continue;
+    const mesh = new THREE.Mesh(merged, meshes[0].material);
+    scene.add(mesh);
+    for (const old of meshes) old.removeFromParent();
+    if (key.endsWith('|block')) {
+      for (const old of meshes) blockers.splice(blockers.indexOf(old), 1);
+      blockers.push(mesh);
+    }
+  }
+}
 
 export function buildWorld(scene) {
   const colliders = [];
@@ -674,18 +712,18 @@ export function buildWorld(scene) {
     road.rotation.x = -Math.PI / 2;
     road.position.set(0, 0.002, 14);
     scene.add(road);
+    const dashMaterial = new THREE.MeshBasicMaterial({ color: '#e8e2d0' });
     for (let x = -38; x < 40; x += 4) {
-      const dash = new THREE.Mesh(new THREE.PlaneGeometry(2, 0.15), new THREE.MeshBasicMaterial({ color: '#e8e2d0' }));
+      const dash = new THREE.Mesh(new THREE.PlaneGeometry(2, 0.15), dashMaterial);
       dash.rotation.x = -Math.PI / 2;
       dash.position.set(x, 0.004, 14);
       scene.add(dash);
     }
     // Red and white curb.
+    const curbRed = new THREE.MeshStandardMaterial({ color: '#b3362c', roughness: 0.8 });
+    const curbWhite = new THREE.MeshStandardMaterial({ color: '#ece6d6', roughness: 0.8 });
     for (let x = -40; x < 40; x += 1) {
-      const curb = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 0.15, 0.25),
-        new THREE.MeshStandardMaterial({ color: Math.round(x) % 2 === 0 ? '#b3362c' : '#ece6d6', roughness: 0.8 }),
-      );
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(1, 0.15, 0.25), Math.round(x) % 2 === 0 ? curbRed : curbWhite);
       curb.position.set(x + 0.5, 0.075, 10.4);
       scene.add(curb);
     }
@@ -732,6 +770,7 @@ export function buildWorld(scene) {
       new THREE.MeshStandardMaterial({ map: canvasTexture(330, 240, drawIsraeliFlag), side: THREE.DoubleSide, roughness: 0.8 }),
     );
     flag.position.set(-4.95, 8.0, 3.2);
+    flag.userData.dynamic = true;
     scene.add(flag);
     const rest = flagGeometry.attributes.position.array.slice();
     updaters.push((t) => {
@@ -755,6 +794,8 @@ export function buildWorld(scene) {
     colliders.push({ minX: -30.5, maxX: -26, minZ: -0.2, maxZ: 0.2 });
     colliders.push({ minX: 26, maxX: 30.5, minZ: -0.2, maxZ: 0.2 });
   }
+
+  mergeStatic(scene, blockers);
 
   return {
     colliders,

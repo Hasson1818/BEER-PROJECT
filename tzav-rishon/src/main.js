@@ -36,8 +36,10 @@ async function start() {
   // ---------- Renderer & scene ----------
 
   const canvas = document.getElementById('game');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+  const touchDevice = window.matchMedia('(pointer: coarse)').matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  // Phones have very dense screens; drawing fewer pixels keeps the frame rate up.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, touchDevice ? 1.5 : 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
 
@@ -63,6 +65,11 @@ async function start() {
     const h = window.innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    // On a phone held upright the view would be a narrow slit, so widen it
+    // to keep about 75° visible side to side (up to a limit).
+    const horizontal = THREE.MathUtils.degToRad(75);
+    const vertical = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(horizontal / 2) / camera.aspect));
+    camera.fov = THREE.MathUtils.clamp(vertical, 70, 95);
     camera.updateProjectionMatrix();
   }
   window.addEventListener('resize', resize);
@@ -96,6 +103,7 @@ async function start() {
 
   const ui = createUI({
     onModalChange(open) {
+      document.body.classList.toggle('modal-open', open);
       player.enabled = !open;
       if (open) player.unlock();
       else player.lock();
@@ -258,6 +266,12 @@ async function start() {
     interactions.add({
       id: 'seat',
       object: row.hitbox,
+      // For the touch fallback: the nearest free chair, not the middle of the row.
+      position: () => {
+        const free = row.seats.filter((s) => !s.taken);
+        if (!free.length) return { x: Infinity, z: Infinity };
+        return free.reduce((a, b) => (Math.abs(a.x - player.x) < Math.abs(b.x - player.x) ? a : b));
+      },
       label: 'לשבת',
       enabled: () => !player.seat && row.seats.some((s) => !s.taken),
       onInteract: () => {
@@ -299,6 +313,24 @@ async function start() {
     if (event.button === 0 && player.locked) tryInteract();
   });
   document.getElementById('action-button').addEventListener('click', tryInteract);
+  // On touch screens the prompt itself ("לדבר עם...") can be tapped too.
+  document.getElementById('prompt').addEventListener('click', tryInteract);
+
+  const fullscreenButton = document.getElementById('fullscreen-button');
+  fullscreenButton.hidden = !document.fullscreenEnabled;
+  fullscreenButton.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+        // Android lets a fullscreen page lock to landscape; other browsers just ignore this.
+        await screen.orientation?.lock?.('landscape').catch(() => {});
+      }
+    } catch {
+      ui.toast('הדפדפן הזה לא תומך במסך מלא');
+    }
+  });
 
   // ---------- Loop ----------
 
@@ -370,7 +402,7 @@ async function start() {
     ui.toast('ממשיכים מאיפה שעצרת');
   }
 
-  if (import.meta.env.DEV) window.__tzav = { game, player, world, queue, hall, staff, interactions, pending, advance };
+  if (import.meta.env.DEV) window.__tzav = { game, player, world, queue, hall, staff, interactions, pending, advance, renderer };
 
   await runFlow(game, startStep);
 }

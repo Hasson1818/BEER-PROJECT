@@ -132,7 +132,11 @@ export class Player {
     };
     base.addEventListener('pointerdown', (event) => {
       joyId = event.pointerId;
-      base.setPointerCapture(joyId);
+      try {
+        base.setPointerCapture(joyId);
+      } catch {
+        // Some browsers refuse capture; the joystick still works while the finger stays on it.
+      }
       moveKnob(event);
     });
     base.addEventListener('pointermove', (event) => {

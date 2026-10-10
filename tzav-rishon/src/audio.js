@@ -13,7 +13,8 @@ function context() {
 }
 
 // Browsers only allow sound after the first user gesture.
-for (const type of ['pointerdown', 'keydown']) {
+// (iPhones need touchend or click specifically.)
+for (const type of ['pointerdown', 'keydown', 'touchend', 'click']) {
   window.addEventListener(type, () => context(), { once: true });
 }
 

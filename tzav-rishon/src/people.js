@@ -9,7 +9,7 @@ const PANTS = ['#2c3e66', '#1f2a44', '#3b3b3b', '#5d6d7e', '#c8b28a', '#22313f']
 const UNIFORM = '#5b6236';
 
 function makeCapsule(radius, length, pivotTop = true) {
-  const geometry = new THREE.CapsuleGeometry(radius, length, 4, 10);
+  const geometry = new THREE.CapsuleGeometry(radius, length, 3, 8);
   if (pivotTop) geometry.translate(0, -(length / 2 + radius), 0);
   return geometry;
 }
@@ -21,28 +21,26 @@ const GEO = {
   forearm: makeCapsule(0.05, 0.2),
   torso: new THREE.CapsuleGeometry(0.17, 0.3, 4, 12),
   neck: new THREE.CylinderGeometry(0.045, 0.05, 0.1, 8),
-  head: new THREE.SphereGeometry(0.115, 18, 14),
-  eye: new THREE.SphereGeometry(0.016, 8, 6),
+  head: new THREE.SphereGeometry(0.115, 16, 12),
+  eye: new THREE.SphereGeometry(0.016, 6, 4),
   hand: new THREE.SphereGeometry(0.045, 8, 6),
   shoe: new THREE.BoxGeometry(0.1, 0.07, 0.24),
-  hairCap: new THREE.SphereGeometry(0.124, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.55),
+  hairCap: new THREE.SphereGeometry(0.124, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
   hairLong: new THREE.BoxGeometry(0.22, 0.3, 0.07),
   beret: new THREE.CylinderGeometry(0.115, 0.125, 0.045, 14),
   phone: new THREE.BoxGeometry(0.055, 0.105, 0.01),
   paper: new THREE.BoxGeometry(0.22, 0.01, 0.3),
-  hitbox: new THREE.CylinderGeometry(0.35, 0.35, 1.8, 8),
 };
-GEO.hitbox.translate(0, 0.9, 0);
 
-const materials = new Map();
-function mat(color, options = {}) {
-  const key = color + JSON.stringify(options);
-  if (!materials.has(key)) {
-    materials.set(key, new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...options }));
-  }
-  return materials.get(key);
-}
+const hitboxGeometry = new THREE.CylinderGeometry(0.35, 0.35, 1.8, 8);
+hitboxGeometry.translate(0, 0.9, 0);
 const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
+
+// Every body part is drawn through one InstancedMesh per shape (see Crowd),
+// so 60+ people cost about 15 draw calls instead of 1000+. That's what keeps
+// the game smooth on phones.
+const MAX_PEOPLE = 160;
+const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
@@ -83,105 +81,96 @@ export class Person {
     this.headTimer = 0;
     this.talking = false;
 
+    this.parts = [];
     this.build();
 
-    this.hitbox = new THREE.Mesh(GEO.hitbox, hitboxMaterial);
+    this.hitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
     this.group.add(this.hitbox);
+  }
+
+  /** A body part: an empty node that the Crowd draws with shape `key` and `color`. */
+  part(key, color, parent) {
+    const node = new THREE.Object3D();
+    parent.add(node);
+    this.parts.push({ key, color, node });
+    return node;
   }
 
   build() {
     const { look } = this;
-    const skin = mat(look.skin);
 
     // Legs
     this.legs = [-1, 1].map((side) => {
       const hip = new THREE.Group();
       hip.position.set(side * 0.09, 0.9, 0);
-      hip.add(new THREE.Mesh(GEO.thigh, mat(look.pants)));
+      this.part('thigh', look.pants, hip);
       const knee = new THREE.Group();
       knee.position.y = -0.44;
-      knee.add(new THREE.Mesh(GEO.shin, mat(look.pants)));
-      const shoe = new THREE.Mesh(GEO.shoe, mat(look.shoes));
-      shoe.position.set(0, -0.42, 0.04);
-      knee.add(shoe);
+      this.part('shin', look.pants, knee);
+      this.part('shoe', look.shoes, knee).position.set(0, -0.42, 0.04);
       hip.add(knee);
       this.body.add(hip);
       return { hip, knee };
     });
 
     // Torso
-    const torso = new THREE.Mesh(GEO.torso, mat(look.shirt));
+    const torso = this.part('torso', look.shirt, this.body);
     torso.scale.set(1.12, 1, 0.68);
     torso.position.y = 1.22;
     this.torso = torso;
-    this.body.add(torso);
 
     // Arms
     this.arms = [-1, 1].map((side) => {
       const shoulder = new THREE.Group();
       shoulder.position.set(side * 0.23, 1.47, 0);
-      shoulder.add(new THREE.Mesh(GEO.upperArm, mat(look.shirt)));
+      this.part('upperArm', look.shirt, shoulder);
       const elbow = new THREE.Group();
       elbow.position.y = -0.31;
-      elbow.add(new THREE.Mesh(GEO.forearm, look.shortSleeves === false ? mat(look.shirt) : skin));
-      const hand = new THREE.Mesh(GEO.hand, skin);
+      this.part('forearm', look.shortSleeves === false ? look.shirt : look.skin, elbow);
+      const hand = this.part('hand', look.skin, elbow);
       hand.position.y = -0.31;
-      elbow.add(hand);
       shoulder.add(elbow);
       this.body.add(shoulder);
       return { shoulder, elbow, hand, side };
     });
 
     // Head
-    const neck = new THREE.Mesh(GEO.neck, skin);
-    neck.position.y = 1.57;
-    this.body.add(neck);
+    this.part('neck', look.skin, this.body).position.y = 1.57;
 
     this.head = new THREE.Group();
     this.head.position.y = 1.7;
-    this.head.add(new THREE.Mesh(GEO.head, skin));
+    this.part('head', look.skin, this.head);
     for (const side of [-1, 1]) {
-      const eye = new THREE.Mesh(GEO.eye, mat('#1a1a1a'));
-      eye.position.set(side * 0.042, 0.015, 0.103);
-      this.head.add(eye);
+      this.part('eye', '#1a1a1a', this.head).position.set(side * 0.042, 0.015, 0.103);
     }
     if (!look.bald) {
-      const cap = new THREE.Mesh(GEO.hairCap, mat(look.hair));
+      const cap = this.part('hairCap', look.hair, this.head);
       cap.rotation.x = -0.35;
       cap.position.set(0, 0.008, -0.01);
-      this.head.add(cap);
-      if (look.longHair) {
-        const back = new THREE.Mesh(GEO.hairLong, mat(look.hair));
-        back.position.set(0, -0.08, -0.09);
-        this.head.add(back);
-      }
+      if (look.longHair) this.part('hairLong', look.hair, this.head).position.set(0, -0.08, -0.09);
     }
     if (look.beret) {
-      const beret = new THREE.Mesh(GEO.beret, mat(look.beret === true ? '#3d4224' : look.beret));
+      const beret = this.part('beret', look.beret === true ? '#3d4224' : look.beret, this.head);
       beret.position.set(-0.015, 0.1, -0.01);
       beret.rotation.z = 0.25;
-      this.head.add(beret);
     }
     if (look.coat) {
       // White doctor's coat over the shirt.
-      const coat = new THREE.Mesh(GEO.torso, mat('#f7f7f4'));
+      const coat = this.part('torso', '#f7f7f4', this.body);
       coat.scale.set(1.2, 1.18, 0.74);
       coat.position.y = 1.17;
-      this.body.add(coat);
     }
     this.body.add(this.head);
 
     // Props, shown only in some poses.
-    this.phone = new THREE.Mesh(GEO.phone, mat('#111111', { roughness: 0.3 }));
+    this.phone = this.part('phone', '#111111', this.arms[1].elbow);
     this.phone.position.set(0, -0.36, 0.03);
     this.phone.rotation.x = -0.6;
     this.phone.visible = false;
-    this.arms[1].elbow.add(this.phone);
 
-    this.paper = new THREE.Mesh(GEO.paper, mat('#ffffff'));
+    this.paper = this.part('paper', '#ffffff', this.arms[0].elbow);
     this.paper.position.set(0, -0.34, 0.08);
     this.paper.visible = false;
-    this.arms[0].elbow.add(this.paper);
   }
 
   get position() {
@@ -367,16 +356,43 @@ export class Person {
   }
 }
 
-/** Keeps a list of people and updates them every frame. */
+/** Keeps a list of people, animates them and draws all their body parts in batches. */
 export class Crowd {
   constructor(scene) {
     this.scene = scene;
     this.people = [];
+    this.batches = new Map();
+    this.color = new THREE.Color();
+  }
+
+  get full() {
+    return this.people.length >= MAX_PEOPLE;
+  }
+
+  batch(key) {
+    let mesh = this.batches.get(key);
+    if (!mesh) {
+      // At most 2 of each shape per person (legs, arms, eyes; a coat reuses the torso shape).
+      mesh = new THREE.InstancedMesh(GEO[key], new THREE.MeshStandardMaterial({ roughness: 0.85 }), MAX_PEOPLE * 2);
+      mesh.count = 0;
+      mesh.frustumCulled = false; // People move around, so the batch has no fixed bounds.
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      this.scene.add(mesh);
+      this.batches.set(key, mesh);
+    }
+    return mesh;
   }
 
   add(person) {
     this.people.push(person);
     this.scene.add(person.group);
+    for (const part of person.parts) {
+      const mesh = this.batch(part.key);
+      part.mesh = mesh;
+      part.index = mesh.count++;
+      mesh.setColorAt(part.index, this.color.set(part.color));
+      mesh.instanceColor.needsUpdate = true;
+    }
     return person;
   }
 
@@ -388,5 +404,18 @@ export class Crowd {
       if (far && !person.walking) continue;
       person.update(dt);
     }
+    this.sync();
+  }
+
+  /** Copy every body part's position into its batch. */
+  sync() {
+    for (const person of this.people) {
+      const shown = person.group.visible;
+      if (shown) person.group.updateMatrixWorld(true);
+      for (const part of person.parts) {
+        part.mesh.setMatrixAt(part.index, shown && part.node.visible ? part.node.matrixWorld : HIDDEN);
+      }
+    }
+    for (const mesh of this.batches.values()) mesh.instanceMatrix.needsUpdate = true;
   }
 }

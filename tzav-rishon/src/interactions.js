@@ -31,6 +31,7 @@ export class Interactions {
   }
 
   positionOf(item) {
+    if (typeof item.position === 'function') return item.position();
     if (item.position) return item.position;
     return item.object.getWorldPosition(this.tmp);
   }

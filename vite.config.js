@@ -6,6 +6,8 @@ const page = (path) => fileURLToPath(new URL(path, import.meta.url));
 export default defineConfig({
   // Relative paths so the build also works from a sub-folder (e.g. GitHub Pages).
   base: './',
+  // Listen on the local network too, so a phone on the same Wi-Fi can open the game.
+  server: { host: true },
   build: {
     // Three.js alone is about 550 kB, so the default 500 kB warning always fires.
     chunkSizeWarningLimit: 800,

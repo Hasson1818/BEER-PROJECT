@@ -128,7 +128,8 @@ export class RoutingQueue {
   }
 
   spawnArrival() {
-    const person = this.pool.pop() ?? this.crowd.add(new Person(randomLook(), pick(NPC_NAMES)));
+    const person = this.pool.pop() ?? (this.crowd.full ? null : this.crowd.add(new Person(randomLook(), pick(NPC_NAMES))));
+    if (!person) return;
     const fromLeft = Math.random() < 0.5;
     person.group.visible = true;
     person.place(fromLeft ? -18 : 18, 7.5, 0);

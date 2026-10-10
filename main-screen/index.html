@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BEER PROJECT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Secular+One&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <main class="menu">
+      <section class="folder" aria-labelledby="game-title">
+        <div class="folder-tab">תיק אישי</div>
+
+        <div class="folder-body">
+          <div class="stamp" aria-hidden="true">מלש״ב</div>
+          <p class="eyebrow">שלב 1 · צו ראשון</p>
+          <h1 id="game-title">BEER PROJECT</h1>
+          <p class="tagline">משחק בגוף ראשון על הדרך לצבא</p>
+
+          <nav class="actions" aria-label="תפריט ראשי">
+            <button id="start" class="btn btn-primary" type="button">
+              <span class="btn-label">התחל משחק</span>
+              <span class="btn-note">מתחילים מהצו הראשון</span>
+            </button>
+            <button id="continue" class="btn btn-secondary" type="button">
+              <span class="btn-label">המשך מאיפה שעצרת</span>
+              <span class="btn-note" id="continue-note">אין שמירה עדיין</span>
+            </button>
+          </nav>
+        </div>
+
+        <footer class="folder-foot">
+          <span>גרסה 0.1</span>
+          <span class="hint"><kbd>Enter</kbd> להתחלה</span>
+        </footer>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

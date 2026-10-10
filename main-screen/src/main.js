@@ -1,7 +1,6 @@
 import './style.css';
 import { createBackground } from './scene.js';
-
-const SAVE_KEY = 'beer-project-save';
+import { loadSave } from '../../shared/save.js';
 
 const canvas = document.getElementById('bg');
 try {
@@ -12,16 +11,7 @@ try {
   canvas.remove();
 }
 
-function readSave() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-const save = readSave();
+const save = loadSave();
 if (save) {
   document.getElementById('continue-note').textContent = `שמור: ${save.stageName ?? 'שלב לא ידוע'}`;
 }
@@ -38,13 +28,16 @@ function showToast(message) {
 const startButton = document.getElementById('start');
 const continueButton = document.getElementById('continue');
 
-// The stages don't exist yet, so the buttons only explain that for now.
 startButton.addEventListener('click', () => {
-  showToast('השלב הראשון, צו ראשון, עדיין בבנייה');
+  window.location.href = '../tzav-rishon/?new=1';
 });
 
 continueButton.addEventListener('click', () => {
-  showToast(save ? 'טעינת שמירה עדיין לא מוכנה' : 'עדיין אין משחק שמור. התחל משחק חדש');
+  if (save) {
+    window.location.href = '../tzav-rishon/?continue=1';
+  } else {
+    showToast('עדיין אין משחק שמור. התחל משחק חדש');
+  }
 });
 
 document.addEventListener('keydown', (event) => {

@@ -1,14 +1,14 @@
-import './style.css';
+import '../../shared/engine/game.css';
 import * as THREE from 'three';
 import { buildWorld } from './world.js';
-import { Crowd } from './people.js';
-import { Player } from './player.js';
-import { Interactions } from './interactions.js';
-import { createUI } from './ui.js';
+import { Crowd } from '../../shared/engine/people.js';
+import { Player } from '../../shared/engine/player.js';
+import { Interactions } from '../../shared/engine/interactions.js';
+import { createUI } from '../../shared/engine/ui.js';
 import { createStaff, RoutingQueue, HallLife, nextNumber } from './life.js';
 import { runFlow, idleLine, STEPS } from './flow.js';
 import { CHATTER, STAFF_IDLE } from './content.js';
-import { canvasTexture } from './textures.js';
+import { canvasTexture } from '../../shared/engine/textures.js';
 import { loadSave, writeSave, clearSave } from '../../shared/save.js';
 
 const START_CLOCK = 7 * 60 + 50;
@@ -226,7 +226,7 @@ async function start() {
   const registered = new Set();
   function addPerson(id, person, label, fallback) {
     registered.add(person);
-    interactions.add({ id, object: person.hitbox, label, onInteract: () => handle(id, person, fallback) });
+    interactions.add({ id, object: person.hitbox, label, priority: () => pending.has(id), onInteract: () => handle(id, person, fallback) });
   }
 
   addPerson('guard', staff.guard, 'לדבר עם המאבטח', STAFF_IDLE.guard);

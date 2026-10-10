@@ -1,8 +1,9 @@
 import { ROOMS } from './world.js';
 import { inHall, stationLabel } from './life.js';
-import { chime, beep } from './audio.js';
+import { chime, beep } from '../../shared/engine/audio.js';
 import { FACTS, DATA_DIALOGUE, MEDICAL_QUESTIONS, INTERVIEW, STAFF_IDLE } from './content.js';
-import { bagCheck, daparTest, measurements, visionTest, resultsPhone } from './minigames.js';
+import { bagCheck, daparTest, measurements, visionTest, resultsPhone, learnMore } from './minigames.js';
+import { saveResults } from '../../shared/save.js';
 
 export const STEPS = ['arrive', 'routing', 'data', 'dapar', 'medical', 'interview', 'checkout', 'results'];
 
@@ -329,16 +330,16 @@ async function results(game) {
   const k = 0.5 * d + 0.17 * (r.education ?? 0.7) + 0.33 * (r.interview ?? 0.6);
   r.kaba = Math.round(41 + k * 15);
   r.hebrew = r.hebrew ?? 8;
+  r.profile = r.profile ?? 97;
   game.save('results');
+  saveResults('tzav-rishon', r);
   await ui.interlude('שבועיים אחר כך…', 2200);
-  const choice = await resultsPhone(ui, {
-    profile: r.profile ?? 97,
-    dapar: r.dapar ?? '—',
-    kaba: r.kaba,
-    hebrew: r.hebrew,
-  });
+  const shown = { profile: r.profile, dapar: r.dapar ?? '—', kaba: r.kaba, hebrew: r.hebrew };
+  await resultsPhone(ui, shown);
   await ui.fact(FACTS.end.title, FACTS.end.points);
+  const choice = await learnMore(ui, shown);
   if (choice === 'again') window.location.href = './?new=1';
+  else if (choice === 'next') window.location.href = '../yom-sayarot/?new=1';
   else window.location.href = '../main-screen/';
 }
 

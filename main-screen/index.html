@@ -25,7 +25,7 @@
           <h1 id="game-title">BEER PROJECT</h1>
           <p class="tagline">משחק בגוף ראשון על הדרך לצבא</p>
 
-          <nav class="actions" aria-label="תפריט ראשי">
+          <nav class="actions" id="main-actions" aria-label="תפריט ראשי">
             <button id="start" class="btn btn-primary" type="button">
               <span class="btn-label">התחל משחק</span>
               <span class="btn-note">מתחילים מהצו הראשון</span>
@@ -34,6 +34,29 @@
               <span class="btn-label">המשך מאיפה שעצרת</span>
               <span class="btn-note" id="continue-note">אין שמירה עדיין</span>
             </button>
+            <button id="choose" class="btn btn-secondary" type="button">
+              <span class="btn-label">בחירת שלב</span>
+              <span class="btn-note">צו ראשון · יום סיירות</span>
+            </button>
+          </nav>
+
+          <nav class="stages" id="stages" aria-label="בחירת שלב" hidden>
+            <a class="stage" href="../tzav-rishon/?new=1">
+              <span class="stage-number">1</span>
+              <span class="stage-text">
+                <strong>צו ראשון</strong>
+                <small>לשכת הגיוס: ניתוב, מבחן ממוחשב, רפואי וראיון</small>
+              </span>
+            </a>
+            <a class="stage" href="../yom-sayarot/?new=1">
+              <span class="stage-number">2</span>
+              <span class="stage-text">
+                <strong>יום סיירות · אוקטובר</strong>
+                <small>שני לילות בדיונות: ריצה, שקים, אלונקה, חפירה וצוות</small>
+              </span>
+              <span class="stage-tag">טיוטה</span>
+            </a>
+            <button id="back" class="btn-back" type="button">← חזרה</button>
           </nav>
         </div>
 

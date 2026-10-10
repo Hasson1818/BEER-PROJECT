@@ -1,4 +1,4 @@
-import { Person, randomLook, soldierLook } from './people.js';
+import { Person, randomLook, soldierLook } from '../../shared/engine/people.js';
 import { ROOMS } from './world.js';
 import { NPC_NAMES } from './content.js';
 

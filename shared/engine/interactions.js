@@ -48,10 +48,13 @@ export class Interactions {
     for (const hit of hits) {
       const item = this.byObject.get(hit.object);
       if (!item) break; // A wall is in the way.
-      if (hit.distance <= item.range) {
+      if (hit.distance > item.range) continue;
+      // Someone the story is waiting for wins over people standing in front of them.
+      if (item.priority?.()) {
         this.current = item;
         break;
       }
+      this.current ??= item;
     }
 
     if (!this.current && player.touch) {

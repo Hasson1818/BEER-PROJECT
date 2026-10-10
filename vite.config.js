@@ -16,6 +16,7 @@ export default defineConfig({
         index: page('./index.html'),
         mainScreen: page('./main-screen/index.html'),
         tzavRishon: page('./tzav-rishon/index.html'),
+        yomSayarot: page('./yom-sayarot/index.html'),
       },
     },
   },

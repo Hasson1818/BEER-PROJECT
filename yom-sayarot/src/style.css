@@ -1,0 +1,315 @@
+/* Additions for יום סיירות on top of shared/engine/game.css. */
+
+body {
+  background: #1b2238;
+}
+
+.clock .day {
+  margin-inline-end: 6px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+/* The number written on your white shirt. */
+.bib {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 74px;
+  padding: 4px 10px 6px;
+  border-radius: 6px;
+  background: #f7f7f2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: rotate(-2deg);
+}
+
+.bib span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #555;
+}
+
+.bib strong {
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-weight: 400;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: #111;
+}
+
+/* Drill title / countdown in the middle top. */
+.drill {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: min(460px, calc(100% - 300px));
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: var(--glass);
+  color: var(--khaki-100);
+  text-align: center;
+}
+
+.drill strong {
+  font-size: 1rem;
+}
+
+.drill span {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  direction: rtl;
+}
+
+.drill.countdown {
+  top: 30%;
+  padding: 10px 30px;
+  background: none;
+}
+
+.drill.countdown span {
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-size: 5rem;
+  line-height: 1;
+  opacity: 1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Stamina bar at the bottom. */
+.stamina {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(360px, calc(100% - 300px));
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--khaki-100);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.stamina-track {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.stamina-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f2c94c, #7fbf4d);
+  transform-origin: right;
+  transition: transform 0.15s linear;
+}
+
+.stamina.low .stamina-fill {
+  background: #e05a47;
+}
+
+.carry {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(201, 180, 138, 0.92);
+  color: #2a2d1d;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* Red edges when you're out of breath. */
+.tired {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(140, 20, 10, 0.55) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.exhausted .tired {
+  opacity: 1;
+  animation: heartbeat 0.9s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { opacity: 0.65; }
+  40% { opacity: 1; }
+}
+
+.result-tile.low {
+  background: var(--stamp);
+}
+
+.panel .note {
+  font-size: 0.9rem;
+  color: var(--olive-700);
+}
+
+/* Sand map task */
+
+.map-task {
+  width: min(720px, 100%);
+}
+
+.map-layout {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.sand-map {
+  flex: none;
+  width: auto;
+  height: min(62vh, 520px);
+  border-radius: 10px;
+  background: #9fc6d9;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.map-land {
+  fill: #e3cba0;
+  stroke: #8a6a44;
+  stroke-width: 1.2;
+}
+
+.map-sea {
+  fill: #2c5d7a;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.map-guess {
+  fill: #a3271f;
+}
+
+.map-true {
+  fill: #2e8b3e;
+}
+
+.map-label {
+  fill: #2a2d1d;
+  font-size: 7px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #f4ead2;
+  stroke-width: 2px;
+}
+
+.map-side {
+  flex: 1;
+}
+
+.map-prompt {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--olive-900);
+}
+
+.map-list {
+  margin: 0;
+  padding-inline-start: 20px;
+  line-height: 1.7;
+}
+
+/* Results SMS */
+
+.sms-outcome {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.15rem;
+  color: var(--olive-900);
+}
+
+.sms-detail {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+}
+
+.summary-list {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.summary-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(60, 68, 35, 0.3);
+  font-size: 0.9rem;
+}
+
+.summary-list strong {
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .drill {
+    top: auto;
+    bottom: 160px;
+    max-width: calc(100% - 32px);
+  }
+
+  .stamina {
+    bottom: 150px;
+    width: calc(100% - 60px);
+  }
+
+  .carry {
+    bottom: 196px;
+  }
+
+  .map-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sand-map {
+    height: 50vh;
+  }
+}
+
+@media (max-height: 500px) {
+  .drill {
+    top: 8px;
+    max-width: calc(100% - 360px);
+    padding: 4px 12px;
+  }
+
+  .drill span {
+    font-size: 0.75rem;
+  }
+
+  .stamina {
+    bottom: 10px;
+    width: min(300px, calc(100% - 330px));
+  }
+
+  .carry {
+    bottom: 48px;
+  }
+
+  .sand-map {
+    height: calc(100vh - 140px);
+  }
+
+  .bib strong {
+    font-size: 1.2rem;
+  }
+}

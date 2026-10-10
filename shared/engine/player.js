@@ -26,6 +26,13 @@ export class Player {
     this.eye = EYE_HEIGHT;
     this.touch = window.matchMedia('(pointer: coarse)').matches;
 
+    // Hooks for stages with uneven ground and physical drills.
+    this.ground = () => 0; // (x, z) => height of the floor
+    this.speedScale = 1; // Carrying, crawling and being tired slow you down.
+    this.autoRun = false; // Drills: run without holding Shift.
+    this.eyeOverride = null; // e.g. close to the ground while crawling
+    this.movedThisFrame = 0; // Meters moved in the last update.
+
     camera.rotation.order = 'YXZ';
 
     document.addEventListener('keydown', (event) => {
@@ -191,13 +198,18 @@ export class Player {
       strafe += this.joystick.x;
     }
     this.yaw += turn * dt * 2.2;
+    this.input = { forward, strafe };
 
     const moving = Math.hypot(forward, strafe) > 0.1;
     if (this.seat && moving) this.standUp();
 
-    if (!this.seat && moving) {
+    const startX = this.x;
+    const startZ = this.z;
+    // `positionLocked`: something else moves the player (e.g. carrying a stretcher).
+    if (!this.seat && moving && !this.positionLocked) {
       const length = Math.max(1, Math.hypot(forward, strafe));
-      const speed = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? RUN_SPEED : WALK_SPEED;
+      const running = this.autoRun || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+      const speed = (running ? RUN_SPEED : WALK_SPEED) * this.speedScale;
       const sin = Math.sin(this.yaw);
       const cos = Math.cos(this.yaw);
       // Camera looks down -z at yaw 0.
@@ -210,6 +222,7 @@ export class Player {
       this.bob += dt * speed * 3.2;
       this.collide();
     }
+    this.movedThisFrame = Math.hypot(this.x - startX, this.z - startZ);
 
     this.applyCamera(moving && !this.seat ? 1 : 0, dt);
   }
@@ -255,10 +268,10 @@ export class Player {
   }
 
   applyCamera(moving, dt = 0) {
-    const targetEye = this.seat ? SEATED_EYE : EYE_HEIGHT;
+    const targetEye = this.seat ? (this.seat.eye ?? SEATED_EYE) : (this.eyeOverride ?? EYE_HEIGHT);
     this.eye += (targetEye - this.eye) * Math.min(1, dt * 8 || 1);
     const bob = moving ? Math.sin(this.bob) * 0.035 : 0;
-    this.camera.position.set(this.x, this.eye + bob, this.z);
+    this.camera.position.set(this.x, this.ground(this.x, this.z) + this.eye + bob, this.z);
     this.camera.rotation.set(this.pitch, this.yaw, 0);
   }
 }

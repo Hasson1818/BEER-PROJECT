@@ -11,10 +11,23 @@ try {
   canvas.remove();
 }
 
+// Each stage has its own page; the save remembers which one you were in.
+const STAGE_PAGES = { 'tzav-rishon': '../tzav-rishon/', 'yom-sayarot': '../yom-sayarot/' };
+
 const save = loadSave();
 if (save) {
   document.getElementById('continue-note').textContent = `שמור: ${save.stageName ?? 'שלב לא ידוע'}`;
 }
+
+const mainActions = document.getElementById('main-actions');
+const stages = document.getElementById('stages');
+function showStages(show) {
+  mainActions.hidden = show;
+  stages.hidden = !show;
+  (show ? stages.querySelector('.stage') : document.getElementById('choose')).focus();
+}
+document.getElementById('choose').addEventListener('click', () => showStages(true));
+document.getElementById('back').addEventListener('click', () => showStages(false));
 
 const toast = document.getElementById('toast');
 let toastTimer;
@@ -34,7 +47,7 @@ startButton.addEventListener('click', () => {
 
 continueButton.addEventListener('click', () => {
   if (save) {
-    window.location.href = '../tzav-rishon/?continue=1';
+    window.location.href = `${STAGE_PAGES[save.stage] ?? STAGE_PAGES['tzav-rishon']}?continue=1`;
   } else {
     showToast('עדיין אין משחק שמור. התחל משחק חדש');
   }

@@ -1,5 +1,5 @@
-import { BAG_ITEMS, DAPAR_SECTIONS, FACTS } from './content.js';
-import { beep, click } from './audio.js';
+import { BAG_ITEMS, DAPAR_SECTIONS, FACTS, LEARN } from './content.js';
+import { beep, click } from '../../shared/engine/audio.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rand = (min, max) => Math.round(min + Math.random() * (max - min));
@@ -507,12 +507,66 @@ export function resultsPhone(ui, results) {
     }
     const note = el('p', 'note', 'במשחק החישוב פשוט יותר מבמציאות. הקב״א מחושב מהדפ״ר, ההשכלה והראיון. בקשות לערעור ושינויים עוברים דרך אתר מתגייסים.');
     const actions = el('div', 'actions');
-    const menu = button('לתפריט הראשי');
-    const again = button('לשחק שוב', 'button secondary');
-    actions.append(menu, again);
+    const next = button('מה המספרים האלה אומרים?');
+    actions.append(next);
     screen.append(time, sms, grid, note, actions);
     panel.append(screen);
-    menu.addEventListener('click', () => close('menu'));
-    again.addEventListener('click', () => close('again'));
+    next.addEventListener('click', () => close());
+  });
+}
+
+// ---------- "What do you want to learn about?" ----------
+
+/**
+ * Lets the player pick דפ״ר / פרופיל / עברית and read what their own number means.
+ * Resolves to 'menu', 'again' or 'next' (the next stage).
+ */
+export function learnMore(ui, results) {
+  return ui.panel('learn', (panel, close) => {
+    const values = { dapar: results.dapar, profile: results.profile, hebrew: results.hebrew };
+    const seen = new Set();
+
+    function showMenu() {
+      panel.innerHTML = '';
+      panel.append(
+        el('p', 'eyebrow', 'התוצאות שלך'),
+        el('h2', '', 'על מה תרצה לדעת עוד?'),
+        el('p', '', 'בחר נתון כדי להבין מה הוא אומר, איך הוא נקבע ומה הוא פותח לך.'),
+      );
+      const grid = el('div', 'learn-grid');
+      for (const [key, info] of Object.entries(LEARN)) {
+        const card = button('', `learn-card${seen.has(key) ? ' seen' : ''}`);
+        card.append(el('span', 'learn-label', info.label), el('strong', '', String(values[key] ?? '—')), el('small', '', `טווח ${info.range}`));
+        card.addEventListener('click', () => showTopic(key));
+        grid.append(card);
+      }
+      const actions = el('div', 'actions');
+      const nextStage = button('לשלב הבא: יום סיירות');
+      const menu = button('לתפריט הראשי', 'button secondary');
+      const again = button('לשחק שוב', 'button secondary');
+      nextStage.addEventListener('click', () => close('next'));
+      menu.addEventListener('click', () => close('menu'));
+      again.addEventListener('click', () => close('again'));
+      actions.append(nextStage, menu, again);
+      panel.append(grid, actions);
+    }
+
+    function showTopic(key) {
+      seen.add(key);
+      const info = LEARN[key];
+      panel.innerHTML = '';
+      const mine = el('div', 'learn-mine');
+      mine.append(el('span', '', 'הציון שלך'), el('strong', '', String(values[key] ?? '—')), el('p', '', info.verdict(values[key])));
+      const list = el('ul', 'learn-points');
+      for (const point of info.points) list.append(el('li', '', point));
+      const actions = el('div', 'actions');
+      const back = button('חזרה לבחירה');
+      back.addEventListener('click', showMenu);
+      actions.append(back);
+      panel.append(el('p', 'eyebrow', `טווח ${info.range}`), el('h2', '', info.title), mine, list, actions);
+      panel.parentElement?.scrollTo?.({ top: 0 });
+    }
+
+    showMenu();
   });
 }

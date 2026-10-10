@@ -26,3 +26,26 @@ export function clearSave() {
     // Ignore, same as above.
   }
 }
+
+// Final results of finished stages, kept separately from the "continue" slot,
+// e.g. { 'tzav-rishon': { profile: 97, dapar: 70, ... } }.
+const RESULTS_KEY = 'beer-project-results';
+
+export function loadResults(stage) {
+  try {
+    const all = JSON.parse(localStorage.getItem(RESULTS_KEY) ?? '{}');
+    return stage ? (all[stage] ?? null) : all;
+  } catch {
+    return stage ? null : {};
+  }
+}
+
+export function saveResults(stage, results) {
+  try {
+    const all = JSON.parse(localStorage.getItem(RESULTS_KEY) ?? '{}');
+    all[stage] = { ...results, finishedAt: Date.now() };
+    localStorage.setItem(RESULTS_KEY, JSON.stringify(all));
+  } catch {
+    // Same as writeSave: the game works without storage.
+  }
+}

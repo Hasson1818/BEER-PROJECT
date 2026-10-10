@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeStatic } from '../../shared/engine/merge.js';
 import { drawIsraeliFlag } from '../../shared/flag.js';
 import {
   canvasTexture,
@@ -9,7 +9,7 @@ import {
   tileTexture,
   wallTexture,
   drawQueueScreen,
-} from './textures.js';
+} from '../../shared/engine/textures.js';
 
 // The recruitment office (לשכת גיוס). Units are meters, +z points out of the
 // front door toward the street, so walking in means moving toward -z.
@@ -38,43 +38,6 @@ export const ROOMS = {
   interview2: { name: 'ראיון אישי', room: 'חדר ראיונות 2', door: { x: 0, z: -30 }, inside: { x: 0, z: -31.2 } },
   interview3: { name: 'ראיון אישי', room: 'חדר ראיונות 3', door: { x: 9.4, z: -30 }, inside: { x: 9.4, z: -31.2 } },
 };
-
-/**
- * Joins all non-moving meshes that share a material into one mesh each.
- * The building has hundreds of boxes; drawing them separately is too slow on phones.
- */
-function mergeStatic(scene, blockers) {
-  scene.updateMatrixWorld(true);
-  const blockerSet = new Set(blockers);
-  const buckets = new Map();
-  scene.traverse((obj) => {
-    if (!obj.isMesh || obj.isInstancedMesh || obj.userData.dynamic) return;
-    if (Array.isArray(obj.material) || obj.material.visible === false) return;
-    const key = `${obj.material.uuid}|${blockerSet.has(obj) ? 'block' : ''}`;
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(obj);
-  });
-
-  for (const [key, meshes] of buckets) {
-    if (meshes.length < 2) continue;
-    const geometries = meshes.map((mesh) => {
-      const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
-      for (const name of Object.keys(geometry.attributes)) {
-        if (!['position', 'normal', 'uv'].includes(name)) geometry.deleteAttribute(name);
-      }
-      return geometry.applyMatrix4(mesh.matrixWorld);
-    });
-    const merged = mergeGeometries(geometries);
-    if (!merged) continue;
-    const mesh = new THREE.Mesh(merged, meshes[0].material);
-    scene.add(mesh);
-    for (const old of meshes) old.removeFromParent();
-    if (key.endsWith('|block')) {
-      for (const old of meshes) blockers.splice(blockers.indexOf(old), 1);
-      blockers.push(mesh);
-    }
-  }
-}
 
 export function buildWorld(scene) {
   const colliders = [];

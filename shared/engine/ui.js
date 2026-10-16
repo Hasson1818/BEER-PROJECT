@@ -199,7 +199,8 @@ export function createUI({ onModalChange }) {
       };
       continueEl.onclick = (event) => {
         event.stopPropagation();
-        done(null);
+        // A question can only be closed by picking an answer.
+        if (!choices) done(null);
       };
 
       const openedAt = performance.now();

@@ -34,6 +34,14 @@ const GEO = {
   jerrycan: new THREE.BoxGeometry(0.16, 0.34, 0.26),
   shaft: new THREE.CylinderGeometry(0.018, 0.018, 0.9, 6),
   blade: new THREE.BoxGeometry(0.2, 0.24, 0.02),
+  // Head gear: a combat helmet, a floppy field hat ("כובע טמבל"), a cap, sunglasses.
+  helmet: new THREE.SphereGeometry(0.15, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.52),
+  hatTop: new THREE.CylinderGeometry(0.12, 0.128, 0.085, 14),
+  brim: new THREE.CylinderGeometry(0.2, 0.2, 0.012, 16),
+  bill: new THREE.BoxGeometry(0.15, 0.014, 0.1),
+  glasses: new THREE.BoxGeometry(0.19, 0.035, 0.02),
+  bottle: new THREE.CylinderGeometry(0.036, 0.036, 0.24, 8),
+  kitbag: new THREE.CapsuleGeometry(0.17, 0.42, 3, 8),
 };
 
 const hitboxGeometry = new THREE.CylinderGeometry(0.35, 0.35, 1.8, 8);
@@ -158,6 +166,36 @@ export class Person {
       beret.position.set(-0.015, 0.1, -0.01);
       beret.rotation.z = 0.25;
     }
+    // A person can have both a helmet and a field hat and switch with setHeadgear().
+    this.helmet = null;
+    this.hat = [];
+    if (look.helmet) {
+      this.helmet = this.part('helmet', look.helmet, this.head);
+      this.helmet.position.set(0, 0.02, -0.005);
+      this.helmet.scale.set(1, 0.95, 1.08);
+    }
+    if (look.bucketHat) {
+      const top = this.part('hatTop', look.bucketHat, this.head);
+      top.position.set(0, 0.1, -0.01);
+      const brim = this.part('brim', look.bucketHat, this.head);
+      brim.position.set(0, 0.065, 0);
+      brim.rotation.x = -0.08;
+      this.hat = [top, brim];
+    }
+    if (look.cap) {
+      const crown = this.part('hairCap', look.cap, this.head);
+      crown.scale.setScalar(1.06);
+      crown.position.set(0, 0.012, -0.01);
+      this.part('bill', look.cap, this.head).position.set(0, 0.06, 0.13);
+    }
+    if (this.helmet && this.hat.length) this.setHeadgear(look.headgear ?? 'hat');
+    // Staff in a gibbush wear sunglasses all day (see the pilot gibbush stage).
+    this.glasses = look.sunglasses ? this.part('glasses', '#101214', this.head) : null;
+    this.glasses?.position.set(0, 0.02, 0.105);
+    if (look.bottle) {
+      const bottle = this.part('bottle', '#d9e8ee', this.body);
+      bottle.position.set(0.21, 0.92, -0.04);
+    }
     if (look.coat) {
       // White doctor's coat over the shirt.
       const coat = this.part('torso', '#f7f7f4', this.body);
@@ -193,7 +231,12 @@ export class Person {
     this.part('blade', '#5b5f63', this.shovel).position.y = -0.52;
     this.shovel.visible = false;
 
-    this.carrying = null; // 'sandbag' | 'jerrycan' | null
+    // A full kitbag on the back for marches.
+    this.kitbag = this.part('kitbag', '#4a5130', this.body);
+    this.kitbag.position.set(0, 1.18, -0.3);
+    this.kitbag.visible = false;
+
+    this.carrying = null; // 'sandbag' | 'jerrycan' | 'beam' | 'kitbag' | null
   }
 
   get position() {
@@ -206,11 +249,22 @@ export class Person {
     return this;
   }
 
-  /** What the person holds: 'sandbag', 'jerrycan' or null. */
+  /**
+   * What the person holds: 'sandbag', 'jerrycan', 'kitbag' (on the back),
+   * 'beam' (hands up holding something on the shoulders, drawn separately) or null.
+   */
   carry(item) {
     this.carrying = item;
     this.sandbag.visible = item === 'sandbag';
     this.jerrycan.visible = item === 'jerrycan';
+    this.kitbag.visible = item === 'kitbag';
+    return this;
+  }
+
+  /** 'helmet', 'hat' or null, for people built with both. */
+  setHeadgear(kind) {
+    if (this.helmet) this.helmet.visible = kind === 'helmet';
+    for (const node of this.hat) node.visible = kind === 'hat';
     return this;
   }
 
@@ -221,7 +275,7 @@ export class Person {
   setPose(pose) {
     this.pose = pose;
     this.phone.visible = pose === 'phone' || pose === 'sit-phone';
-    this.paper.visible = pose === 'clipboard';
+    this.paper.visible = pose === 'clipboard' || pose === 'sit-read';
     this.shovel.visible = pose === 'dig';
     return this;
   }
@@ -302,7 +356,7 @@ export class Person {
       this.head.rotation.set(0, 0, 0);
       this.torso.rotation.set(0, 0, 0);
       this.body.rotation.set(0, 0, 0);
-      const groundSit = this.pose === 'sit-ground';
+      const groundSit = this.pose === 'sit-ground' || this.pose === 'sit-east' || this.pose === 'sit-read';
       this.body.position.set(0, groundSit ? -0.86 : this.pose.startsWith('sit') ? -0.43 : 0, 0);
     };
     reset();
@@ -319,7 +373,7 @@ export class Person {
     this.headYaw = (this.headYaw ?? 0) + (this.headTarget - (this.headYaw ?? 0)) * Math.min(1, dt * 3);
 
     const sitting = this.pose.startsWith('sit');
-    if (sitting && this.pose !== 'sit-ground') {
+    if (sitting && this.pose !== 'sit-ground' && this.pose !== 'sit-east' && this.pose !== 'sit-read') {
       for (const leg of this.legs) {
         leg.hip.rotation.x = -Math.PI / 2;
         leg.knee.rotation.x = Math.PI / 2;
@@ -365,6 +419,59 @@ export class Person {
         headFree = false;
         break;
       }
+      case 'run-place': {
+        // Running in place ("אדמה בוערת"): high knees, no movement.
+        const phase = t * 11;
+        const swing = Math.sin(phase) * 0.9;
+        legL.hip.rotation.x = -Math.max(0, swing);
+        legR.hip.rotation.x = -Math.max(0, -swing);
+        legL.knee.rotation.x = Math.max(0, swing) * 1.6;
+        legR.knee.rotation.x = Math.max(0, -swing) * 1.6;
+        armL.shoulder.rotation.x = swing * 0.6;
+        armR.shoulder.rotation.x = -swing * 0.6;
+        armL.elbow.rotation.x = -1.3;
+        armR.elbow.rotation.x = -1.3;
+        this.body.position.y = Math.abs(Math.sin(phase)) * 0.06;
+        headFree = false;
+        break;
+      }
+      case 'sit-east':
+      case 'sit-read':
+        // Cross-legged ("ישיבה מזרחית"): thighs forward and out, shins folded across.
+        for (const leg of this.legs) {
+          const side = leg === legL ? -1 : 1;
+          leg.hip.rotation.set(-Math.PI / 2, 0, side * 0.95);
+          leg.knee.rotation.set(0, 0, -side * 2.55);
+        }
+        if (this.pose === 'sit-read') {
+          // Reading the booklet held in front.
+          armL.shoulder.rotation.x = -0.95;
+          armL.elbow.rotation.x = -1.05;
+          armR.shoulder.rotation.x = -0.75;
+          armR.elbow.rotation.x = -1.2;
+          this.head.rotation.x = 0.55;
+          headFree = false;
+        } else {
+          for (const arm of this.arms) {
+            arm.shoulder.rotation.x = -0.55;
+            arm.elbow.rotation.x = -0.55;
+          }
+        }
+        this.body.rotation.x = 0.06;
+        break;
+      case 'hang':
+        // Hanging from a bar; the caller lifts the whole person.
+        for (const arm of this.arms) {
+          arm.shoulder.rotation.set(-Math.PI + 0.05, 0, arm.side * 0.32);
+          arm.elbow.rotation.set(-0.1, 0, 0);
+        }
+        for (const leg of this.legs) {
+          leg.hip.rotation.x = -0.25 + Math.sin(t * 1.3 + leg.hip.position.x * 9) * 0.05;
+          leg.knee.rotation.x = 0.55;
+        }
+        this.head.rotation.x = -0.15;
+        headFree = false;
+        break;
       case 'dig':
         this.body.rotation.x = 0.4;
         for (const arm of this.arms) {
@@ -457,7 +564,7 @@ export class Person {
     }
 
     // Carrying overrides the arms.
-    if (this.carrying === 'sandbag') {
+    if (this.carrying === 'sandbag' || this.carrying === 'beam') {
       for (const arm of this.arms) {
         arm.shoulder.rotation.set(-2.9, 0, arm.side * 0.45);
         arm.elbow.rotation.set(-1.5, 0, 0);

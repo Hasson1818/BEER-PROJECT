@@ -1,7 +1,8 @@
 import { SPOTS, DUNE, height } from './world.js';
 import { gather, campLife } from './team.js';
-import { FACTS, INTERVIEW, OUTCOMES } from './content.js';
-import { summons, bagCheck, preferences, medicCheck, mapTask, sociometric, resultsSms } from './minigames.js';
+import { FACTS, INTERVIEW, OUTCOMES, MAP_PLACES } from './content.js';
+import { summons, bagCheck, preferences, medicCheck, sociometric, resultsSms } from './minigames.js';
+import { mapTask } from '../../shared/engine/map-task.js';
 import { formatTime } from './drills.js';
 import { loadResults, saveResults } from '../../shared/save.js';
 
@@ -207,7 +208,7 @@ async function team(game) {
     ]);
     teamwork += [1, 0.4, 0.1][choice];
   });
-  state.map = await mapTask(ui);
+  state.map = await mapTask(ui, MAP_PLACES);
 
   await talkScene(game, guy, async () => {
     await ui.talk(guy.name, 'עכשיו פירמידה משקי חול. תחליטו מי בונה, מי ממלא, מי מאבטח ומי סוחב.');

@@ -1,8 +1,9 @@
 import '../../shared/engine/game.css';
+import '../../shared/engine/field.css';
 import './style.css';
 import * as THREE from 'three';
 import { buildWorld, height } from './world.js';
-import { createSky } from './sky.js';
+import { createSky } from '../../shared/engine/sky.js';
 import { createPeople } from './team.js';
 import { createDrills } from './drills.js';
 import { runFlow, STEPS } from './flow.js';
@@ -47,6 +48,10 @@ function createHud() {
       const labels = { sandbag: 'שק חול על הכתפיים', jerrycan: 'ג׳ריקן 20 ליטר' };
       $('carry').hidden = !item;
       $('carry').textContent = labels[item] ?? '';
+    },
+    /** What the drill box shows now, so a countdown can put it back. */
+    getDrill() {
+      return $('drill').hidden || $('drill').classList.contains('countdown') ? null : { title: $('drill-title').textContent, info: $('drill-info').textContent };
     },
     setDrill(title, info = '') {
       const box = $('drill');

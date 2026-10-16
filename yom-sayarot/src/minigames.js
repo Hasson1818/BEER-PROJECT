@@ -1,4 +1,4 @@
-import { BAG_ITEMS, UNITS, MAP_PLACES, MAP_OUTLINE, FACTS } from './content.js';
+import { BAG_ITEMS, UNITS, FACTS } from './content.js';
 import { click } from '../../shared/engine/audio.js';
 
 function el(tag, className, text) {
@@ -149,86 +149,6 @@ export function medicCheck(ui) {
     const ok = button('תודה');
     ok.addEventListener('click', () => close());
     panel.append(grid, el('p', '', 'החובש בודק דופק ולחץ דם לפני הריצה. מי שלא מרגיש טוב צריך להגיד עכשיו.'), actions(ok));
-  });
-}
-
-// ---------- Sand map of Israel ----------
-
-const project = ([lon, lat]) => [(lon - 34.1) * 100, (33.45 - lat) * 118];
-
-/** Tap where each place is. Resolves to accuracy 0..1. */
-export function mapTask(ui) {
-  return ui.panel('map-task', (panel, close) => {
-    const ns = 'http://www.w3.org/2000/svg';
-    const [w, h] = project([35.95, 29.4]);
-    panel.append(el('p', 'eyebrow', 'משימת צוות · מפה בחול'), el('h2', '', 'סמנו את המקומות על המפה'));
-    const prompt = el('p', 'map-prompt', '');
-    const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-    svg.setAttribute('class', 'sand-map');
-    const outline = document.createElementNS(ns, 'polygon');
-    outline.setAttribute('points', MAP_OUTLINE.map((p) => project(p).join(',')).join(' '));
-    outline.setAttribute('class', 'map-land');
-    svg.append(outline);
-    const sea = document.createElementNS(ns, 'text');
-    sea.setAttribute('x', '6');
-    sea.setAttribute('y', String(h * 0.42));
-    sea.setAttribute('class', 'map-sea');
-    sea.textContent = 'הים';
-    svg.append(sea);
-    const layout = el('div', 'map-layout');
-    const side = el('div', 'map-side');
-    const list = el('ol', 'map-list');
-    side.append(prompt, list);
-    layout.append(svg, side);
-    panel.append(layout);
-
-    const results = [];
-    let index = 0;
-    const showPrompt = () => {
-      prompt.textContent = index < MAP_PLACES.length ? `איפה ${MAP_PLACES[index][0]}? לחץ על המפה.` : 'כל הכבוד. בירוק: המקומות האמיתיים.';
-    };
-    showPrompt();
-
-    const dot = (x, y, cls, label) => {
-      const c = document.createElementNS(ns, 'circle');
-      c.setAttribute('cx', x);
-      c.setAttribute('cy', y);
-      c.setAttribute('r', '3.4');
-      c.setAttribute('class', cls);
-      svg.append(c);
-      if (label) {
-        const t = document.createElementNS(ns, 'text');
-        t.setAttribute('x', x + 5);
-        t.setAttribute('y', y + 3);
-        t.setAttribute('class', 'map-label');
-        t.textContent = label;
-        svg.append(t);
-      }
-    };
-
-    svg.addEventListener('pointerdown', (event) => {
-      if (index >= MAP_PLACES.length) return;
-      const point = svg.createSVGPoint();
-      point.x = event.clientX;
-      point.y = event.clientY;
-      const local = point.matrixTransform(svg.getScreenCTM().inverse());
-      const [name, lon, lat] = MAP_PLACES[index];
-      const [tx, ty] = project([lon, lat]);
-      const km = Math.hypot((local.x - tx) * 0.94, (local.y - ty) * 0.94);
-      results.push(Math.max(0, 1 - km / 60));
-      dot(local.x, local.y, 'map-guess', name);
-      list.append(el('li', '', `${name}: ${km < 8 ? 'בול!' : `סטייה של כ־${Math.round(km)} ק״מ`}`));
-      click();
-      index++;
-      if (index === MAP_PLACES.length) {
-        for (const [, lo, la] of MAP_PLACES) dot(...project([lo, la]), 'map-true');
-        const done = button('סיימנו את המפה');
-        done.addEventListener('click', () => close(results.reduce((a, b) => a + b, 0) / results.length));
-        side.append(actions(done));
-      }
-      showPrompt();
-    });
   });
 }
 

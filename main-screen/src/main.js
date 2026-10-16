@@ -12,7 +12,7 @@ try {
 }
 
 // Each stage has its own page; the save remembers which one you were in.
-const STAGE_PAGES = { 'tzav-rishon': '../tzav-rishon/', 'yom-sayarot': '../yom-sayarot/' };
+const STAGE_PAGES = { 'tzav-rishon': '../tzav-rishon/', 'yom-sayarot': '../yom-sayarot/', 'gibbush-tayis': '../gibbush-tayis/' };
 
 const save = loadSave();
 if (save) {

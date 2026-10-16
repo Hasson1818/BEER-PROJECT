@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 
-// Sky, sun/moon and stars for each part of the two days.
+// Sky, sun/moon and stars for each part of a day in the field (outdoor stages).
 const PRESETS = {
   afternoon: { top: '#3d82d0', horizon: '#d8e7ef', sun: [-0.5, 0.65, -0.35], sunColor: '#fff1d6', sunIntensity: 2.3, hemi: 1.25, stars: 0, flood: 0, fogFar: 260 },
   dusk: { top: '#25365f', horizon: '#f0a35e', sun: [-0.85, 0.07, -0.3], sunColor: '#ffb070', sunIntensity: 1.3, hemi: 0.65, stars: 0.15, flood: 0.4, fogFar: 220 },
   night: { top: '#03050c', horizon: '#141a2e', sun: [0.35, 0.6, 0.4], sunColor: '#a9bcff', sunIntensity: 0.22, hemi: 0.18, stars: 1, flood: 1, fogFar: 160 },
+  predawn: { top: '#070b1a', horizon: '#2a3352', sun: [0.8, 0.02, -0.3], sunColor: '#9fb0e0', sunIntensity: 0.3, hemi: 0.25, stars: 0.8, flood: 1, fogFar: 170 },
   dawn: { top: '#2f4675', horizon: '#f3b48a', sun: [0.85, 0.08, -0.2], sunColor: '#ffc08a', sunIntensity: 1.1, hemi: 0.6, stars: 0.25, flood: 0.5, fogFar: 220 },
   day: { top: '#3a7fd1', horizon: '#e6eef2', sun: [0.25, 0.9, 0.2], sunColor: '#fff6e5', sunIntensity: 2.6, hemi: 1.45, stars: 0, flood: 0, fogFar: 280 },
 };
@@ -81,18 +82,26 @@ export function createSky(scene, floodlights) {
     sun.intensity = p.sunIntensity;
     sun.position.copy(uniforms.sunDir.value).multiplyScalar(100);
     hemi.intensity = p.hemi;
-    hemi.color.set(name === 'night' ? '#8fa2d6' : '#ffffff');
+    hemi.color.set(name === 'night' || name === 'predawn' ? '#8fa2d6' : '#ffffff');
     stars.material.opacity = p.stars;
     stars.visible = p.stars > 0;
     scene.fog.color.set(p.horizon);
     scene.fog.far = p.fogFar;
     floodlights.setPower(p.flood);
+    current = name;
   }
+  let current = null;
 
   function update(camera) {
     dome.position.copy(camera.position);
     stars.position.copy(camera.position);
   }
 
-  return { setTime, update };
+  return {
+    setTime,
+    update,
+    get time() {
+      return current;
+    },
+  };
 }

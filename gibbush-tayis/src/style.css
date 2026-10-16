@@ -1,0 +1,562 @@
+/* Additions for גיבוש טייס on top of shared/engine/game.css and field.css. */
+
+body {
+  background: #1d2430;
+}
+
+/* Your number, written on the shoulder tabs ("כותפות"). */
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+  padding: 4px 10px 6px;
+  border-radius: 6px;
+  background: #5b6236;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: var(--khaki-100);
+}
+
+.tab span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.tab strong {
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-weight: 400;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+/* Helmet, bottle and the בד״ח booklet: always on you. */
+.gear-hud {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--glass);
+  font-size: 1.1rem;
+  pointer-events: auto;
+}
+
+.gear-hud button {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--yellow);
+  font-size: 1rem;
+}
+
+.gear-hud small {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #222;
+}
+
+/* Grip while hanging on the plum rack. */
+.grip {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(360px, calc(100% - 300px));
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--khaki-100);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.grip-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6fb6e8, #3d7fc4);
+  transform-origin: right;
+}
+
+.grip.low .grip-fill {
+  background: #e05a47;
+}
+
+/* The bus from Ofakim (closed windows). */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2c3138 0%, #23272d 55%, #1a1c20 100%);
+}
+
+.on-bus .backdrop {
+  display: block;
+}
+
+.bus-row {
+  position: absolute;
+  top: 12%;
+  left: -2%;
+  right: -2%;
+  height: 26%;
+  background: repeating-linear-gradient(90deg, transparent 0 18px, #3e4a5a 18px 210px, transparent 210px 228px);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  opacity: 0.85;
+}
+
+.bus-row::after {
+  /* Curtains drawn over the windows. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(94, 72, 52, 0.85) 18px 26px, rgba(110, 86, 62, 0.7) 26px 34px, rgba(94, 72, 52, 0.85) 34px 42px);
+}
+
+.bus-seats {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: repeating-linear-gradient(90deg, #1f3b73 0 120px, #18305f 120px 128px, transparent 128px 170px);
+  border-top: 18px solid #2a4d8f;
+  border-radius: 40% 40% 0 0 / 20% 20% 0 0;
+  opacity: 0.9;
+}
+
+/* Eyes closed on the plum rack. */
+.eyes {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(4, 4, 6, 0.94);
+  color: rgba(241, 232, 207, 0.6);
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.eyes-closed .eyes {
+  opacity: 1;
+}
+
+/* ---------- Panels ---------- */
+
+.time-bar {
+  position: relative;
+  height: 14px;
+  margin: 12px 0 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(60, 68, 35, 0.2);
+}
+
+.time-fill {
+  height: 100%;
+  background: var(--olive-600);
+  transform-origin: right;
+}
+
+.time-bar.low .time-fill {
+  background: var(--stamp);
+}
+
+.time-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.path-list {
+  margin: 0 0 6px;
+  padding-inline-start: 22px;
+  line-height: 1.5;
+}
+
+.path-list li strong {
+  margin-inline-end: 6px;
+}
+
+.path-list li:last-child {
+  color: var(--stamp);
+  font-weight: 700;
+}
+
+.declaration {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.decl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decl-row span {
+  flex: 1;
+}
+
+.decl-choice {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(75, 83, 32, 0.35);
+  font-weight: 700;
+}
+
+.decl-choice.on {
+  background: var(--olive-600);
+  color: var(--khaki-100);
+}
+
+.mini-phone {
+  margin: 10px 0;
+  padding: 14px;
+  border-radius: 18px;
+  background: #15171a;
+}
+
+.mini-phone .bubble {
+  margin-inline-start: auto;
+  width: fit-content;
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 14px 14px 4px 14px;
+  background: #3d7fc4;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+/* The בד״ח booklet. */
+.booklet {
+  border-top: 6px solid #3d7fc4;
+}
+
+.booklet-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.booklet-tab {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(61, 127, 196, 0.45);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.booklet-tab.on {
+  background: #3d7fc4;
+  color: #fff;
+}
+
+.booklet-locked {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--olive-500);
+}
+
+.booklet-page {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fbf8ee;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.booklet-page h3 {
+  margin: 0 0 8px;
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-weight: 400;
+}
+
+.booklet-steps {
+  margin: 0;
+  padding-inline-start: 22px;
+  line-height: 1.8;
+}
+
+/* Ordered steps (בד״ח tests, tent, planning). */
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.step {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 2px rgba(75, 83, 32, 0.35);
+  color: var(--olive-900);
+  font-weight: 500;
+  text-align: start;
+  line-height: 1.35;
+}
+
+.step:hover:not(:disabled) {
+  background: #fff;
+}
+
+.step.done {
+  opacity: 0.35;
+}
+
+.step.wrong {
+  background: rgba(163, 39, 31, 0.18);
+  box-shadow: inset 0 0 0 2px var(--stamp);
+}
+
+.said-steps {
+  min-height: 1em;
+  margin: 0;
+  padding-inline-start: 22px;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--olive-700);
+}
+
+.said-steps .rival-line {
+  color: #3d7fc4;
+}
+
+.said-steps .wrong-line {
+  color: var(--stamp);
+}
+
+.rival-thinking {
+  color: var(--olive-500);
+  font-style: italic;
+}
+
+.test-result {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.test-result.good {
+  background: rgba(46, 139, 62, 0.15);
+  color: #1f6b2c;
+}
+
+.test-result.bad {
+  background: rgba(163, 39, 31, 0.12);
+  color: var(--stamp);
+}
+
+/* Einstein riddle */
+.clues {
+  margin: 0 0 10px;
+  padding-inline-start: 20px;
+  line-height: 1.6;
+}
+
+.clues .mine {
+  font-weight: 800;
+  color: var(--olive-900);
+}
+
+.riddle-table {
+  display: grid;
+  gap: 8px;
+}
+
+.riddle-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.riddle-row select {
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px rgba(75, 83, 32, 0.35);
+  font: inherit;
+}
+
+/* Planning pages */
+.plan-lines {
+  margin: 0 0 8px;
+  padding-inline-start: 20px;
+  line-height: 1.6;
+}
+
+.plan-lines .ok {
+  color: #1f6b2c;
+}
+
+.plan-lines .miss {
+  color: var(--stamp);
+}
+
+.plan-peek {
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.plan-peek summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--olive-600);
+}
+
+.plan-peek p {
+  margin: 4px 0;
+}
+
+/* Human checkers */
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  width: min(330px, 100%);
+  aspect-ratio: 1;
+  margin: 8px auto;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px #8a6a44;
+  direction: ltr;
+}
+
+.sq {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.sq.light {
+  background: #ead6b0;
+}
+
+.sq.dark {
+  background: #a98454;
+}
+
+.sq.target {
+  background: #f2c94c;
+  cursor: pointer;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { background: #f7dd85; }
+}
+
+.piece {
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+}
+
+.piece.bag {
+  border-radius: 6px;
+  background: #8f7a52;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.piece.me {
+  background: #3d7fc4;
+  box-shadow: 0 0 0 3px #fff;
+}
+
+/* Sudoku */
+.sudoku-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  gap: 4px;
+  justify-content: center;
+  margin: 10px 0;
+  direction: ltr;
+}
+
+.sudoku-grid .cell {
+  display: grid;
+  place-items: center;
+  height: 56px;
+  border-radius: 6px;
+  background: #fff;
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-size: 1.6rem;
+  color: #3d7fc4;
+}
+
+.sudoku-grid .cell.given {
+  background: #e6dcc0;
+  color: var(--olive-900);
+}
+
+.sudoku-grid .cell:nth-child(4n + 2) {
+  margin-right: 6px;
+}
+
+.sudoku-grid .cell:nth-child(n + 9):nth-child(-n + 12) {
+  margin-top: 6px;
+}
+
+.walking {
+  text-align: center;
+  font-weight: 700;
+  animation: pulse-text 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  50% { opacity: 0.5; }
+}
+
+@media (max-width: 640px) {
+  .grip {
+    bottom: 196px;
+    width: calc(100% - 60px);
+  }
+}
+
+@media (max-height: 500px) {
+  .grip {
+    bottom: 48px;
+    width: min(300px, calc(100% - 330px));
+  }
+
+  .tab strong {
+    font-size: 1.2rem;
+  }
+
+  .step {
+    padding: 7px 10px;
+    font-size: 0.85rem;
+  }
+
+  .sudoku-grid {
+    grid-template-columns: repeat(4, 44px);
+  }
+
+  .sudoku-grid .cell {
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .board {
+    width: min(240px, 100%);
+  }
+}

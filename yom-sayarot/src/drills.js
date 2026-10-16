@@ -81,6 +81,7 @@ export function createDrills(game) {
   }
 
   async function countdown(text = 'זינוק!') {
+    const before = hud.getDrill();
     for (const n of ['3', '2', '1']) {
       hud.setDrill(null, n);
       click();
@@ -88,7 +89,7 @@ export function createDrills(game) {
     }
     chime();
     ui.announce(text);
-    hud.setDrill(null);
+    hud.setDrill(before?.title ?? null, before?.info ?? '');
   }
 
   function whistle() {

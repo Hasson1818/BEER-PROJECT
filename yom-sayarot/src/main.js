@@ -8,6 +8,7 @@ import { createPeople } from './team.js';
 import { createDrills } from './drills.js';
 import { runFlow, STEPS } from './flow.js';
 import { Crowd, Person } from '../../shared/engine/people.js';
+import { enableCloseUps } from '../../shared/engine/detail.js';
 import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
@@ -102,6 +103,7 @@ async function start() {
   const sky = createSky(scene, world.floodlights);
   Person.ground = height;
   const crowd = new Crowd(scene);
+  enableCloseUps(crowd); // The detailed close-up characters load in the background.
   const player = new Player(camera, canvas, world, crowd);
   player.ground = height;
   const interactions = new Interactions(camera, world);

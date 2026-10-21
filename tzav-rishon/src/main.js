@@ -2,6 +2,7 @@ import '../../shared/engine/game.css';
 import * as THREE from 'three';
 import { buildWorld } from './world.js';
 import { Crowd } from '../../shared/engine/people.js';
+import { enableCloseUps } from '../../shared/engine/detail.js';
 import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
@@ -79,6 +80,7 @@ async function start() {
 
   const world = buildWorld(scene);
   const crowd = new Crowd(scene);
+  enableCloseUps(crowd); // The detailed close-up characters load in the background.
   const player = new Player(camera, canvas, world, crowd);
   const interactions = new Interactions(camera, world);
   const staff = createStaff(world, crowd);

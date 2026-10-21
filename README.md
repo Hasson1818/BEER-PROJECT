@@ -45,3 +45,11 @@ npm run dev
 ## שמירה
 
 המשחק נשמר בדפדפן (`localStorage`, מפתח `beer-project-save`) אחרי כל תחנה. "המשך מאיפה שעצרת" במסך הראשי ממשיך מהתחנה האחרונה שהושלמה.
+
+## דמויות מקרוב
+
+הדמויות מצוירות מצורות פשוטות כדי שהמשחק יישאר קל בטלפון. את הדמויות הכי קרובות למצלמה (עד 12 במחשב, 8 בטלפון) מחליף מודל מפורט עם שלד, שנעשה בבלנדר: גוף מעוצב, פנים, ידיים, מגפיים, חגורה, כיסים וצווארון. הוא מונע מאותם מפרקים כמו הדמות הפשוטה, אז כל התנוחות והאנימציות עובדות בשניהם.
+
+- הקוד: [`shared/engine/detail.js`](shared/engine/detail.js)
+- קובץ הבלנדר לעריכה: [`shared/engine/assets/character.blend`](shared/engine/assets/character.blend)
+- הסקריפט שבונה אותו ומייצא את `character.json`: [`tools/blender/build_character.py`](tools/blender/build_character.py)

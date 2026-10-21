@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { DetailPool } from './detail.js';
 
 // Low-poly people built from simple shapes. A person faces +z, origin at the feet.
 
@@ -83,6 +84,8 @@ export class Person {
     this.group.scale.setScalar(look.scale ?? 1);
 
     this.pose = 'stand';
+    this.detail = null; // The detailed model currently drawing this person, if any.
+    this.blend = null; // A smooth change from the previous pose.
     this.time = Math.random() * 10;
     this.path = [];
     this.speed = 1.25;
@@ -155,6 +158,10 @@ export class Person {
     for (const side of [-1, 1]) {
       this.part('eye', '#1a1a1a', this.head).position.set(side * 0.042, 0.015, 0.103);
     }
+    // Everything built so far (legs, torso, arms, neck, head, eyes) is replaced by the detailed
+    // model when this person is close to the camera; hair, hats and props are not.
+    this.bodyCount = this.parts.length;
+    this.joints = [this.body, this.legs[0].hip, this.legs[1].hip, this.legs[0].knee, this.legs[1].knee, this.arms[0].shoulder, this.arms[1].shoulder, this.arms[0].elbow, this.arms[1].elbow, this.head];
     if (!look.bald) {
       const cap = this.part('hairCap', look.hair, this.head);
       cap.rotation.x = -0.35;
@@ -268,11 +275,35 @@ export class Person {
     return this;
   }
 
+  captureJoints() {
+    const out = [];
+    for (const node of this.joints) out.push(node.rotation.x, node.rotation.y, node.rotation.z, node.position.x, node.position.y, node.position.z);
+    return out;
+  }
+
+  /** Mixes the new pose with the previous one over a quarter of a second. */
+  applyBlend(dt) {
+    const blend = this.blend;
+    blend.t += dt / 0.28;
+    const t = Math.min(1, blend.t);
+    const w = t * t * (3 - 2 * t);
+    this.joints.forEach((node, i) => {
+      const f = blend.from;
+      const o = i * 6;
+      node.rotation.set(f[o] + (node.rotation.x - f[o]) * w, f[o + 1] + (node.rotation.y - f[o + 1]) * w, f[o + 2] + (node.rotation.z - f[o + 2]) * w);
+      // The body is the only joint that moves (sitting down, lying to crawl).
+      if (node === this.body) node.position.set(f[o + 3] + (node.position.x - f[o + 3]) * w, f[o + 4] + (node.position.y - f[o + 4]) * w, f[o + 5] + (node.position.z - f[o + 5]) * w);
+    });
+    if (t >= 1) this.blend = null;
+  }
+
   faceTowards(x, z) {
     this.group.rotation.y = Math.atan2(x - this.group.position.x, z - this.group.position.z);
   }
 
   setPose(pose) {
+    // Start a smooth change from what the joints look like now (not for the first pose).
+    if (pose !== this.pose && this.joints) this.blend = { t: 0, from: this.captureJoints() };
     this.pose = pose;
     this.phone.visible = pose === 'phone' || pose === 'sit-phone';
     this.paper.visible = pose === 'clipboard' || pose === 'sit-read';
@@ -575,6 +606,7 @@ export class Person {
     }
 
     if (headFree) this.head.rotation.y = this.headYaw;
+    if (this.blend) this.applyBlend(dt);
   }
 }
 
@@ -588,6 +620,17 @@ export class Crowd {
     this.people = [];
     this.batches = new Map();
     this.color = new THREE.Color();
+    this.detail = null;
+  }
+
+  /**
+   * Switches on the detailed close-up characters (see detail.js). `model` comes from
+   * loadCharacter(); call it once it has loaded. Only the `size` people nearest to the
+   * camera (within `range` meters) use it, so it costs about one draw call each.
+   */
+  enableDetail(model, { size = 12, range = 16 } = {}) {
+    if (!model || this.detail) return;
+    this.detail = new DetailPool(this.scene, model, size, range);
   }
 
   get full() {
@@ -629,6 +672,7 @@ export class Crowd {
       if (far && !person.walking) continue;
       person.update(dt);
     }
+    if (this.detail && camera) this.detail.select(this.people, camera);
     this.sync();
   }
 
@@ -637,9 +681,13 @@ export class Crowd {
     for (const person of this.people) {
       const shown = person.group.visible;
       if (shown) person.group.updateMatrixWorld(true);
-      for (const part of person.parts) {
+      const detailed = shown && person.detail;
+      if (detailed) this.detail.pose(person);
+      for (let index = 0; index < person.parts.length; index++) {
+        const part = person.parts[index];
         // A part is drawn only if it and every group above it (e.g. the shovel) is visible.
-        let visible = shown;
+        // The body parts are skipped when the detailed model draws them instead.
+        let visible = shown && !(detailed && index < person.bodyCount);
         for (let node = part.node; visible && node && node !== person.group; node = node.parent) {
           if (!node.visible) visible = false;
         }

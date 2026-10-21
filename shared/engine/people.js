@@ -62,6 +62,7 @@ export function randomLook(overrides = {}) {
     skin: pick(SKIN),
     hair: pick(HAIR),
     shirt: pick(SHIRTS),
+    build: 0.93 + Math.random() * 0.17, // width of the body
     pants: pick(PANTS),
     shoes: pick(['#2b2b2b', '#f2f2f2', '#6b4b33']),
     longHair: Math.random() < 0.4,
@@ -85,6 +86,7 @@ export class Person {
 
     this.pose = 'stand';
     this.detail = null; // The detailed model currently drawing this person, if any.
+    this.hairStyle = look.longHair ? 'long' : Math.random() < 0.4 ? 'buzz' : 'short';
     this.blend = null; // A smooth change from the previous pose.
     this.time = Math.random() * 10;
     this.path = [];
@@ -130,7 +132,7 @@ export class Person {
 
     // Torso
     const torso = this.part('torso', look.shirt, this.body);
-    torso.scale.set(1.12, 1, 0.68);
+    torso.scale.set(1.12 * (look.build ?? 1), 1, 0.68);
     torso.position.y = 1.22;
     this.torso = torso;
 
@@ -161,6 +163,7 @@ export class Person {
     // Everything built so far (legs, torso, arms, neck, head, eyes) is replaced by the detailed
     // model when this person is close to the camera; hair, hats and props are not.
     this.bodyCount = this.parts.length;
+    this.hairStart = this.parts.length;
     this.joints = [this.body, this.legs[0].hip, this.legs[1].hip, this.legs[0].knee, this.legs[1].knee, this.arms[0].shoulder, this.arms[1].shoulder, this.arms[0].elbow, this.arms[1].elbow, this.head];
     if (!look.bald) {
       const cap = this.part('hairCap', look.hair, this.head);
@@ -195,6 +198,7 @@ export class Person {
       crown.position.set(0, 0.012, -0.01);
       this.part('bill', look.cap, this.head).position.set(0, 0.06, 0.13);
     }
+    this.hairEnd = this.hairStart + (look.bald ? 0 : look.longHair ? 2 : 1);
     if (this.helmet && this.hat.length) this.setHeadgear(look.headgear ?? 'hat');
     // Staff in a gibbush wear sunglasses all day (see the pilot gibbush stage).
     this.glasses = look.sunglasses ? this.part('glasses', '#101214', this.head) : null;
@@ -430,6 +434,9 @@ export class Person {
         armR.elbow.rotation.x = running ? -1.3 : -0.25;
         this.body.position.y = Math.abs(Math.cos(phase)) * (running ? 0.06 : 0.03);
         if (running) this.body.rotation.x = 0.16;
+        // The shoulders turn against the hips and the head stays steady.
+        this.body.rotation.y = Math.sin(phase) * (running ? 0.09 : 0.05);
+        this.head.rotation.y = -this.body.rotation.y * 0.8;
         headFree = false;
         break;
       }
@@ -489,6 +496,58 @@ export class Person {
           }
         }
         this.body.rotation.x = 0.06;
+        break;
+      case 'sit-fidget':
+        // Nervous, waiting: hands on the knees, a foot tapping, glancing around.
+        for (const arm of this.arms) {
+          arm.shoulder.rotation.x = -0.75;
+          arm.elbow.rotation.x = -0.35;
+        }
+        legR.knee.rotation.x = Math.PI / 2 + Math.max(0, Math.sin(t * 9)) * 0.16;
+        this.head.rotation.x = 0.18;
+        break;
+      case 'sit-bow':
+        // Head down, elbows on the knees.
+        for (const arm of this.arms) {
+          arm.shoulder.rotation.x = -0.95;
+          arm.shoulder.rotation.z = arm.side * 0.12;
+          arm.elbow.rotation.x = -1.25;
+        }
+        this.head.rotation.x = 0.7;
+        headFree = false;
+        break;
+      case 'sit-relax':
+        // Leaning back with the legs stretched out and the arms folded.
+        legL.hip.rotation.x = -1.25;
+        legR.hip.rotation.x = -1.25;
+        legL.knee.rotation.x = 0.35;
+        legR.knee.rotation.x = 0.35;
+        for (const arm of this.arms) {
+          arm.shoulder.rotation.x = -0.35;
+          arm.shoulder.rotation.z = -arm.side * 0.15;
+          arm.elbow.rotation.x = -1.6;
+          arm.elbow.rotation.y = arm.side * 0.9;
+        }
+        this.head.rotation.x = -0.12;
+        break;
+      case 'lean':
+        // Leaning on a wall behind, arms folded, one foot crossed over the other.
+        this.body.rotation.x = -0.1;
+        for (const arm of this.arms) {
+          arm.shoulder.rotation.x = -0.35;
+          arm.shoulder.rotation.z = -arm.side * 0.15;
+          arm.elbow.rotation.x = -1.6;
+          arm.elbow.rotation.y = arm.side * 0.9;
+        }
+        legR.hip.rotation.x = -0.12;
+        legR.hip.rotation.z = -0.1;
+        legR.knee.rotation.x = 0.25;
+        break;
+      case 'wave':
+        armR.shoulder.rotation.z = 2.5 + Math.sin(t * 6) * 0.22;
+        armR.elbow.rotation.x = -0.25;
+        this.head.rotation.y = this.headYaw * 0.3;
+        headFree = false;
         break;
       case 'hang':
         // Hanging from a bar; the caller lifts the whole person.
@@ -590,7 +649,18 @@ export class Person {
           arm.elbow.rotation.y = arm.side * 0.9;
         }
         break;
+      case 'stand':
       default:
+        if (this.pose === 'stand') {
+          // Standing is never perfectly still: the weight shifts and the arms hang loose.
+          const sway = Math.sin(t * 0.7 + this.time * 0.01);
+          this.body.rotation.z = sway * 0.018;
+          this.body.position.x = sway * 0.012;
+          legL.hip.rotation.z = sway * 0.03;
+          legR.hip.rotation.z = sway * 0.03;
+          armL.shoulder.rotation.x = Math.sin(t * 0.9) * 0.035;
+          armR.shoulder.rotation.x = Math.sin(t * 0.9 + 1.7) * 0.035;
+        }
         break;
     }
 
@@ -687,7 +757,7 @@ export class Crowd {
         const part = person.parts[index];
         // A part is drawn only if it and every group above it (e.g. the shovel) is visible.
         // The body parts are skipped when the detailed model draws them instead.
-        let visible = shown && !(detailed && index < person.bodyCount);
+        let visible = shown && !(detailed && (index < person.bodyCount || (index >= person.hairStart && index < person.hairEnd)));
         for (let node = part.node; visible && node && node !== person.group; node = node.parent) {
           if (!node.visible) visible = false;
         }

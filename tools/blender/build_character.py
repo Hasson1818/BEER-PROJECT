@@ -32,11 +32,12 @@ PIVOT = {
     "elbowL": (-0.23, 1.16, 0), "elbowR": (0.23, 1.16, 0),
     "head": (0, 1.7, 0),
 }
-REG = dict(skin=0, shirt=1, sleeve=2, pants=3, shoes=4, hair=5, dark=6, shirtDark=7, white=8, shaft=9)
+REG = dict(skin=0, shirt=1, sleeve=2, pants=3, shoes=4, hair=5, dark=6, shirtDark=7, white=8, shaft=9, hairShort=10, hairLong=11, hairBuzz=12)
 REG_COLORS = {
     "skin": (0.80, 0.58, 0.44), "shirt": (0.36, 0.38, 0.21), "sleeve": (0.36, 0.38, 0.21),
     "pants": (0.30, 0.32, 0.18), "shoes": (0.10, 0.10, 0.10), "hair": (0.10, 0.08, 0.06),
     "dark": (0.03, 0.03, 0.03), "shirtDark": (0.24, 0.26, 0.14), "white": (0.95, 0.95, 0.93), "shaft": (0.10, 0.10, 0.10),
+    "hairShort": (0.10, 0.08, 0.06), "hairLong": (0.10, 0.08, 0.06), "hairBuzz": (0.10, 0.08, 0.06),
 }
 
 
@@ -172,6 +173,35 @@ def ring_xy(cy, z, cx, hw, hh, n=10, power=2.6):
     return pts
 
 
+def w_hairlong(p):
+    h = smooth(1.46, 1.62, p[1])
+    return norm({"head": h, "body": 1 - h})
+
+
+def hair(b, kind):
+    """A hair cap that follows the skull; the hairline is high on the forehead and low at the nape."""
+    R = 0.115 * {"short": 1.085, "long": 1.09, "buzz": 1.03}[kind]
+    front, side, back = {"short": (60, 80, 106), "long": (58, 80, 112), "buzz": (66, 82, 100)}[kind]
+    n, K = 16, 5
+    rings = []
+    for k in range(1, K + 1):
+        ring = []
+        for i in range(n):
+            a = 2 * math.pi * i / n
+            sn = math.sin(a)
+            end = math.radians(side + (-(side - front) * sn if sn > 0 else (back - side) * -sn))
+            th = end * k / K
+            r = R * math.sin(th)
+            ring.append((r * 0.97 * math.cos(a), 1.7 + R * 1.04 * math.cos(th), r * 0.97 * sn - 0.004))
+        rings.append(ring)
+    region = {"short": "hairShort", "long": "hairLong", "buzz": "hairBuzz"}[kind]
+    b.loft(rings, region, w_head, caps=(True, False))
+    if kind == "long":
+        # A curtain of hair down the back to the shoulders.
+        panel = [(1.70, 0.098, 0.05, -0.088), (1.62, 0.108, 0.052, -0.098), (1.54, 0.105, 0.05, -0.098), (1.47, 0.092, 0.042, -0.092)]
+        b.loft([ring_xz(0, y, cz, rx, rz, n=10, power=3.0) for y, rx, rz, cz in panel], region, w_hairlong)
+
+
 def build():
     b = Builder()
 
@@ -216,6 +246,9 @@ def build():
     # Nose and mouth.
     b.pyramid([(-0.013, 1.668, 0.106), (0.013, 1.668, 0.106), (0.011, 1.70, 0.108), (-0.011, 1.70, 0.108)], (0, 1.675, 0.131), "skin", w_head)
     b.box((0, 1.645, 0.104), (0.042, 0.007, 0.012), "dark", w_head)
+
+    for kind in ("short", "long", "buzz"):
+        hair(b, kind)
 
     # ----- arms (side -1 = x<0, "L") -----
     for sgn, side in ((-1, "L"), (1, "R")):
@@ -332,6 +365,7 @@ def export(obj):
 
     verts = {}
     pos, nrm, reg, skin, wgt, index = [], [], [], [], [], []
+    hair_index = {10: [], 11: [], 12: []}
 
     def emit(poly, v):
         n = Vector((0, 0, 0))
@@ -349,21 +383,23 @@ def export(obj):
             verts[key] = len(pos) // 3
             pos.extend(int(round(c * 10000)) for c in p3)
             nrm.extend(n3)
-            reg.append(poly.material_index)
+            reg.append(5 if poly.material_index >= 10 else poly.material_index)
             skin.extend(i for i, _ in ws)
             wgt.extend(wq)
         return verts[key]
 
     for p in polys:
         vs = [emit(p, v) for v in p.vertices]
+        target = hair_index[p.material_index] if p.material_index >= 10 else index
         for k in range(1, len(vs) - 1):
-            index.extend((vs[0], vs[k], vs[k + 1]))
+            target.extend((vs[0], vs[k], vs[k + 1]))
 
     data = {
         "bones": BONES,
         "pivots": {b: PIVOT[b] for b in BONES},
         "regions": list(REG.keys()),
         "pos": pos, "nrm": nrm, "region": reg, "skin": skin, "wgt": wgt, "index": index,
+        "hair": {"short": hair_index[10], "long": hair_index[11], "buzz": hair_index[12]},
     }
     os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
     with open(OUT_JSON, "w", encoding="utf-8") as f:

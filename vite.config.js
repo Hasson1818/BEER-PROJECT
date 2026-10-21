@@ -18,6 +18,7 @@ export default defineConfig({
         tzavRishon: page('./tzav-rishon/index.html'),
         yomSayarot: page('./yom-sayarot/index.html'),
         gibbushTayis: page('./gibbush-tayis/index.html'),
+        interviewWeek: page('./interview-week/index.html'),
       },
     },
   },

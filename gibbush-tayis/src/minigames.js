@@ -927,11 +927,13 @@ export function resultsPhone(ui, { outcome, lines, socialRank }) {
     screen.append(el('p', 'eyebrow', 'איך היה לך (רק במשחק)'), list);
     if (socialRank) screen.append(el('p', 'note', `לפי החישוב של המשחק, בסוציומטרי של הכיתה היית במקום ${socialRank} מתוך 16.`));
     screen.append(el('p', 'note', 'במציאות לא מקבלים פירוט, והנוסחה של הגיבוש סודית. החישוב כאן פשוט, ונועד להראות מה בודקים.'));
-    const menu = button('לתפריט הראשי');
+    const next = button('לשלב הבא: שבוע ראיונות');
+    const menu = button('לתפריט הראשי', 'button secondary');
     const again = button('לשחק שוב', 'button secondary');
+    next.addEventListener('click', () => close('next'));
     menu.addEventListener('click', () => close('menu'));
     again.addEventListener('click', () => close('again'));
-    screen.append(actions(menu, again));
+    screen.append(actions(next), actions(menu, again));
     panel.append(screen);
     chime();
   });

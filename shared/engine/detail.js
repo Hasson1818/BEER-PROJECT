@@ -37,9 +37,14 @@ function prepare(data) {
     normal: new THREE.BufferAttribute(normal, 3),
     skinIndex: new THREE.BufferAttribute(new Uint16Array(data.skin), 4),
     skinWeight: new THREE.BufferAttribute(skinWeight, 4),
-    index: new THREE.BufferAttribute(count > 65535 ? new Uint32Array(data.index) : new Uint16Array(data.index), 1),
   };
-  return { base, region: Uint8Array.from(data.region), count, regions: data.regions, pivots: data.pivots };
+  const hair = {};
+  let longest = 0;
+  for (const [style, list] of Object.entries(data.hair)) {
+    hair[style] = Uint16Array.from(list);
+    longest = Math.max(longest, list.length);
+  }
+  return { base, body: Uint16Array.from(data.index), hair, longest, region: Uint8Array.from(data.region), count, pivots: data.pivots };
 }
 
 const REGION_ORDER = ['skin', 'shirt', 'sleeve', 'pants', 'shoes', 'hair', 'dark', 'shirtDark', 'white', 'shaft'];
@@ -81,12 +86,15 @@ export class DetailPool {
   }
 
   makeEntry(scene) {
-    const { base, count, pivots } = this.model;
+    const { base, count, pivots, body, longest } = this.model;
     const geometry = new THREE.BufferGeometry();
-    for (const [name, attribute] of Object.entries(base)) {
-      if (name === 'index') geometry.setIndex(attribute);
-      else geometry.setAttribute(name, attribute);
-    }
+    for (const [name, attribute] of Object.entries(base)) geometry.setAttribute(name, attribute);
+    // Each person has their own index list: the body, then the hairstyle they wear.
+    const index = new THREE.BufferAttribute(new Uint16Array(body.length + longest), 1);
+    index.setUsage(THREE.DynamicDrawUsage);
+    index.array.set(body);
+    geometry.setIndex(index);
+    geometry.setDrawRange(0, body.length);
     const colors = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
     colors.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('color', colors);
@@ -98,7 +106,7 @@ export class DetailPool {
     mesh.matrixAutoUpdate = false;
     scene.add(mesh);
     mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());
-    return { mesh, bones, colors, person: null };
+    return { mesh, bones, colors, index, person: null };
   }
 
   /** Give the nearest visible people (inside the camera's view) a detailed body. */
@@ -140,6 +148,13 @@ export class DetailPool {
       array[i * 3 + 2] = c.b;
     }
     entry.colors.needsUpdate = true;
+    // Hairstyle: bald people get none.
+    const { body, hair } = this.model;
+    const list = person.look.bald ? null : hair[person.hairStyle];
+    if (list) entry.index.array.set(list, body.length);
+    entry.index.needsUpdate = true;
+    entry.mesh.geometry.setDrawRange(0, body.length + (list ? list.length : 0));
+    entry.build = person.look.build ?? 1;
     entry.person = person;
     person.detail = entry;
     entry.mesh.visible = true;
@@ -155,7 +170,16 @@ export class DetailPool {
   pose(person) {
     const entry = person.detail;
     const joints = person.joints;
-    for (let i = 0; i < joints.length; i++) entry.bones[i].matrixWorld.copy(joints[i].matrixWorld);
+    // `build` widens or slims the body a little (not the height), around each joint.
+    const w = entry.build;
+    for (let i = 0; i < joints.length; i++) {
+      const m = entry.bones[i].matrixWorld.copy(joints[i].matrixWorld);
+      if (w !== 1) {
+        const e = m.elements;
+        e[0] *= w; e[1] *= w; e[2] *= w; // local x axis
+        e[8] *= w; e[9] *= w; e[10] *= w; // local z axis
+      }
+    }
   }
 }
 

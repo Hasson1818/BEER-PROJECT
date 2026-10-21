@@ -810,6 +810,7 @@ async function results(game) {
   await ui.interlude('יום ראשון שאחרי. 19:00 בדיוק. הטלפון רוטט…', 2400);
   const choice = await resultsPhone(ui, { outcome, lines, socialRank: parts ? socialRank : null });
   if (choice === 'again') window.location.href = './?new=1';
+  else if (choice === 'next') window.location.href = '../interview-week/?new=1';
   else window.location.href = '../main-screen/';
 }
 

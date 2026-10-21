@@ -40,6 +40,7 @@ npm run dev
 | [`tzav-rishon`](tzav-rishon/) | השלב הראשון, יום הצו הראשון בלשכת הגיוס |
 | [`yom-sayarot`](yom-sayarot/) | יום סיירות (יום שדה) של אוקטובר: שני לילות בדיונות. טיוטה |
 | [`gibbush-tayis`](gibbush-tayis/) | גיבוש טייס: חמישה ימים בגבעת הגיבוש בחצרים. טיוטה, פרטים ומקורות ב־[README של השלב](gibbush-tayis/README.md) |
+| [`interview-week`](interview-week/) | שבוע ראיונות: יום אחד בבקו״ם עם זום, דירוג יחידות, המתנה, ראיונות ותשובה. פרטים ומקורות ב־[README של השלב](interview-week/README.md) |
 | `shared` | קוד משותף: שמירת משחק, ציור הדגל, והמנוע של השלבים (`shared/engine`: תנועה, דמויות, ממשק, שמיים, מפה בחול) |
 
 ## שמירה

@@ -83,6 +83,39 @@
       </section>
     </main>
 
+    <aside class="journey" id="journey" aria-label="ההתקדמות שלי">
+      <div class="journey-head">
+        <div class="journey-percent" aria-live="polite"><strong id="j-percent">0</strong><span>%</span></div>
+        <div class="journey-info">
+          <p class="journey-title">הדרך שלי לצבא</p>
+          <p class="journey-rank">דרגה: <b id="j-rank">מלש״ב מתחיל</b></p>
+        </div>
+        <button id="j-open" class="journey-button" type="button">🏅 הישגים</button>
+      </div>
+
+      <div class="journey-track" id="j-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="התקדמות כללית">
+        <div class="journey-fill" id="j-fill"></div>
+        <span class="journey-runner" id="j-runner" aria-hidden="true">🪖</span>
+        <i class="journey-flag" style="--at: 25%" aria-hidden="true"></i>
+        <i class="journey-flag" style="--at: 50%" aria-hidden="true"></i>
+        <i class="journey-flag" style="--at: 75%" aria-hidden="true"></i>
+        <i class="journey-flag finish" style="--at: 100%" aria-hidden="true">🏁</i>
+      </div>
+
+      <ul class="journey-stages" id="j-stages"></ul>
+      <p class="journey-foot" id="j-foot"></p>
+    </aside>
+
+    <div class="ach-panel" id="ach-panel" role="dialog" aria-modal="true" aria-labelledby="ach-title" hidden>
+      <div class="ach-card">
+        <button class="ach-close" id="ach-close" type="button" aria-label="סגירה">✕</button>
+        <p class="eyebrow">תיק ההישגים</p>
+        <h2 id="ach-title">ההישגים שלי</h2>
+        <p class="ach-summary" id="ach-summary"></p>
+        <div class="ach-groups" id="ach-groups"></div>
+      </div>
+    </div>
+
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script type="module" src="./src/main.js"></script>

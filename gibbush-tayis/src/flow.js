@@ -38,6 +38,7 @@ import {
 import { formatTime } from './drills.js';
 import { mapTask } from '../../shared/engine/map-task.js';
 import { loadResults, saveResults } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 // Five days, Sunday to Thursday, results on the following Sunday.
 export const STEPS = ['arrive', 'intake', 'run', 'playground', 'crawls', 'day2', 'plan', 'night2', 'day3', 'night3', 'day4', 'night4', 'day5', 'results'];
@@ -806,11 +807,25 @@ async function results(game) {
   const violations = state.violations ?? [];
   if (violations.length) lines.push(['עברת על כללים', `${violations.length} · דיווחת על ${violations.filter((v) => v.reported).length}`]);
   saveResults('gibbush-tayis', { outcome: outcome.title, total });
+  unlock('gibbush-done');
+  if (parts) {
+    if (outcome.title.startsWith('עברת')) unlock('gibbush-pass');
+    const hiddenSeen = violations.filter((v) => v.seen && !v.reported).length;
+    if (violations.some((v) => v.reported) && !hiddenSeen) unlock('gibbush-honest');
+    if (stats.groupHang?.success) unlock('rack-team');
+    if (stats.crawls?.some((c) => c.best === 1)) unlock('crawl-first');
+    if ((state.badach ?? []).length >= 3 && state.badach.every((t) => !t.crashed)) unlock('badach-ace');
+    if (state.einstein?.score === 1) unlock('einstein');
+    if (state.star === 1) unlock('star');
+    if ((state.map ?? 0) >= 0.9) unlock('map-master');
+  }
   game.save('results');
   await ui.interlude('יום ראשון שאחרי. 19:00 בדיוק. הטלפון רוטט…', 2400);
   const choice = await resultsPhone(ui, { outcome, lines, socialRank: parts ? socialRank : null });
-  if (choice === 'again') window.location.href = './?new=1';
-  else if (choice === 'next') window.location.href = '../interview-week/?new=1';
+  if (choice === 'again') {
+    unlock('persistence');
+    window.location.href = './?new=1';
+  } else if (choice === 'next') window.location.href = '../interview-week/?new=1';
   else window.location.href = '../main-screen/';
 }
 

@@ -4,6 +4,7 @@ import { chime, beep } from '../../shared/engine/audio.js';
 import { FACTS, DATA_DIALOGUE, MEDICAL_QUESTIONS, INTERVIEW, STAFF_IDLE } from './content.js';
 import { bagCheck, daparTest, measurements, visionTest, resultsPhone, learnMore } from './minigames.js';
 import { saveResults } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 export const STEPS = ['arrive', 'routing', 'data', 'dapar', 'medical', 'interview', 'checkout', 'results'];
 
@@ -333,13 +334,18 @@ async function results(game) {
   r.profile = r.profile ?? 97;
   game.save('results');
   saveResults('tzav-rishon', r);
+  unlock('tzav-done');
+  if (r.dapar >= 70) unlock('dapar-70');
+  if (r.profile === 97) unlock('profile-97');
   await ui.interlude('שבועיים אחר כך…', 2200);
   const shown = { profile: r.profile, dapar: r.dapar ?? '—', kaba: r.kaba, hebrew: r.hebrew };
   await resultsPhone(ui, shown);
   await ui.fact(FACTS.end.title, FACTS.end.points);
   const choice = await learnMore(ui, shown);
-  if (choice === 'again') window.location.href = './?new=1';
-  else if (choice === 'next') window.location.href = '../yom-sayarot/?new=1';
+  if (choice === 'again') {
+    unlock('persistence');
+    window.location.href = './?new=1';
+  } else if (choice === 'next') window.location.href = '../yom-sayarot/?new=1';
   else window.location.href = '../main-screen/';
 }
 

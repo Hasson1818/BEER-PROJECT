@@ -5,6 +5,7 @@ import { summons, bagCheck, preferences, medicCheck, sociometric, resultsSms } f
 import { mapTask } from '../../shared/engine/map-task.js';
 import { formatTime } from './drills.js';
 import { loadResults, saveResults } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 // Day 1 afternoon → night 1 → day 2 → night 2 → day 3 morning, results by SMS.
 export const STEPS = ['arrive', 'run', 'night1', 'morning', 'dig', 'team', 'night2', 'home', 'results'];
@@ -82,7 +83,9 @@ async function run(game) {
   });
 
   let result = await drills.thresholdRun();
+  let tries = 1;
   while (!result.passed) {
+    tries++;
     const choice = await ui.talk(head.name, `${formatTime(result.time)}. זה מעל הרף. במציאות היום שלך היה נגמר כאן.`, ['לנסות שוב (רק במשחק)', 'לסיים את היום']);
     if (choice === 1) {
       state.failedRun = true;
@@ -93,6 +96,7 @@ async function run(game) {
     result = await drills.thresholdRun();
   }
   ui.announce(`עברת: ${formatTime(result.time)}`, 'עמדת ברף של ריצת הסף');
+  if (tries === 1) unlock('sayarot-run');
   await ui.fact(FACTS.run.title, FACTS.run.points);
 
   const guy = people.staff.guy;
@@ -321,12 +325,21 @@ async function results(game) {
   if (state.map !== undefined) lines.push(['מפה', `${Math.round(state.map * 100)}% דיוק`]);
   if (stats.stops) lines.push(['עצירות', `${stats.stops} פעמים המגבש צעק`]);
   saveResults('yom-sayarot', { outcome: outcome.title, total });
+  unlock('sayarot-done');
+  if (!state.failedRun) {
+    if ((stats.stops ?? 0) <= 2) unlock('sayarot-steady');
+    if (outcome.title.includes('היחידה')) unlock('sayarot-unit');
+    if ((state.teamwork ?? 0) >= 0.85) unlock('sayarot-team');
+    if ((state.map ?? 0) >= 0.9) unlock('map-master');
+  }
   game.save('results');
   await ui.interlude('יום 3 · אחר הצהריים. הטלפון רוטט…', 2200);
   const choice = await resultsSms(ui, { bib: state.bib, outcome, lines });
   await ui.fact(FACTS.end.title, FACTS.end.points);
-  if (choice === 'again') window.location.href = './?new=1';
-  else window.location.href = '../main-screen/';
+  if (choice === 'again') {
+    unlock('persistence');
+    window.location.href = './?new=1';
+  } else window.location.href = '../main-screen/';
 }
 
 const HANDLERS = { arrive, run, night1, morning, dig, team, night2, home, results };

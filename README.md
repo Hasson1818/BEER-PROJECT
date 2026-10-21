@@ -54,3 +54,9 @@ npm run dev
 - הקוד: [`shared/engine/detail.js`](shared/engine/detail.js)
 - קובץ הבלנדר לעריכה: [`shared/engine/assets/character.blend`](shared/engine/assets/character.blend)
 - הסקריפט שבונה אותו ומייצא את `character.json`: [`tools/blender/build_character.py`](tools/blender/build_character.py)
+
+## התקדמות והישגים
+
+במסך הראשי יש "הדרך שלי לצבא": פס התקדמות באחוזים עם דרגה, חייל קטן שרץ בקצה הפס, ורשימה של מה שנשאר. לכל הישג יש ערך באחוזים, וכל ההישגים יחד שווים 100%. ההישגים נשמרים בדפדפן (`beer-project-achievements`) והם מקבלים הודעה קופצת באמצע המשחק כשמקבלים אותם.
+
+הרשימה והערכים נמצאים ב־[`shared/achievements.js`](shared/achievements.js). כדי להוסיף הישג: מוסיפים אותו לרשימה שם, וקוראים ל־`unlock('המזהה')` בנקודה המתאימה בשלב. מי שסיים שלב לפני שההישגים נוספו מקבל את הישגי הסיום שלו אוטומטית, בלי הודעה.

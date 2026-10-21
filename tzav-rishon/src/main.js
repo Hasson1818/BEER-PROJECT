@@ -11,6 +11,7 @@ import { runFlow, idleLine, STEPS } from './flow.js';
 import { CHATTER, STAFF_IDLE } from './content.js';
 import { canvasTexture } from '../../shared/engine/textures.js';
 import { loadSave, writeSave, clearSave } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 const START_CLOCK = 7 * 60 + 50;
 
@@ -389,6 +390,7 @@ async function start() {
   document.getElementById('loading').classList.add('done');
   document.getElementById('hud').hidden = false;
   started = true;
+  unlock('first-steps');
 
   let startStep = 'arrive';
   if (resuming) {

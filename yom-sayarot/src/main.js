@@ -13,6 +13,7 @@ import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
 import { loadSave, writeSave, clearSave } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 async function loadFonts() {
   const fonts = ['400 32px Heebo', '500 32px Heebo', '700 32px Heebo', '800 32px Heebo', '32px "Secular One"'];
@@ -331,6 +332,7 @@ async function start() {
   $('loading').classList.add('done');
   $('hud').hidden = false;
   started = true;
+  unlock('first-steps');
 
   let startStep = 'arrive';
   if (resuming) {

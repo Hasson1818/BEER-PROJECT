@@ -8,6 +8,7 @@ import { createPeople, pace } from './team.js';
 import { runFlow, STEPS } from './flow.js';
 import { readPoster } from './minigames.js';
 import { UNIT_BY_ID } from './content.js';
+import { mark, unlock } from '../../shared/achievements.js';
 import { Crowd } from '../../shared/engine/people.js';
 import { enableCloseUps } from '../../shared/engine/detail.js';
 import { Player } from '../../shared/engine/player.js';
@@ -242,6 +243,7 @@ async function start() {
       range: 3.2,
       onInteract: async () => {
         const unit = UNIT_BY_ID[poster.id === 'recon' ? 'golani' : poster.id];
+        mark('posters', poster.id, 5, 'reader');
         const release = ui.holdModal();
         await readPoster(ui, poster.id === 'recon' ? { ...unit, name: 'סיירות חי״ר (גולני, גבעתי, נח״ל, כפיר)' } : unit);
         release();
@@ -340,6 +342,7 @@ async function start() {
   $('loading').classList.add('done');
   $('hud').hidden = false;
   started = true;
+  unlock('first-steps');
 
   let startStep = 'home';
   if (devStep && STEPS.includes(devStep)) startStep = devStep;

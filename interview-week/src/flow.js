@@ -16,6 +16,7 @@ import {
 import { smsPanel, zoomPanel, rankingPanel, formPanel, bagCheck, schedulePanel, readPoster, resultsPhone, learnMenu } from './minigames.js';
 import { makeSign } from '../../shared/engine/textures.js';
 import { saveResults } from '../../shared/save.js';
+import { unlock } from '../../shared/achievements.js';
 
 // One interview day, with the Zoom, the survey and the answer around it.
 export const STEPS = ['home', 'prepare', 'gate', 'register', 'wait', 'interviews', 'ranking', 'results'];
@@ -398,6 +399,13 @@ async function results(game) {
     ['עקביות מול הטופס', inconsistent ? `${inconsistent} סתירות` : 'עקבי'],
   ];
   saveResults('interview-week', { accepted: accepted?.name ?? null });
+  unlock('interview-done');
+  if (accepted) unlock('interview-accepted');
+  if (!inconsistent) unlock('interview-consistent');
+  if (state.manner?.length && avgManner >= 0.9) unlock('interview-calm');
+  if ((state.heard ?? []).length >= UNITS.length) unlock('interview-heard');
+  if (state.results.length >= 3 && state.results.every((r) => r.impression >= 0.85)) unlock('interview-strong');
+  if ((state.ranking ?? []).length >= 6) unlock('interview-wide');
   game.save('results');
   const topics = [
     { title: FACTS.steps.title, points: FACTS.steps.points },
@@ -410,8 +418,10 @@ async function results(game) {
       await learnMenu(ui, topics);
       continue;
     }
-    if (choice === 'again') window.location.href = './?new=1';
-    else window.location.href = '../main-screen/';
+    if (choice === 'again') {
+      unlock('persistence');
+      window.location.href = './?new=1';
+    } else window.location.href = '../main-screen/';
     return;
   }
 }

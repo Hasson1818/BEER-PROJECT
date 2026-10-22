@@ -1,5 +1,6 @@
 import { BADACH, RIDDLE, ATTACK, TENT_STEPS, DRESS_ITEMS, BUNKER, CHECKERS, SUDOKU, RESCUE, TRAITS, MY_NUMBER, CLASS_NAME } from './content.js';
-import { click, chime } from '../../shared/engine/audio.js';
+import { click } from '../../shared/engine/audio.js';
+import { play } from '../../shared/engine/sound.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -935,6 +936,6 @@ export function resultsPhone(ui, { outcome, lines, socialRank }) {
     again.addEventListener('click', () => close('again'));
     screen.append(actions(next), actions(menu, again));
     panel.append(screen);
-    chime();
+    play('sms', { volume: 0.8 });
   });
 }

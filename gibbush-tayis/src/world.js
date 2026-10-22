@@ -706,9 +706,9 @@ export function buildWorld(scene) {
     return g;
   }
   const flights = [
-    { craft: [jet(), jet()], altitude: 160, speed: 140, period: 55, offset: 5, from: [-500, -60], to: [500, 40] },
+    { jets: true, craft: [jet(), jet()], altitude: 160, speed: 140, period: 55, offset: 5, from: [-500, -60], to: [500, 40] },
     { craft: [trainer()], altitude: 110, speed: 60, period: 40, offset: 20, from: [80, 500], to: [-60, -500] },
-    { craft: [jet()], altitude: 220, speed: 160, period: 70, offset: 45, from: [400, -400], to: [-400, 300] },
+    { jets: true, craft: [jet()], altitude: 220, speed: 160, period: 70, offset: 45, from: [400, -400], to: [-400, 300] },
   ];
   for (const f of flights) {
     f.dir = new THREE.Vector3(f.to[0] - f.from[0], 0, f.to[1] - f.from[1]);
@@ -722,11 +722,15 @@ export function buildWorld(scene) {
       scene.add(craft);
     });
   }
+  const hooks = { onFlyover: null };
   updaters.push((t) => {
     for (const f of flights) {
       const local = (t + f.offset) % f.period;
       const travel = local * f.speed;
       const flying = travel < f.length;
+      // A jet's roar starts as it appears (the stage plays the sound).
+      if (flying && !f.wasFlying && f.jets) hooks.onFlyover?.();
+      f.wasFlying = flying;
       f.craft.forEach((craft, i) => {
         craft.visible = flying;
         if (!flying) return;
@@ -740,6 +744,7 @@ export function buildWorld(scene) {
   });
 
   return {
+    hooks,
     colliders,
     blockers: [],
     floodlights,

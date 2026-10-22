@@ -1,5 +1,6 @@
 import { BAG_ITEMS, FORM, UNIT_BY_ID } from './content.js';
-import { click, chime } from '../../shared/engine/audio.js';
+import { click } from '../../shared/engine/audio.js';
+import { play } from '../../shared/engine/sound.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -34,7 +35,7 @@ export function smsPanel(ui, { from, text, time = 'היום · 09:12', label = '
     ok.addEventListener('click', () => close());
     screen.append(actions(ok));
     panel.append(screen);
-    chime();
+    play('sms', { volume: 0.8 });
   });
 }
 
@@ -260,7 +261,7 @@ export function resultsPhone(ui, { accepted, lines, impressions }) {
     again.addEventListener('click', () => close('again'));
     screen.append(actions(learn), actions(menu, again));
     panel.append(screen);
-    chime();
+    play('sms', { volume: 0.8 });
   });
 }
 

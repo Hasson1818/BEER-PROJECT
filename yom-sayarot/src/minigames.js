@@ -1,5 +1,6 @@
 import { BAG_ITEMS, UNITS, FACTS } from './content.js';
 import { click } from '../../shared/engine/audio.js';
+import { play } from '../../shared/engine/sound.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -198,6 +199,7 @@ export function resultsSms(ui, { bib, outcome, lines }) {
     panel.className = 'phone';
     const screen = el('div', 'phone-screen');
     screen.append(el('div', 'phone-time', 'יום 3 · 17:20'));
+    play('sms', { volume: 0.8 });
     const sms = el('div', 'sms');
     sms.append(el('b', '', 'צה״ל · מיונים'), `שלום ${bib}, תשובות יום השדה: `, el('strong', 'sms-outcome', outcome.title));
     sms.append(el('p', 'sms-detail', outcome.detail));

@@ -9,6 +9,7 @@ import { createDrills } from './drills.js';
 import { runFlow, STEPS } from './flow.js';
 import { Crowd, Person } from '../../shared/engine/people.js';
 import { enableCloseUps } from '../../shared/engine/detail.js';
+import { loop, mountMuteButton, preload } from '../../shared/engine/sound.js';
 import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
@@ -294,6 +295,35 @@ async function start() {
     }
   });
 
+  // ---------- Sound: ambience, steps, breathing ----------
+
+  mountMuteButton();
+  const sounds = {
+    wind: loop('wind'),
+    crickets: loop('crickets'),
+    murmur: loop('murmur'),
+    room: loop('roomtone'),
+    steps: loop('steps'),
+    crawl: loop('crawl'),
+    breath: loop('breath'),
+  };
+  function updateAudio(dt) {
+    const night = sky.time === 'night' || sky.time === 'predawn';
+    const inside = false;
+    sounds.wind.setVolume(inside ? 0.06 : night ? 0.45 : 0.85);
+    sounds.crickets.setVolume(!inside && night ? 1 : sky.time === 'dusk' && !inside ? 0.5 : 0);
+    sounds.murmur.setVolume(inside ? 0.5 : 0);
+    sounds.room.setVolume(inside ? 1 : 0);
+    const speed = dt > 0 ? player.movedThisFrame / dt : 0;
+    const moving = speed > 0.3 && !player.seat && !player.positionLocked && !ui.modalOpen;
+    const crawling = player.eyeOverride === 0.5;
+    sounds.steps.setVolume(moving && !crawling && !inside ? Math.min(1, 0.55 + speed / 8) : 0, 0.2);
+    sounds.steps.setRate(THREE.MathUtils.clamp(speed / 2.6, 0.85, 1.7));
+    sounds.crawl.setVolume(moving && crawling ? 1 : 0, 0.2);
+    const stamina = game.drills.stamina ?? 100;
+    sounds.breath.setVolume(stamina < 30 ? Math.min(1, ((30 - stamina) / 30) * 1.2) : 0, 0.8);
+  }
+
   // ---------- Loop ----------
 
   let last = performance.now();
@@ -307,6 +337,7 @@ async function start() {
     crowd.update(dt, camera);
     world.update(elapsed);
     sky.update(camera);
+    updateAudio(dt);
     for (const ticker of [...tickers]) ticker(dt);
 
     const item = !game.onAction ? interactions.update(player) : null;
@@ -347,6 +378,7 @@ async function start() {
     }
   }
 
+  preload(['whistle', 'sms', 'achievement', 'dig1', 'dig2']);
   if (import.meta.env.DEV) window.__sayarot = { game, player, people, advance, renderer, pending };
 
   await runFlow(game, startStep);

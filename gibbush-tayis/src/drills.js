@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { SPOTS, MARCH, RACK, height } from './world.js';
 import { active, rackSlot } from './team.js';
 import { MY_NUMBER, STAFF_LINES } from './content.js';
-import { beep, chime, click } from '../../shared/engine/audio.js';
+import { chime, click } from '../../shared/engine/audio.js';
+import { play, playRandom } from '../../shared/engine/sound.js';
 
 const between = (a, b) => a + Math.random() * (b - a);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -100,8 +101,7 @@ export function createDrills(game) {
   }
 
   function whistle() {
-    beep();
-    setTimeout(beep, 180);
+    play('whistle', { volume: 0.85 });
   }
 
   const near = (target, radius) => Math.hypot(player.x - target.x, player.z - target.z) < radius;
@@ -872,7 +872,7 @@ export function createDrills(game) {
         return;
       }
       stamina = Math.max(0, stamina - 2.6);
-      click();
+      playRandom('dig', 6, { volume: 0.8, rate: 0.95 + Math.random() * 0.1 });
       update();
     };
     let t = 0;
@@ -929,7 +929,7 @@ export function createDrills(game) {
       }
       digs++;
       depth = Math.min(50, depth + 2.5);
-      click();
+      playRandom('dig', 6, { volume: 0.8, rate: 0.95 + Math.random() * 0.1 });
       hud.setDrill('מעבר מתחת לגדר', `מקום מתחת לחוט: ${Math.round(wire + depth)} ס״מ · צריך בערך ${needed} כדי לעבור בלי לגעת`);
     };
     await game.waitUntil(() => {

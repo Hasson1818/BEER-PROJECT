@@ -1,5 +1,6 @@
 import { BAG_ITEMS, DAPAR_SECTIONS, FACTS, LEARN } from './content.js';
 import { beep, click } from '../../shared/engine/audio.js';
+import { play } from '../../shared/engine/sound.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rand = (min, max) => Math.round(min + Math.random() * (max - min));
@@ -489,6 +490,7 @@ export function visionTest(ui) {
 export function resultsPhone(ui, results) {
   return ui.panel('phone-wrap', (panel, close) => {
     panel.className = 'phone';
+    play('sms', { volume: 0.8 });
     const screen = el('div', 'phone-screen');
     const time = el('div', 'phone-time', '16:42');
     const sms = el('div', 'sms');

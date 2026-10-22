@@ -11,6 +11,7 @@ import { UNIT_BY_ID } from './content.js';
 import { mark, unlock } from '../../shared/achievements.js';
 import { Crowd } from '../../shared/engine/people.js';
 import { enableCloseUps } from '../../shared/engine/detail.js';
+import { loop, mountMuteButton, play, preload } from '../../shared/engine/sound.js';
 import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
@@ -263,6 +264,7 @@ async function start() {
         pending.get('vending')();
         pending.delete('vending');
       } else ui.toast('בקבוק מים קר. 8 שקלים. תודה.');
+      play('vending', { volume: 0.7 });
     },
   });
   const laptopHit = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 0.8), seatHit);
@@ -305,6 +307,19 @@ async function start() {
     }
   });
 
+  // ---------- Sound: ambience ----------
+
+  mountMuteButton();
+  const sounds = { wind: loop('wind'), murmur: loop('murmur'), room: loop('roomtone') };
+  function updateAudio() {
+    const home = player.z > 100;
+    const outside = !home && player.z > 22;
+    const hall = !home && !outside && player.z > -14;
+    sounds.wind.setVolume(outside ? 0.3 : 0);
+    sounds.murmur.setVolume(hall ? 0.5 : outside ? 0.04 : player.z <= -14 && !home ? 0.1 : 0);
+    sounds.room.setVolume(home ? 0.8 : outside ? 0 : 1);
+  }
+
   // ---------- Loop ----------
 
   let last = performance.now();
@@ -318,6 +333,7 @@ async function start() {
     crowd.update(dt, camera);
     world.update(elapsed);
     sky.update(camera);
+    updateAudio();
     for (const ticker of [...tickers]) ticker(dt);
 
     const item = interactions.update(player);
@@ -358,6 +374,7 @@ async function start() {
   }
   if (resuming && startStep !== 'home') ui.toast('ממשיכים מאיפה שעצרת');
 
+  preload(['sms', 'achievement', 'vending']);
   if (import.meta.env.DEV) window.__interview = { game, player, people, advance, renderer, pending, crowd, target: () => (typeof target === 'function' ? target() : target) };
 
   await runFlow(game, startStep);

@@ -1,6 +1,8 @@
 // Achievements: each one is worth some points, and the points add up to the progress bar on the main screen
 // (100 points = 100%). Unlocked achievements are kept in the browser (localStorage), like the save slot.
 
+import { play } from './engine/sound.js';
+
 const KEY = 'beer-project-achievements';
 
 export const STAGES = [
@@ -181,6 +183,7 @@ function next() {
   el.querySelector('span').textContent = item.desc;
   el.querySelector('.ach-gain').textContent = `+${gain}%`;
   document.body.append(el);
+  play('achievement', { volume: 0.6 });
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
   setTimeout(() => el.classList.remove('on'), 3800);
   setTimeout(() => {

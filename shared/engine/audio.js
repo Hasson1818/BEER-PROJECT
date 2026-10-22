@@ -1,6 +1,14 @@
-// Small synthesized sounds, so the game needs no audio files.
+// Small synthesized sounds (clicks, beeps), plus the shared audio context and the mute switch used by
+// the recorded sounds in sound.js.
 
 let ctx = null;
+let master = null;
+let muted = false;
+try {
+  muted = localStorage.getItem('beer-project-muted') === '1';
+} catch {
+  // Storage can be blocked; sound stays on.
+}
 
 function context() {
   if (!ctx) {
@@ -10,6 +18,31 @@ function context() {
   }
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
+}
+
+/** Everything the game plays goes through this node, so one switch can silence it all. */
+export function audioOut() {
+  const audio = context();
+  if (!audio) return null;
+  if (!master) {
+    master = audio.createGain();
+    master.gain.value = muted ? 0 : 1;
+    master.connect(audio.destination);
+  }
+  return master;
+}
+
+export const audioContext = () => context();
+export const isMuted = () => muted;
+
+export function setMuted(value) {
+  muted = value;
+  try {
+    localStorage.setItem('beer-project-muted', value ? '1' : '0');
+  } catch {
+    // Same as above.
+  }
+  if (master) master.gain.setTargetAtTime(value ? 0 : 1, master.context.currentTime, 0.05);
 }
 
 // Browsers only allow sound after the first user gesture.
@@ -29,7 +62,7 @@ function tone(freq, start, duration, { type = 'sine', volume = 0.18 } = {}) {
   gain.gain.setValueAtTime(0, t);
   gain.gain.linearRampToValueAtTime(volume, t + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-  osc.connect(gain).connect(audio.destination);
+  osc.connect(gain).connect(audioOut());
   osc.start(t);
   osc.stop(t + duration + 0.05);
 }

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { DUNE, SPOTS, height } from './world.js';
 import { laneX, nearestCone, loop } from './team.js';
 import { SHOUTS } from './content.js';
-import { beep, chime, click } from '../../shared/engine/audio.js';
+import { chime, click } from '../../shared/engine/audio.js';
+import { play, playRandom } from '../../shared/engine/sound.js';
 
 const between = (a, b) => a + Math.random() * (b - a);
 const shuffle = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
@@ -93,8 +94,7 @@ export function createDrills(game) {
   }
 
   function whistle() {
-    beep();
-    setTimeout(beep, 180);
+    play('whistle', { volume: 0.85 });
   }
 
   /** Ask for "number and lap" after each lap; the HUD never shows the lap count. */
@@ -511,7 +511,7 @@ export function createDrills(game) {
       const power = 0.5 + stamina / 200;
       if (task === 'pit') depth = Math.min(1, depth + 0.028 * power);
       else length = Math.min(2, length + 0.04 * power);
-      click();
+      playRandom('dig', 6, { volume: 0.8, rate: 0.95 + Math.random() * 0.1 });
       hole.material.color.setHSL(0.09, 0.35, THREE.MathUtils.lerp(0.4, 0.14, Math.min(1, depth)));
       // The trench grows to the left of the pit (the dirt pile is on the right).
       hole.scale.set(length, 1, 1);
@@ -641,7 +641,19 @@ export function createDrills(game) {
     return stats.pyramid;
   }
 
-  return { thresholdRun, lapDrill, stretcherDrill, digDrill, pyramid, resetBody, rest, stats };
+  return {
+    thresholdRun,
+    lapDrill,
+    stretcherDrill,
+    digDrill,
+    pyramid,
+    resetBody,
+    rest,
+    stats,
+    get stamina() {
+      return stamina;
+    },
+  };
 }
 
 export function formatTime(seconds) {

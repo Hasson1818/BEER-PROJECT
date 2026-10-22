@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { buildWorld } from './world.js';
 import { Crowd } from '../../shared/engine/people.js';
 import { enableCloseUps } from '../../shared/engine/detail.js';
+import { loop, mountMuteButton, preload } from '../../shared/engine/sound.js';
 import { Player } from '../../shared/engine/player.js';
 import { Interactions } from '../../shared/engine/interactions.js';
 import { createUI } from '../../shared/engine/ui.js';
@@ -335,6 +336,16 @@ async function start() {
     }
   });
 
+  // ---------- Sound: the office hum and the waiting hall ----------
+
+  mountMuteButton();
+  const sounds = { murmur: loop('murmur'), room: loop('roomtone') };
+  function updateAudio() {
+    const waitingHall = player.z < -11 && player.z > -31 && Math.abs(player.x) < 14;
+    sounds.murmur.setVolume(waitingHall ? 0.5 : player.z > 1 ? 0 : 0.18);
+    sounds.room.setVolume(0.9);
+  }
+
   // ---------- Loop ----------
 
   let last = performance.now();
@@ -352,6 +363,7 @@ async function start() {
     queue.update(dt, player);
     hall.update(dt, player);
     world.update(elapsed);
+    updateAudio();
     for (const ticker of [...tickers]) ticker(dt);
 
     if (!ui.modalOpen) game.addMinutes(dt * 0.25);
@@ -406,6 +418,7 @@ async function start() {
     ui.toast('ממשיכים מאיפה שעצרת');
   }
 
+  preload(['sms', 'achievement']);
   if (import.meta.env.DEV) window.__tzav = { game, player, world, queue, hall, staff, interactions, pending, advance, renderer };
 
   await runFlow(game, startStep);

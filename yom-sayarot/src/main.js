@@ -191,11 +191,15 @@ async function start() {
       return new Promise((resolve) => pending.set(id, resolve));
     },
     waitUntil(fn) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const ticker = (dt) => {
-          if (fn(dt)) {
+          try {
+            if (!fn(dt)) return;
             tickers.delete(ticker);
             resolve();
+          } catch (error) {
+            tickers.delete(ticker);
+            reject(error);
           }
         };
         tickers.add(ticker);
@@ -367,7 +371,9 @@ async function start() {
 
   let startStep = 'arrive';
   if (resuming) {
-    const index = STEPS.indexOf(save.step);
+    // Saves from before the stretcher became its own step: 'morning' meant both parts were done.
+    const savedStep = save.step === 'morning' && save.state?.stats?.stretcher ? 'stretcher' : save.step;
+    const index = STEPS.indexOf(savedStep);
     startStep = STEPS[Math.min(index + 1, STEPS.length - 1)];
     state.step = startStep;
     if (startStep !== 'arrive') {

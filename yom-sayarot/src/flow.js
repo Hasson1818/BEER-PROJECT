@@ -8,7 +8,7 @@ import { loadResults, saveResults } from '../../shared/save.js';
 import { unlock } from '../../shared/achievements.js';
 
 // Day 1 afternoon → night 1 → day 2 → night 2 → day 3 morning, results by SMS.
-export const STEPS = ['arrive', 'run', 'night1', 'morning', 'dig', 'team', 'night2', 'home', 'results'];
+export const STEPS = ['arrive', 'run', 'night1', 'morning', 'stretcher', 'dig', 'team', 'night2', 'home', 'results'];
 
 const above = (person, extra = 2.3) => () => ({ x: person.position.x, y: person.position.y + extra, z: person.position.z });
 const groundTarget = (spot, extra = 2.2) => ({ x: spot.x, y: height(spot.x, spot.z) + extra, z: spot.z });
@@ -152,15 +152,23 @@ async function morning(game) {
   const tz = await drills.lapDrill('tzukon', 85, guy.name);
   ui.announce(`צוקון: ${tz.laps} סיבובים`, `בממוצע בצוות: ${tz.average}`);
   await ui.fact(FACTS.tzukon.title, FACTS.tzukon.points);
+  game.save('morning');
+}
 
+async function stretcher(game) {
+  const { ui, people, sky, drills } = game;
   sky.setTime('day');
   game.setClock(2, 7 * 60);
+  const guy = people.staff.guy;
+  guy.place(-2, DUNE.startZ + 3, Math.PI).setPose('clipboard');
+  gather(people.teammates, 0, DUNE.startZ + 2, 0);
+  game.player.teleport(-2, 6, 0.2);
   await talkScene(game, guy, async () => {
     await ui.talk(guy.name, 'אלונקה סוציומטרית. ספרינט עד הקונוס וחזרה. ארבעת הראשונים מרימים את האלונקה, חמישי ושישי ג׳ריקנים, כל השאר עוד סיבוב.');
   });
   await drills.stretcherDrill(2, guy.name);
   await ui.fact(FACTS.stretcher.title, FACTS.stretcher.points);
-  game.save('morning');
+  game.save('stretcher');
 }
 
 async function dig(game) {
@@ -342,7 +350,19 @@ async function results(game) {
   } else window.location.href = '../main-screen/';
 }
 
-const HANDLERS = { arrive, run, night1, morning, dig, team, night2, home, results };
+const HANDLERS = { arrive, run, night1, morning, stretcher, dig, team, night2, home, results };
+
+/** Put the player back in control after a step died half-way, so the game can go on. */
+function recover(game) {
+  game.ui.releaseAll?.();
+  game.player.positionLocked = false;
+  game.player.autoRun = false;
+  game.player.standUp?.(false);
+  game.setTarget(null);
+  game.onAction = null;
+  game.hud.setDrill(null, '');
+  game.drills.resetBody?.();
+}
 
 export async function runFlow(game, startStep = 'arrive') {
   let i = STEPS.indexOf(startStep);
@@ -350,8 +370,17 @@ export async function runFlow(game, startStep = 'arrive') {
     i = STEPS.indexOf(step) - 1;
   };
   for (; i < STEPS.length; i++) {
-    game.state.step = STEPS[i];
-    await HANDLERS[STEPS[i]](game);
+    const step = STEPS[i];
+    game.state.step = step;
+    try {
+      await HANDLERS[step](game);
+    } catch (error) {
+      // One broken step must never end the run: log it, tidy up, save, and carry on with the next one.
+      console.error(`step "${step}" failed`, error);
+      recover(game);
+      game.ui.toast('משהו השתבש בחלק הזה, ממשיכים הלאה', 3000);
+      game.save(step);
+    }
     game.state.stats = { ...(game.state.stats ?? {}), ...game.drills.stats };
   }
 }

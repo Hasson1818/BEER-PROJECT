@@ -17,9 +17,16 @@ export function createUI({ onModalChange }) {
     return () => {
       if (released) return;
       released = true;
-      modalCount--;
+      modalCount = Math.max(0, modalCount - 1);
       if (modalCount === 0) onModalChange(false);
     };
+  }
+
+  /** Drop every hold at once (used when a step has to be abandoned). */
+  function releaseAll() {
+    if (modalCount === 0) return;
+    modalCount = 0;
+    onModalChange(false);
   }
 
   document.addEventListener('keydown', (event) => {
@@ -316,6 +323,7 @@ export function createUI({ onModalChange }) {
 
   return {
     holdModal,
+    releaseAll,
     onKey,
     setObjective,
     setObjectiveSub,

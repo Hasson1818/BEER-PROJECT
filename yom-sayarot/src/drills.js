@@ -350,7 +350,7 @@ export function createDrills(game) {
       // NPC roles for the second lap.
       const bearers = order.filter((_, i) => i < 4 && i !== rank - 1).slice(0, role === 'stretcher' ? 3 : 4);
       const canCarriers = order.filter((p) => !bearers.includes(p)).slice(0, role === 'jerrycan' ? 1 : 2);
-      const rest = order.filter((p) => !bearers.includes(p) && !canCarriers.includes(p));
+      const stragglers = order.filter((p) => !bearers.includes(p) && !canCarriers.includes(p));
 
       // Stretcher path: up the middle to the crest and back.
       const path = [new THREE.Vector2(0, DUNE.startZ + 0.5), new THREE.Vector2(0, DUNE.crestZ + 1.5), new THREE.Vector2(0, DUNE.startZ + 0.5)];
@@ -374,7 +374,7 @@ export function createDrills(game) {
         person.carry('jerrycan');
         person.walkTo([{ x: cone.x + 0.9, z: cone.z - 0.5 }, { x, z: DUNE.startZ + 1 }], { speed: 2.4 * person.fitness, pose: 'hands-on-knees' });
       });
-      rest.forEach((person) => {
+      stragglers.forEach((person) => {
         const x = person.position.x;
         const cone = nearestCone(x);
         person.carry(null);

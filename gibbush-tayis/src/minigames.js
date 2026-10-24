@@ -930,7 +930,7 @@ export function resultsPhone(ui, { outcome, lines, socialRank }) {
     screen.append(el('p', 'note', 'במציאות לא מקבלים פירוט, והנוסחה של הגיבוש סודית. החישוב כאן פשוט, ונועד להראות מה בודקים.'));
     const next = button('לשלב הבא: שבוע ראיונות');
     const menu = button('לתפריט הראשי', 'button secondary');
-    const again = button('לשחק שוב', 'button secondary');
+    const again = button('לנסות שוב', 'button secondary');
     next.addEventListener('click', () => close('next'));
     menu.addEventListener('click', () => close('menu'));
     again.addEventListener('click', () => close('again'));

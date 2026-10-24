@@ -121,15 +121,11 @@ async function resultStep(game) {
     detail: text.detail,
     lines,
     note: 'במציאות אין פירוט כזה, ולא ידוע משקל הראיון בציון הסופי. לא נמצא נתון רשמי על אחוז הנפסלים בשלב הזה.',
-    buttons: passed
-      ? [
-          { id: 'next', label: 'לגיבוש טייס' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ]
-      : [
-          { id: 'again', label: 'לנסות שוב (רק במשחק)' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ],
+    buttons: [
+      { id: 'next', label: passed ? 'לגיבוש טייס' : 'לגיבוש טייס (המשך בכל זאת)' },
+      { id: 'again', label: 'לנסות שוב', secondary: true },
+      { id: 'hub', label: 'חזרה למסלול', secondary: true },
+    ],
   });
   saveResult('psychologist', { passed, score: Math.round(total * 100) / 100, scores: s });
   unlock('pilot-psych-done');

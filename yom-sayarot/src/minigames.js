@@ -212,11 +212,13 @@ export function resultsSms(ui, { bib, outcome, lines }) {
     }
     screen.append(el('p', 'eyebrow', 'איך היה לך (רק במשחק)'), list);
     screen.append(el('p', 'note', 'במציאות מקבלים רק את התשובה, בלי פירוט. החישוב כאן פשוט ונועד להראות מה המגבשים מחפשים.'));
-    const menu = button('לתפריט הראשי');
-    const again = button('לשחק שוב', 'button secondary');
+    const next = button('לשלב הבא: גיבוש טייס');
+    const menu = button('לתפריט הראשי', 'button secondary');
+    const again = button('לנסות שוב', 'button secondary');
+    next.addEventListener('click', () => close('next'));
     menu.addEventListener('click', () => close('menu'));
     again.addEventListener('click', () => close('again'));
-    screen.append(actions(menu, again));
+    screen.append(actions(next), actions(again, menu));
     panel.append(screen);
   });
 }

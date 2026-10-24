@@ -253,13 +253,15 @@ export function resultsPhone(ui, { accepted, lines, impressions }) {
       screen.append(bars);
     }
     screen.append(el('p', 'note', 'במציאות לא מקבלים פירוט. הנוסחה של השיבוץ אינה פומבית, והחישוב כאן פשוט ונועד להראות מה בודקים.'));
-    const learn = button('מה עוד כדאי לדעת');
+    const learn = button('מה עוד כדאי לדעת', 'button secondary');
+    const next = button('לשלב הבא: המסלול לטיס');
     const menu = button('לתפריט הראשי', 'button secondary');
-    const again = button('לשחק שוב', 'button secondary');
+    const again = button('לנסות שוב', 'button secondary');
     learn.addEventListener('click', () => close('learn'));
+    next.addEventListener('click', () => close('next'));
     menu.addEventListener('click', () => close('menu'));
     again.addEventListener('click', () => close('again'));
-    screen.append(actions(learn), actions(menu, again));
+    screen.append(actions(next), actions(again, menu), actions(learn));
     panel.append(screen);
     play('sms', { volume: 0.8 });
   });

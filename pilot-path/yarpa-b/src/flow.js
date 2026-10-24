@@ -214,15 +214,11 @@ async function verdict(game) {
     detail: text.detail,
     lines,
     note: 'במציאות הציון הסופי ידוע רק אחרי כל השלבים, ואין פרסום של רף. המשחק מציג פירוט רק כדי שיהיה אפשר להשתפר.',
-    buttons: passed
-      ? [
-          { id: 'next', label: 'לפסיכולוג' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ]
-      : [
-          { id: 'again', label: 'לנסות שוב (רק במשחק)' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ],
+    buttons: [
+      { id: 'next', label: passed ? 'לפסיכולוג' : 'לפסיכולוג (המשך בכל זאת)' },
+      { id: 'again', label: 'לנסות שוב', secondary: true },
+      { id: 'hub', label: 'חזרה למסלול', secondary: true },
+    ],
   });
   saveResult('yarpa-b', { passed, sim: state.sim?.score ?? null, consistency: scores?.consistency ?? null, score: Math.round(((state.sim?.score ?? 0) * 0.7 + (scores?.consistency ?? 0) * 0.3) * 100) / 100 });
   if (!failedSim) unlock('pilot-yarpa-b-done');

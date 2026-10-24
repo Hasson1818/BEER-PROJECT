@@ -545,7 +545,7 @@ export function learnMore(ui, results) {
       const actions = el('div', 'actions');
       const nextStage = button('לשלב הבא: יום סיירות');
       const menu = button('לתפריט הראשי', 'button secondary');
-      const again = button('לשחק שוב', 'button secondary');
+      const again = button('לנסות שוב', 'button secondary');
       nextStage.addEventListener('click', () => close('next'));
       menu.addEventListener('click', () => close('menu'));
       again.addEventListener('click', () => close('again'));

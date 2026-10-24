@@ -128,15 +128,11 @@ async function answer(game) {
     detail: text.detail,
     lines,
     note: 'במציאות לא מקבלים פירוט. אין פרסום של הציון, של הרף או של אחוזי המעבר, והמשחק לא ממציא אותם.',
-    buttons: passed
-      ? [
-          { id: 'next', label: 'לירפ״א א׳' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ]
-      : [
-          { id: 'again', label: 'לנסות שוב (רק במשחק)' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ],
+    buttons: [
+      { id: 'next', label: passed ? 'לירפ״א א׳' : 'לירפ״א א׳ (המשך בכל זאת)' },
+      { id: 'again', label: 'לנסות שוב', secondary: true },
+      { id: 'hub', label: 'חזרה למסלול', secondary: true },
+    ],
   });
   saveResult('home-test', { passed, score: Math.round(state.exam.score * 100) / 100, tasks: Object.fromEntries(Object.entries(tasks).map(([k, v]) => [k, v.score])) });
   saveAnswers({ prepared: state.prepared?.length ?? 0 });

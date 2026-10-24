@@ -421,7 +421,8 @@ async function results(game) {
     if (choice === 'again') {
       unlock('persistence');
       window.location.href = './?new=1';
-    } else window.location.href = '../main-screen/';
+    } else if (choice === 'next') window.location.href = '../pilot-path/home-test/?new=1';
+    else window.location.href = '../main-screen/';
     return;
   }
 }

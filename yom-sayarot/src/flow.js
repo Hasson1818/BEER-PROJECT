@@ -347,7 +347,8 @@ async function results(game) {
   if (choice === 'again') {
     unlock('persistence');
     window.location.href = './?new=1';
-  } else window.location.href = '../main-screen/';
+  } else if (choice === 'next') window.location.href = '../gibbush-tayis/?new=1';
+  else window.location.href = '../main-screen/';
 }
 
 const HANDLERS = { arrive, run, night1, morning, stretcher, dig, team, night2, home, results };

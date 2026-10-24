@@ -215,15 +215,11 @@ async function verdict(game) {
     detail: text.detail,
     lines,
     note: 'במציאות לא מקבלים פירוט של ציונים או אחוזים, והרף לא פורסם. המשחק מציג אותם כדי שיהיה אפשר להשתפר.',
-    buttons: passed
-      ? [
-          { id: 'next', label: 'לירפ״א ב׳' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ]
-      : [
-          { id: 'again', label: 'לנסות שוב (רק במשחק)' },
-          { id: 'hub', label: 'חזרה למסלול', secondary: true },
-        ],
+    buttons: [
+      { id: 'next', label: passed ? 'לירפ״א ב׳' : 'לירפ״א ב׳ (המשך בכל זאת)' },
+      { id: 'again', label: 'לנסות שוב', secondary: true },
+      { id: 'hub', label: 'חזרה למסלול', secondary: true },
+    ],
   });
   saveResult('yarpa-a', { passed, tests: state.tests ?? {}, sim: state.sim?.score ?? null, score: Math.round(((state.testScore ?? 0) * 0.4 + (state.sim?.score ?? 0) * 0.6) * 100) / 100 });
   if (!failedTests) unlock('pilot-yarpa-a-done');

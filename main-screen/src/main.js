@@ -67,7 +67,7 @@ requestAnimationFrame(() => document.body.classList.add('ready'));
 syncFromResults();
 
 const $ = (id) => document.getElementById(id);
-const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name }))];
+const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'pilot-path', name: 'המסלול לטיס' }];
 
 function renderJourney(animate = true) {
   const p = progress();

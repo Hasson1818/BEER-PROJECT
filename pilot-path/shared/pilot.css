@@ -1,0 +1,233 @@
+/* Look of the screens inside "המסלול לטיס": the exam portal, the video call, the simulator panels.
+   Everything is prefixed pp- so it never collides with the 3D stages' own styles. */
+
+:root {
+  --pp-bg: #0c1424;
+  --pp-bg-2: #131f36;
+  --pp-panel: #182742;
+  --pp-line: rgba(160, 190, 255, 0.18);
+  --pp-text: #e8eefc;
+  --pp-muted: #9fb0d3;
+  --pp-accent: #4ea1ff;
+  --pp-accent-2: #7cc4ff;
+  --pp-good: #4cd29a;
+  --pp-bad: #ff6b6b;
+  --pp-warn: #ffc857;
+  --pp-radius: 14px;
+}
+
+/* A full-screen overlay (the laptop screen, the simulator room, the call). */
+.pp-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(8px, 2vw, 28px);
+  background: radial-gradient(1200px 700px at 50% 20%, #1a2c4e 0%, var(--pp-bg) 70%);
+  color: var(--pp-text);
+  font-family: 'Heebo', system-ui, sans-serif;
+  direction: rtl;
+  animation: pp-fade 0.4s ease both;
+}
+
+.pp-screen[hidden] {
+  display: none;
+}
+
+@keyframes pp-fade {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A browser window drawn around the exam, so it feels like a real page on your laptop. */
+.pp-window {
+  display: flex;
+  flex-direction: column;
+  width: min(1080px, 100%);
+  height: min(680px, 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--pp-bg-2);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--pp-line);
+}
+
+.pp-chrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #0a1120;
+  border-bottom: 1px solid var(--pp-line);
+  font-size: 0.78rem;
+  color: var(--pp-muted);
+}
+
+.pp-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.pp-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3a4a6b;
+}
+
+.pp-url {
+  flex: 1;
+  direction: ltr;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #16223a;
+  text-align: left;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+.pp-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: clamp(14px, 2.4vw, 28px);
+  overflow: auto;
+}
+
+.pp-title {
+  margin: 0 0 6px;
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  color: #fff;
+}
+
+.pp-sub {
+  margin: 0 0 14px;
+  color: var(--pp-muted);
+}
+
+.pp-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--pp-accent-2);
+}
+
+.pp-card {
+  padding: 14px 16px;
+  border-radius: var(--pp-radius);
+  background: var(--pp-panel);
+  box-shadow: inset 0 0 0 1px var(--pp-line);
+}
+
+.pp-list {
+  margin: 8px 0;
+  padding-inline-start: 22px;
+  line-height: 1.65;
+}
+
+.pp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pp-btn {
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--pp-accent);
+  color: #06142c;
+  font: 800 1rem 'Heebo', sans-serif;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.12s;
+}
+
+.pp-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.pp-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pp-btn.secondary {
+  background: transparent;
+  color: var(--pp-text);
+  box-shadow: inset 0 0 0 1.5px var(--pp-line);
+}
+
+.pp-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.pp-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--pp-accent), var(--pp-accent-2));
+  transition: width 0.25s ease;
+}
+
+.pp-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 7px;
+  background: #0a1120;
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px var(--pp-line);
+  font: 700 0.85rem ui-monospace, Menlo, monospace;
+  color: #fff;
+}
+
+.pp-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(78, 161, 255, 0.15);
+  color: var(--pp-accent-2);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.pp-tag.official {
+  background: rgba(76, 210, 154, 0.16);
+  color: var(--pp-good);
+}
+
+.pp-tag.prep {
+  background: rgba(255, 200, 87, 0.16);
+  color: var(--pp-warn);
+}
+
+@media (max-width: 640px) {
+  .pp-window {
+    height: 100%;
+  }
+  .pp-url {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-screen {
+    animation: none;
+  }
+}

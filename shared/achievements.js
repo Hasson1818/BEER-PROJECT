@@ -46,6 +46,20 @@ export const ACHIEVEMENTS = [
   { id: 'interview-heard', group: 'interview-week', icon: '🎧', title: 'האזנת לכולם', desc: 'שמעת את כל היחידות במצגת הזום.', points: 2 },
   { id: 'interview-strong', group: 'interview-week', icon: '🌟', title: 'רושם חזק', desc: 'כל שלוש היחידות התרשמו מאוד.', points: 3 },
   { id: 'interview-wide', group: 'interview-week', icon: '📊', title: 'דירוג רחב', desc: 'דירגת שש יחידות ומעלה בסקר.', points: 2 },
+
+  { id: 'pilot-home-prep', group: 'pilot-path', icon: '🪟', title: 'חדר מוכן', desc: 'הכנת את החדר לפני הבוחן המקוון: חלון סגור, טלפון במגירה, מים.', points: 1 },
+  { id: 'pilot-home-done', group: 'pilot-path', icon: '💻', title: 'עברת את הבוחן', desc: 'עברת את הבוחן המקוון מהבית והוזמנת לירפ״א א׳.', points: 3 },
+  { id: 'pilot-bucket', group: 'pilot-path', icon: '🪣', title: 'סיכון מחושב', desc: 'קיבלת ציון גבוה במטלת הדלי ומים, בלי להמר ובלי לפחד.', points: 2 },
+  { id: 'pilot-home-sharp', group: 'pilot-path', icon: '⚡', title: 'ראש זריז', desc: 'ציון גבוה מאוד בבוחן המקוון.', points: 2 },
+  { id: 'pilot-yarpa-a-done', group: 'pilot-path', icon: '🏥', title: 'יום ירפ״א', desc: 'סיימת את ירפ״א א׳ בתל השומר.', points: 3 },
+  { id: 'pilot-psychotech', group: 'pilot-path', icon: '🧊', title: 'חשיבה מרחבית', desc: 'ציון גבוה בשלושת מבחני החשיבה בירפ״א א׳.', points: 3 },
+  { id: 'pilot-sim-1', group: 'pilot-path', icon: '🕹️', title: 'סטיק ומצערת', desc: 'עברת את הסימולטור הראשון.', points: 3 },
+  { id: 'pilot-yarpa-b-done', group: 'pilot-path', icon: '📝', title: 'ירפ״א ב׳', desc: 'סיימת את ירפ״א ב׳: סימולטור ושאלונים.', points: 3 },
+  { id: 'pilot-sim-2', group: 'pilot-path', icon: '🎯', title: 'שליטה בלחץ', desc: 'עברת את הסימולטור השני עם ההסחות.', points: 3 },
+  { id: 'pilot-consistent', group: 'pilot-path', icon: '🪞', title: 'עקביות', desc: 'התשובות האישיות שלך בשאלונים ובראיון תאמו זו את זו.', points: 2 },
+  { id: 'pilot-psych-done', group: 'pilot-path', icon: '🧠', title: 'שיחה עם הפסיכולוג', desc: 'סיימת את הראיון בזום.', points: 3 },
+  { id: 'pilot-psych-honest', group: 'pilot-path', icon: '🤍', title: 'כנות', desc: 'ענית בכנות גם על חולשות, בלי תשובות משוננות.', points: 2 },
+  { id: 'pilot-all-four', group: 'pilot-path', icon: '🛩️', title: 'ארבעה לפני הגיבוש', desc: 'סיימת את ארבעת השלבים של המסלול לטיס שלפני הגיבוש.', points: 5 },
 ];
 
 const BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));

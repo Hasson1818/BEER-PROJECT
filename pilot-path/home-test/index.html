@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>מבחנים בבית · המסלול לטיס · BEER PROJECT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Secular+One&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hud" hidden>
+      <section class="objective" aria-live="polite">
+        <span class="objective-label">משימה</span>
+        <p id="objective-text"></p>
+        <p id="objective-sub" class="objective-sub" hidden></p>
+      </section>
+
+      <section class="status">
+        <div class="clock"><span id="day" class="day">בבית</span> <span id="clock">21:15</span></div>
+              </section>
+
+      <div class="crosshair" id="crosshair"></div>
+      <div class="prompt" id="prompt" hidden></div>
+      <div class="announcement" id="announcement" hidden></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <div id="dialogue" class="dialogue" hidden>
+      <div class="dialogue-speaker" id="dialogue-speaker"></div>
+      <p class="dialogue-text" id="dialogue-text"></p>
+      <div class="dialogue-choices" id="dialogue-choices"></div>
+      <button class="dialogue-continue" id="dialogue-continue" type="button">המשך ◂</button>
+    </div>
+
+    <div id="panel-layer" class="panel-layer" hidden></div>
+
+    <div id="click-to-play" class="click-to-play" hidden>
+      <div class="ctp-card">
+        <h2>מבחנים בבית</h2>
+        <p class="ctp-action">לחצו כדי לשחק</p>
+        <ul class="controls-help">
+          <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> תנועה · <kbd>Shift</kbd> ריצה</li>
+          <li>עכבר · הסתכלות</li>
+          <li><kbd>E</kbd> או לחיצה · פעולה / ישיבה / פתיחת המחשב</li>
+          <li><kbd>1</kbd>–<kbd>5</kbd> בחירת תשובה</li>
+          <li><kbd>Esc</kbd> עצירה</li>
+        </ul>
+        <a class="ctp-menu" href="../">חזרה למסלול לטיס</a>
+      </div>
+    </div>
+
+    <div id="touch-controls" class="touch-controls" hidden>
+      <div class="joystick" id="joystick"><div class="joystick-knob" id="joystick-knob"></div></div>
+      <button class="action-button" id="action-button" type="button">פעולה</button>
+      <a class="touch-menu" href="../" aria-label="חזרה למסלול לטיס">☰</a>
+      <button class="fullscreen-button" id="fullscreen-button" type="button" aria-label="מסך מלא">⛶</button>
+      <div class="rotate-hint">↻ נוח יותר לשחק כשהטלפון לרוחב</div>
+    </div>
+
+    <div id="fade" class="fade"></div>
+    <div id="loading" class="loading">
+      <div class="loading-card">
+        <div class="stamp">בבית</div>
+        <p>מדליקים את המחשב…</p>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

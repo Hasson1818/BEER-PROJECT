@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>המסלול לטיס · BEER PROJECT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Secular+One&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="sky" aria-hidden="true"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <main class="hub">
+      <header class="hub-head">
+        <a class="back" href="../main-screen/">‹ לתפריט הראשי</a>
+        <p class="eyebrow">BEER PROJECT · קורס טיס</p>
+        <h1>המסלול לטיס</h1>
+        <p class="lead">חמישה שלבים מהבית ועד הגיבוש. בחרו שלב: אפשר לשחק אותם בכל סדר, אבל הסדר האמיתי מסומן.</p>
+        <div class="wings" id="wings" aria-live="polite"></div>
+      </header>
+
+      <ol class="route" id="route"></ol>
+
+      <footer class="hub-foot">
+        <button id="truth" class="link" type="button">מה אמיתי ומה מקובל? ›</button>
+        <button id="reset" class="link faint" type="button">איפוס התקדמות במסלול</button>
+      </footer>
+    </main>
+
+    <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-card">
+        <h2 id="sheet-title">מה אמיתי ומה מקובל</h2>
+        <ul id="sheet-list"></ul>
+        <button id="sheet-close" class="go" type="button">הבנתי</button>
+      </div>
+    </div>
+
+    <script type="module" src="./src/hub.js"></script>
+  </body>
+</html>

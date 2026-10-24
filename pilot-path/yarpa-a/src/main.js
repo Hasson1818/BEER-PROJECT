@@ -18,6 +18,10 @@ async function start() {
     onFrame,
   });
   const { world, people, player, ui } = game;
+  game.resumeSpawn = () => {
+    game.sky.setTime('day');
+    player.teleport(0, 8, 0);
+  };
   pace(people.pacers[0], { x: -7, z: 8 }, { x: 8, z: 9.5 });
   pace(people.pacers[1], { x: 9, z: 10.5 }, { x: -9, z: 7 });
 

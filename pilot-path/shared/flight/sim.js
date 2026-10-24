@@ -16,6 +16,7 @@ const STYLE_ID = 'fl-style';
  * runSimulator(game, { kind: 'sim1' | 'sim2', fx, startLevel? }) -> Promise<{ passed, score, levels: [{ id, title, score, note }] }>
  */
 export function runSimulator(game, { kind, fx, startLevel = 0 }) {
+  if (import.meta.env.DEV && window.__simStartLevel !== undefined) startLevel = window.__simStartLevel; // for tests
   return showScreen(game, 'fl-screen', (root, close, helpers) => {
     injectStyle();
     start(game, root, close, helpers, { kind, fx, startLevel });
@@ -156,6 +157,21 @@ function start(game, root, close, helpers, { kind, fx, startLevel }) {
       m.velocity.copy(plane.position).sub(origin).normalize().multiplyScalar(m.speed);
       fx?.missile?.();
       return m;
+    },
+    /** Where a bomb released now would land (a few passes of a ballistic estimate over the terrain). */
+    impactPoint() {
+      const v = plane.velocity;
+      let point = new THREE.Vector3(plane.position.x, world.height(plane.position.x, plane.position.z), plane.position.z);
+      for (let i = 0; i < 4; i++) {
+        const h = Math.max(1, plane.position.y - 3 - point.y);
+        // vertical speed adds to the fall: solve h = -vy*t + g*t^2/2
+        const vy = v.y;
+        const t = (vy + Math.sqrt(vy * vy + 2 * 9.81 * h)) / 9.81;
+        const x = plane.position.x + v.x * t;
+        const z = plane.position.z + v.z * t;
+        point = new THREE.Vector3(x, world.height(x, z), z);
+      }
+      return point;
     },
     puff: (...a) => world.puff(...a),
     crash(reason = 'התרסקת') {

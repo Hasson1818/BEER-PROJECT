@@ -329,6 +329,11 @@ export function failToLoad(error) {
 /** Run the steps of a part one after another; a broken step doesn't end the run. */
 export async function runSteps(game, handlers, order, startStep) {
   let i = Math.max(0, order.indexOf(startStep));
+  if (i > 0) {
+    // Resuming in the middle: nothing earlier fades the screen in or puts the player in a sensible place.
+    document.getElementById('fade')?.classList.remove('on');
+    game.resumeSpawn?.(order[i]);
+  }
   game.jumpTo = (step) => {
     i = order.indexOf(step) - 1;
   };

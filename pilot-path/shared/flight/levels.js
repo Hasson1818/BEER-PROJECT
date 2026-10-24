@@ -390,7 +390,7 @@ function navigationLevel() {
     hud(ctx) {
       return { throttle: ctx.plane.throttle };
     },
-    score: (ctx) => clamp(st.i / route.length - st.peeks * 0.07, 0, 1) * (st.i >= route.length ? 1 - clamp(st.total / 150, 0, 0.25) : 0.9),
+    score: (ctx) => clamp(st.i / route.length - st.peeks * 0.07, 0, 1) * (st.i >= route.length ? 1 - clamp(st.total / 260, 0, 0.2) : 0.9),
   };
 }
 
@@ -423,8 +423,8 @@ function multitaskLevel() {
         radioDone: 0,
         radioIndex: 0,
       };
-      ctx.place({ alt: 2000, heading: 0, speedKt: 240, assist: 0.55 });
-      const e = ctx.spawnEnemy({ position: V(0, 2000, -1250), heading: 0, speed: 125, script: followScript(0.8, 0.8) });
+      ctx.place({ alt: 3200, heading: 0, speedKt: 240, assist: 0.55 });
+      const e = ctx.spawnEnemy({ position: V(0, 3200, -1250), heading: 0, speed: 125, script: followScript(0.8, 0.8) });
       e.baseHeading = 0;
       ctx.onAck = () => {
         if (st.beepOpen > 0) {
@@ -478,9 +478,9 @@ function multitaskLevel() {
         }
       } else if (ctx.levelTime >= st.radioAt && st.radioIndex < 3) {
         const calls = [
-          { text: 'כחול אחד, עלה לגובה 2500 מטר.', alt: 2500 },
+          { text: 'כחול אחד, עלה לגובה 3600 מטר.', alt: 3600 },
           { text: 'כחול אחד, כוון לכיוון 070.', heading: 70 },
-          { text: 'כחול אחד, רד לגובה 1700 מטר.', alt: 1700 },
+          { text: 'כחול אחד, רד לגובה 3000 מטר.', alt: 3000 },
         ];
         const call = calls[st.radioIndex++];
         st.radios++;
@@ -521,7 +521,7 @@ function bombingLevel() {
     brief: [
       'טוס נמוך לאורך העמק. על הקרקע: משאיות עם משואה אדומה מהבהבת הן המטרות שלך.',
       'בתים לבנים עם גג כחול הם אזרחיים. הפצצה עליהם היא טעות חמורה שמורידה ניקוד.',
-      'שחרר פצצה כשהמטרה מתחתיך (X). יש לך שש פצצות ושלוש מטרות.',
+      'הפצצה נופלת קדימה, לא ישר למטה: שחרר (X) כשנקודת הנפילה על המסך (העיגול הצהוב) נמצאת על המטרה. יש לך שש פצצות ושלוש מטרות.',
     ],
     keys: [...KEYS_FLY, KEY_BOMB],
     note: 'לפי אתרי הכנה: בסימולטור השני "מפציצים מטרות" ו"ירי למטרות אסורות מוריד ניקוד".',
@@ -581,7 +581,7 @@ function bombingLevel() {
       const marks = st.military
         .filter((t) => !t.destroyed && Math.hypot(t.x - p.x, t.z - p.z) < 3300)
         .map((t) => ({ position: V(t.x, t.y + 14, t.z), color: '#ff6b6b', size: 22, label: 'מטרה', label2: `${Math.round(Math.hypot(t.x - p.x, t.z - p.z))} מ׳` }));
-      return { marks, throttle: ctx.plane.throttle, bombCount: ctx.bombsLeft };
+      return { marks, throttle: ctx.plane.throttle, bombCount: ctx.bombsLeft, pipper: ctx.impactPoint() };
     },
     score: () => clamp(st.destroyed / 3 - st.civilHit * 0.4, 0, 1) * 0.95 + (st.destroyed === 3 && st.civilHit === 0 ? 0.05 : 0),
   };

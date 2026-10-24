@@ -1,0 +1,19 @@
+/* Additions for "ירפ״א ב׳" on top of the shared game styles. */
+
+body {
+  background: #0c1424;
+}
+
+.clock .day {
+  margin-inline-end: 6px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+/* After the eye drops: blurry and bright for a few hours. */
+body.dilated #game {
+  filter: blur(3px) brightness(1.28) contrast(0.9);
+  transition: filter 1.6s ease;
+}

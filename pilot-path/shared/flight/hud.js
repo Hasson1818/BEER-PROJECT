@@ -330,6 +330,27 @@ export function createHud(canvas) {
       void p;
     }
     for (const m of frame.marks ?? []) mark(camera, m.position, m);
+    if (frame.pipper) {
+      const p = project(camera, frame.pipper);
+      if (!p.behind && p.x > 0 && p.x < w && p.y > 0 && p.y < h) {
+        ctx.save();
+        glow(AMBER, 8);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 13, 0, Math.PI * 2);
+        ctx.moveTo(p.x - 20, p.y);
+        ctx.lineTo(p.x - 13, p.y);
+        ctx.moveTo(p.x + 13, p.y);
+        ctx.lineTo(p.x + 20, p.y);
+        ctx.moveTo(p.x, p.y + 13);
+        ctx.lineTo(p.x, p.y + 20);
+        ctx.stroke();
+        ctx.font = '700 12px Heebo, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('נקודת נפילה', p.x, p.y + 36);
+        ctx.restore();
+      }
+    }
 
     // Bombs left, and the master caution lamp.
     if (frame.bombCount !== undefined) {

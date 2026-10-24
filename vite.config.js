@@ -22,6 +22,7 @@ export default defineConfig({
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),
         pilotYarpaA: page('./pilot-path/yarpa-a/index.html'),
+        pilotYarpaB: page('./pilot-path/yarpa-b/index.html'),
       },
     },
   },

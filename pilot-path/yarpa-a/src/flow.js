@@ -9,7 +9,7 @@ import { chime } from '../../../shared/engine/audio.js';
 import { saveResult } from '../../shared/progress.js';
 import { unlock } from '../../../shared/achievements.js';
 
-export const STEPS = ['arrive', 'checkin', 'tests', 'break', 'simulator', 'verdict'];
+export const STEPS = ['arrive', 'checkin', 'tests', 'simulator', 'verdict'];
 
 const TEST_LINE = 0.22; // Only in the game: the real cut-off was never published.
 
@@ -134,51 +134,23 @@ async function tests(game) {
   game.save('tests');
 }
 
-// ---------- The break ----------
-
-async function breakStep(game) {
-  const { ui, people, world, state, player } = game;
-  game.setClock('יום ירפ״א', 11 * 60 + 40);
-  player.teleport(SPOTS.corridor.x, SPOTS.corridor.z + 1.5, 0);
-  if (state.testScore < TEST_LINE) {
-    state.failedAt = 'tests';
-    await ui.talk('אני', 'אני יוצא מהחדר. לא בטוח איך היה לי.');
-    return;
-  }
-  world.setBoard('שעת הפסקה', 'קחו מים ואכלו משהו');
-  ui.setObjective('הפסקה בחוץ, אל האולם', 'קחו מים. הסימולטור אחרי זה');
-  game.setTarget(groundTarget(SPOTS.vending));
-  await game.waitInteract('vending');
-  game.setTarget(null);
-  ui.toast('בקבוק מים קר, ועוד כמה דקות של שקט.');
-  fx.coin?.();
-  const chatty = people.hall.find((p) => !p.seat && p.pose === 'stand');
-  await wait(game, 8, 1.4);
-  chime();
-  world.setBoard('נקראים לסימולטור', `מועמד ${state.number}`);
-  ui.announce('קוראים לסימולטור', 'הדלת הראשונה בצד ימין');
-  void chatty;
-  game.save('break');
-}
-
 // ---------- The simulator ----------
 
 async function simulator(game) {
   const { ui, player, people, world, state } = game;
-  if (state.failedAt) return;
-  game.setClock('יום ירפ״א', 13 * 60 + 10);
-  await walkTo(game, SPOTS.simA.door, 'לך לחדר הסימולטור', 'במסדרון, הדלת הראשונה מימין', 2.6);
+  game.setClock('יום ירפ״א', 11 * 60 + 40);
+  // Straight after the tests: the same day, the next room.
+  world.setBoard('נקראים לסימולטור', `מועמד ${state.number}`);
+  chime();
+  await ui.interlude('מיד אחרי המבחנים עוברים לחדר הסימולטור…', 2000);
+  player.teleport(SPOTS.simA.chair.x - 3.4, SPOTS.simA.chair.z, -Math.PI / 2);
   const instructor = people.staff.instructorA;
-  await walkTo(game, { x: 8.5, z: -14 }, 'היכנס לחדר', 'חשוך וקריר', 2.6);
   await talkScene(game, instructor, async () => {
     for (const line of INSTRUCTOR_LINES.intro) await ui.talk(instructor.name, line);
   });
   await ui.fact(FACTS.sim.title, FACTS.sim.points);
 
-  ui.setObjective('שב בכיסא הטייס', 'סטיק ביד ימין, מצערת ביד שמאל');
-  game.setTarget({ x: SPOTS.simA.chair.x, y: 1.9, z: SPOTS.simA.chair.z });
-  await game.waitInteract('simchair');
-  game.setTarget(null);
+  ui.toast('יושבים בכיסא הטייס: סטיק ביד ימין, מצערת ביד שמאל', 3200);
   const seat = world.simSeats.A;
   player.sit({ x: seat.x, z: seat.z, exit: { x: seat.x - 1.2, z: seat.z } }, seat.yaw);
   seat.setScreen('ready');
@@ -197,9 +169,9 @@ async function simulator(game) {
 
 async function verdict(game) {
   const { ui, state } = game;
-  const failedTests = state.failedAt === 'tests';
-  const passed = !failedTests && state.sim?.passed;
-  const text = passed ? RESULT.pass : failedTests ? RESULT.failTests : RESULT.failSim;
+  const testsOk = (state.testScore ?? 0) >= TEST_LINE;
+  const passed = testsOk && Boolean(state.sim?.passed);
+  const text = passed ? RESULT.pass : !testsOk ? RESULT.failTests : RESULT.failSim;
   const t = state.tests ?? {};
   const pct = (v) => (v === undefined ? '-' : `${Math.round(v * 100)}%`);
   const lines = [
@@ -222,7 +194,7 @@ async function verdict(game) {
     ],
   });
   saveResult('yarpa-a', { passed, tests: state.tests ?? {}, sim: state.sim?.score ?? null, score: Math.round(((state.testScore ?? 0) * 0.4 + (state.sim?.score ?? 0) * 0.6) * 100) / 100 });
-  if (!failedTests) unlock('pilot-yarpa-a-done');
+  unlock('pilot-yarpa-a-done');
   if (state.testScore >= 0.7) unlock('pilot-psychotech');
   if (state.sim?.passed) unlock('pilot-sim-1');
   game.clearSave();
@@ -232,5 +204,5 @@ async function verdict(game) {
   else window.location.href = '../';
 }
 
-export const HANDLERS = { arrive, checkin, tests, break: breakStep, simulator, verdict };
+export const HANDLERS = { arrive, checkin, tests, simulator, verdict };
 export { HALL_CHATTER };

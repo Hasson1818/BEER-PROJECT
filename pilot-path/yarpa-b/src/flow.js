@@ -4,7 +4,7 @@ import { FACTS, INSTRUCTOR_LINES, WAIT_LINES, RESULT } from './content.js';
 import { GUARD_LINES, CLERK_LINES } from '../../yarpa-a/src/content.js';
 import { runForms } from './forms.js';
 import { runEyeTest } from './eyes.js';
-import { runSimulator } from '../../shared/flight/sim.js';
+import { runStrikeSimulator } from '../../shared/flight/strike.js';
 import { answerPhone } from '../../shared/panels.js';
 import { fx } from '../../shared/fx.js';
 import { chime } from '../../../shared/engine/audio.js';
@@ -107,8 +107,16 @@ async function sim(game) {
   player.sit({ x: seat.x, z: seat.z, exit: { x: seat.x - 1.2, z: seat.z } }, seat.yaw);
   seat.setScreen('ready');
   await game.wait(900);
-  const result = await runSimulator(game, { kind: 'sim2', fx });
-  state.sim = { passed: result.passed, score: result.score, levels: result.levels.map((l) => [l.title, l.score]) };
+  const result = await runStrikeSimulator(game, { fx });
+  const avg = (list) => (list.length ? list.reduce((a, l) => a + l.score, 0) / list.length : null);
+  state.sim = {
+    passed: result.passed,
+    score: result.score,
+    training: avg(result.levels.filter((l) => l.phase === 'training')),
+    tests: avg(result.levels.filter((l) => l.phase === 'test')),
+    points: result.points,
+    count: result.levels.length,
+  };
   player.standUp(false);
   player.teleport(SPOTS.simB.chair.x - 2.5, SPOTS.simB.chair.z, Math.PI / 2 + Math.PI);
   await talkScene(game, instructor, async () => {
@@ -204,7 +212,7 @@ async function verdict(game) {
   const pct = (v) => (v === undefined || v === null ? '-' : `${Math.round(v * 100)}%`);
   const scores = state.forms?.scores;
   const lines = [
-    ...(state.sim ? state.sim.levels.map(([t, s]) => [t, pct(s)]) : []),
+    ...(state.sim ? [['שלבי ההדרכה', pct(state.sim.training)], ['המבחנים', pct(state.sim.tests)], ['ניקוד מטרות', String(state.sim.points ?? 0)]] : []),
     ...(scores ? [['עקביות בין ההיגדים', pct(scores.consistency)], ['שקט בלחץ (לפי ההיגדים)', pct(scores.calm)]] : []),
   ];
   const choice = await answerPhone(ui, {

@@ -73,7 +73,7 @@ export class Plane {
 
     // Roll and pitch rates follow the stick with inertia.
     const wantRoll = stick.x * 2.4;
-    const wantPitch = stick.y * 1.15 * (this.stall ? 0.4 : 1);
+    const wantPitch = stick.y * 1.15 * (this.stall ? 0.4 : 1) * THREE.MathUtils.clamp(this.speed / 105, 0.55, 1.15);
     this.rollRate += (wantRoll - this.rollRate) * Math.min(1, dt * 7);
     this.pitchRate += (wantPitch - this.pitchRate) * Math.min(1, dt * 6);
 
@@ -102,11 +102,12 @@ export class Plane {
     }
     this.quaternion.normalize();
 
-    // Speed: the throttle sets a target; climbing costs speed and diving gives some back.
+    // Speed, like the real thing in spirit: thrust from the throttle, drag that grows with speed (and with
+    // hard pulling), and gravity along the flight path: climbing slows you, diving speeds you up.
     const fwd = this.forwardVector(this._tmp);
-    const target = this.targetSpeed;
-    this.speed += (target - this.speed) * Math.min(1, dt * 0.45);
-    this.speed += -fwd.y * 38 * dt;
+    const thrust = 1.4 + this.throttle * 13;
+    const drag = 0.00027 * this.speed * this.speed + Math.abs(this.pitchRate) * this.speed * 0.012;
+    this.speed += (thrust - drag - G * fwd.y) * dt;
     this.speed = THREE.MathUtils.clamp(this.speed, 38, this.maxSpeed + 70);
 
     // Low speed: the nose sinks.

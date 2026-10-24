@@ -70,6 +70,64 @@ function sandTexture() {
   return tex;
 }
 
+/** Something that looks like aerial photography: fields, scrub, wadis and a few roads, in washed-out colors. */
+function aerialTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 1024;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#a89c80';
+  ctx.fillRect(0, 0, 1024, 1024);
+  const palette = ['#9b8f72', '#b3a487', '#8d8a64', '#7c8456', '#a09a70', '#bfae8c', '#8a7d62', '#6f7a4e', '#b8aa86', '#c4b695'];
+  for (let i = 0; i < 520; i++) {
+    const x = Math.random() * 1024;
+    const y = Math.random() * 1024;
+    const w = 20 + Math.random() * 120;
+    const h = 14 + Math.random() * 90;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.floor(Math.random() * 4) * 0.12 + (i % 3 === 0 ? 0.6 : 0));
+    ctx.fillStyle = palette[Math.floor(Math.random() * palette.length)];
+    ctx.globalAlpha = 0.5 + Math.random() * 0.4;
+    ctx.fillRect(-w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+  // Dry riverbeds: dark meandering lines.
+  ctx.strokeStyle = 'rgba(70,58,44,0.45)';
+  ctx.lineWidth = 2;
+  for (let k = 0; k < 7; k++) {
+    ctx.beginPath();
+    let x = Math.random() * 1024;
+    let y = 0;
+    ctx.moveTo(x, y);
+    while (y < 1024) {
+      x += (Math.random() - 0.5) * 40;
+      y += 30;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  // Roads: thin pale lines.
+  ctx.strokeStyle = 'rgba(224,214,190,0.8)';
+  ctx.lineWidth = 3;
+  for (let k = 0; k < 5; k++) {
+    ctx.beginPath();
+    ctx.moveTo(0, Math.random() * 1024);
+    ctx.bezierCurveTo(300, Math.random() * 1024, 700, Math.random() * 1024, 1024, Math.random() * 1024);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 9000; i++) {
+    const v = 110 + Math.random() * 90;
+    ctx.fillStyle = `rgba(${v + 20}, ${v + 8}, ${v - 20}, ${0.05 + Math.random() * 0.15})`;
+    ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 1 + Math.random() * 3, 1 + Math.random() * 3);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
 function cloudTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -153,7 +211,7 @@ function ring(radius = 130, color = '#4cd29a') {
 
 // ---------- The world ----------
 
-export function createFlightWorld(scene, { mountains = 0, time = 'afternoon' } = {}) {
+export function createFlightWorld(scene, { mountains = 0, time = 'afternoon', aerial = false } = {}) {
   const sky = createSky(scene, { setPower() {} });
   sky.setTime(time);
   scene.fog.far = 16000;
@@ -186,8 +244,9 @@ export function createFlightWorld(scene, { mountains = 0, time = 'afternoon' } =
   }
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const tex = sandTexture();
-  tex.repeat.set(SIZE / 90, SIZE / 90);
+  const tex = aerial ? aerialTexture() : sandTexture();
+  if (aerial) tex.repeat.set(SIZE / 2600, SIZE / 2600);
+  else tex.repeat.set(SIZE / 90, SIZE / 90);
   const terrain = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ vertexColors: true, map: tex }));
   scene.add(terrain);
 

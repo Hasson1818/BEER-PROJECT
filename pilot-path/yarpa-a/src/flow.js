@@ -2,7 +2,7 @@ import { SPOTS } from '../../shared/yarpa-world.js';
 import { seatMates, hideMates } from '../../shared/yarpa-people.js';
 import { FACTS, GUARD_LINES, CLERK_LINES, HALL_CHATTER, PROCTOR_LINES, INSTRUCTOR_LINES, RESULT } from './content.js';
 import { runLab } from './lab.js';
-import { runSimulator } from '../../shared/flight/sim.js';
+import { runIrpaSimulator } from '../../shared/flight/irpa.js';
 import { answerPhone } from '../../shared/panels.js';
 import { fx } from '../../shared/fx.js';
 import { chime } from '../../../shared/engine/audio.js';
@@ -183,7 +183,7 @@ async function simulator(game) {
   player.sit({ x: seat.x, z: seat.z, exit: { x: seat.x - 1.2, z: seat.z } }, seat.yaw);
   seat.setScreen('ready');
   await game.wait(900);
-  const sim = await runSimulator(game, { kind: 'sim1', fx });
+  const sim = await runIrpaSimulator(game, { fx });
   state.sim = { passed: sim.passed, score: sim.score, levels: sim.levels.map((l) => [l.title, l.score]) };
   player.standUp(false);
   player.teleport(SPOTS.simA.chair.x - 2.5, SPOTS.simA.chair.z, Math.PI / 2 + Math.PI);

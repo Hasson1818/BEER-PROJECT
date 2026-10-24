@@ -86,7 +86,11 @@ export function introCard(parent, { eyebrow, title, lines = [], keys = [], pract
       card.append(row);
     }
     if (extra) card.append(extra);
-    if (note) card.append(el('p', 'pp-note', note));
+    if (note) {
+      const p = el('p', 'pp-note');
+      p.innerHTML = note; // our own strings, may contain <b>
+      card.append(p);
+    }
     const actions = el('div', 'pp-actions');
     if (practice) {
       const p = button('תרגול קצר', 'pp-btn secondary');

@@ -368,6 +368,7 @@ function start(game, root, close, helpers, { kind, fx, startLevel }) {
       },
       levels,
       controls,
+      results,
     };
   }
 

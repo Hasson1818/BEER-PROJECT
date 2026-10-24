@@ -7,7 +7,7 @@ const KEY = 'beer-project-pilot';
 
 export const PARTS = [
   { id: 'home-test', number: 1, name: 'מבחנים בבית', short: 'הבוחן המקוון', page: './home-test/', ready: true },
-  { id: 'yarpa-a', number: 2, name: 'ירפ״א א׳', short: 'מבחנים וסימולטור', page: './yarpa-a/', ready: false },
+  { id: 'yarpa-a', number: 2, name: 'ירפ״א א׳', short: 'מבחנים וסימולטור', page: './yarpa-a/', ready: true },
   { id: 'yarpa-b', number: 3, name: 'ירפ״א ב׳', short: 'סימולטור ושאלות אישיות', page: './yarpa-b/', ready: false },
   { id: 'psychologist', number: 4, name: 'הפסיכולוג', short: 'ראיון בזום', page: './psychologist/', ready: false },
   { id: 'gibbush', number: 5, name: 'גיבוש טייס', short: 'חמישה ימים בחצרים', page: '../gibbush-tayis/?new=1', ready: true },

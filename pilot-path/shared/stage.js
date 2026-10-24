@@ -124,6 +124,7 @@ export async function createStage(options) {
   const frameHooks = [];
   let target = null;
   let elapsed = 0;
+  let minutes = 0;
 
   const game = {
     id,
@@ -151,9 +152,16 @@ export async function createStage(options) {
         $('day').textContent = text;
       },
     },
-    setClock(label, minutes) {
+    setClock(label, m) {
       if (label !== undefined) $('day').textContent = label;
-      if (minutes !== undefined) ui.setClock(minutes);
+      if (m !== undefined) {
+        minutes = m;
+        ui.setClock(minutes);
+      }
+    },
+    addMinutes(m) {
+      minutes += m;
+      ui.setClock(minutes);
     },
     setTarget(next) {
       target = next;

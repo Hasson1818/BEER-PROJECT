@@ -147,7 +147,7 @@ function qMeet() {
 
 function qChase() {
   const diff = pick([10, 20, 30]);
-  const v1 = diff * rnd(2, 5);
+  const v1 = pick([40, 50, 60, 70, 80, 90].filter((v) => v % diff === 0));
   const v2 = v1 + diff;
   const h = rnd(1, 3);
   const t = (v1 * h) / diff;
@@ -156,11 +156,11 @@ function qChase() {
   });
   return {
     quant: 'chase',
-    html: `אופניים יוצאים לדרך במהירות ${N(v1)} קמ״ש. ${N(h)} ${h === 1 ? 'שעה' : 'שעות'} אחריהם יוצא באותו כיוון אופנוע במהירות ${N(v2)} קמ״ש. כמה שעות אחרי יציאת האופנוע הוא ישיג את האופניים?`,
+    html: `משאית יוצאת לדרך במהירות ${N(v1)} קמ״ש. ${h === 1 ? 'שעה אחת' : N(h) + ' שעות'} אחריה יוצאת באותו כיוון מכונית במהירות ${N(v2)} קמ״ש. כמה שעות אחרי יציאת המכונית היא תשיג את המשאית?`,
     diagram: { kind: 'chase', v1, v2, h },
     options,
     correct,
-    explain: `לאופניים יש יתרון של ${N(v1)} × ${N(h)} = ${N(v1 * h)} ק״מ. האופנוע מקצר ${N(diff)} ק״מ בכל שעה (${N(v2)} − ${N(v1)}). לכן ${N(v1 * h)} ÷ ${N(diff)} = ${N(t)} שעות.`,
+    explain: `למשאית יש יתרון של ${N(v1)} × ${N(h)} = ${N(v1 * h)} ק״מ. המכונית מקצרת ${N(diff)} ק״מ בכל שעה (${N(v2)} − ${N(v1)}). לכן ${N(v1 * h)} ÷ ${N(diff)} = ${N(t)} שעות.`,
   };
 }
 
@@ -491,7 +491,7 @@ function cubeQuestion(easy) {
   let options, correct, text, explain;
   const trace = [];
   for (let k = 1; k <= L; k++) {
-    trace.push(`צעד ${N(k)}: האדומה ${labels[posR[k - 1]]}→${labels[posR[k]]}, הכחולה ${labels[posB[k - 1]]}→${labels[posB[k]]}`);
+    trace.push(`צעד ${N(k)}: האדומה מ־${labels[posR[k - 1]]} ל־${labels[posR[k]]}, הכחולה מ־${labels[posB[k - 1]]} ל־${labels[posB[k]]}`);
   }
   if (mode === 'when') {
     options = [1, 2, 3, 4, 5].map((k) => `אחרי צעד ${N(k)}`).concat(['לא נפגשות']);
@@ -814,9 +814,9 @@ function drawQuantDiagram(ctx, w, h, t, d) {
       });
       drawCar(ctx, xBike, yBike, '#ffc857', 1);
       drawCar(ctx, xMoto, yMoto, '#4ea1ff', 1);
-      text(ctx, 'אופניים ' + iso(d.v1 + ' קמ״ש'), xBike, yBike - 28, { size: 13, color: '#ffe0a0' });
-      text(ctx, 'אופנוע ' + iso(d.v2 + ' קמ״ש'), xMoto, yMoto - 28, { size: 13, color: '#a9d2ff' });
-      text(ctx, 'האופנוע יוצא ' + iso(d.h + '') + (d.h === 1 ? ' שעה' : ' שעות') + ' מאוחר יותר', w / 2, h * 0.92, { size: 12, color: '#cfe0ff', weight: 500 });
+      text(ctx, 'משאית ' + iso(d.v1 + ' קמ״ש'), xBike, yBike - 28, { size: 13, color: '#ffe0a0' });
+      text(ctx, 'מכונית ' + iso(d.v2 + ' קמ״ש'), xMoto, yMoto - 28, { size: 13, color: '#a9d2ff' });
+      text(ctx, 'המכונית יוצאת ' + iso(d.h + '') + (d.h === 1 ? ' שעה' : ' שעות') + ' מאוחר יותר', w / 2, h * 0.92, { size: 12, color: '#cfe0ff', weight: 500 });
     }
     return;
   }
@@ -1302,7 +1302,7 @@ function drawPlaneView(ctx, w, h, theta, phi) {
 
 function drawCockpit(ctx, w, h, theta, phi) {
   const cp = cockpitParams(theta, phi);
-  const kpx = Math.min(w, h * 1.6) / 62; // pixels per degree of pitch
+  const kpx = h * 0.0105; // pixels per degree of pitch: +-40 degrees stay inside the window
   const R = Math.hypot(w, h);
   ctx.save();
   roundRect(ctx, 0, 0, w, h, 14);
@@ -1447,7 +1447,7 @@ const CSS = `
 .pp-pt-q.out{animation:pp-pt-out .18s ease both;pointer-events:none}
 @keyframes pp-pt-in{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
 @keyframes pp-pt-out{from{opacity:1}to{opacity:0;transform:translateX(26px)}}
-.pp-pt-stim{flex:1;min-height:0;display:flex;gap:12px}
+.pp-pt-stim{flex:1;min-height:0;display:flex;gap:12px;overflow:hidden}
 .pp-pt-stim>.pp-card{min-height:0;min-width:0}
 .pp-pt-textcard{flex:1.35;display:flex;flex-direction:column;justify-content:center;gap:10px;overflow:auto;padding:14px 18px}
 .pp-pt-qtext{margin:0;font-size:1.2rem;line-height:1.65;font-weight:500}
@@ -1488,12 +1488,19 @@ const CSS = `
 .pp-pt-script .pp-pt-qtext{font-size:1.02rem;line-height:1.5}
 .pp-pt-steps{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 6px;align-items:center;font-size:.92rem}
 .pp-pt-steps .h{font-size:.78rem;color:var(--pp-muted,#9fb0d3);text-align:center;font-weight:700}
-.pp-pt-steps .k{font-weight:800;color:var(--pp-muted,#9fb0d3);text-align:center;min-width:22px}
+.pp-pt-steps .h0{grid-column:1;grid-row:1}.pp-pt-steps .hr{grid-column:2;grid-row:1}.pp-pt-steps .hb{grid-column:3;grid-row:1}
+.pp-pt-steps .k{grid-column:1;grid-row:calc(var(--i) + 2);font-weight:800;color:var(--pp-muted,#9fb0d3);text-align:center;min-width:22px}
 .pp-pt-steps .c{padding:4px 6px;border-radius:8px;text-align:center;font-weight:700;transition:background .2s,box-shadow .2s}
-.pp-pt-steps .c.r{background:rgba(255,77,94,.16);color:#ffc2c8}
-.pp-pt-steps .c.b{background:rgba(61,147,255,.18);color:#bcdcff}
+.pp-pt-steps .c.r{grid-column:2;grid-row:calc(var(--i) + 2);background:rgba(255,77,94,.16);color:#ffc2c8}
+.pp-pt-steps .c.b{grid-column:3;grid-row:calc(var(--i) + 2);background:rgba(61,147,255,.18);color:#bcdcff}
 .pp-pt-steps .c.cur{box-shadow:0 0 0 2px #ffc857}
 .pp-pt-steps .c.done{opacity:.6}
+.pp-pt-narrow .pp-pt-steps{grid-template-columns:auto repeat(var(--L),minmax(0,1fr));font-size:.8rem;gap:3px 4px}
+.pp-pt-narrow .pp-pt-steps .h0{grid-column:1;grid-row:1}.pp-pt-narrow .pp-pt-steps .hr{grid-column:1;grid-row:2}.pp-pt-narrow .pp-pt-steps .hb{grid-column:1;grid-row:3}
+.pp-pt-narrow .pp-pt-steps .k{grid-column:calc(var(--i) + 2);grid-row:1}
+.pp-pt-narrow .pp-pt-steps .c.r{grid-column:calc(var(--i) + 2);grid-row:2}
+.pp-pt-narrow .pp-pt-steps .c.b{grid-column:calc(var(--i) + 2);grid-row:3}
+.pp-pt-narrow .pp-pt-steps .c{padding:4px 2px}
 .pp-pt-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px;vertical-align:middle}
 .pp-pt-dot.r{background:#ff4d5e}.pp-pt-dot.b{background:#3d93ff}
 .pp-pt-play{align-self:flex-start;min-height:36px;padding:0 16px;font-size:.92rem}
@@ -1515,13 +1522,18 @@ const CSS = `
 .pp-pt-dots i.skip{background:#6b7a99}
 .pp-pt-legend{display:flex;gap:14px;font-size:.78rem;color:var(--pp-muted,#9fb0d3)}
 .pp-pt-narrow .pp-pt-stim{flex-direction:column;gap:8px}
-.pp-pt-narrow .pp-pt-textcard{flex:none;max-height:46%;padding:10px 12px}
+.pp-pt-narrow .pp-pt-textcard{flex:none;max-height:52%;padding:8px 12px}
+.pp-pt-narrow .pp-pt-textcard .pp-pt-qtext+.pp-pt-qtext{display:none}
 .pp-pt-narrow .pp-pt-qtext,.pp-pt-narrow .pp-pt-qtext.big{font-size:1.05rem;line-height:1.55}
 .pp-pt-narrow .pp-pt-diag{flex:1;min-height:90px}
 .pp-pt-narrow .pp-pt-opts{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .pp-pt-narrow .pp-pt-opt{min-height:46px;font-size:.95rem;padding:6px}
-.pp-pt-narrow .pp-pt-script{max-width:none;flex:none;padding:8px 10px}
-.pp-pt-narrow .pp-pt-cubecard{flex:1;min-height:170px}
+.pp-pt-narrow .pp-pt-script{max-width:none;flex:none;padding:8px 10px;gap:6px}
+.pp-pt-narrow .pp-pt-script .pp-pt-qtext{font-size:.92rem;line-height:1.4}
+.pp-pt-narrow .pp-pt-play{min-height:32px;padding:0 12px}
+.pp-pt-narrow .pp-pt-note{font-size:.76rem}
+.pp-pt-narrow .pp-pt-cubecard{flex:1;min-height:120px}
+.pp-pt-narrow .pp-pt-cubecap{display:none}
 .pp-pt-narrow .pp-pt-hint{display:none}
 .pp-pt-narrow .pp-pt-time{font-size:1.15rem}
 .pp-pt-narrow .pp-pt-title{display:none}
@@ -1597,13 +1609,15 @@ function viewCube(q, api) {
   const script = h('div', 'pp-card pp-pt-script');
   script.appendChild(h('p', 'pp-pt-qtext', q.text));
   const steps = h('div', 'pp-pt-steps');
-  steps.innerHTML = `<span class="h">צעד</span><span class="h"><i class="pp-pt-dot r"></i>האדומה</span><span class="h"><i class="pp-pt-dot b"></i>הכחולה</span>`;
+  steps.style.setProperty('--L', String(q.L));
+  steps.innerHTML = `<span class="h h0">צעד</span><span class="h hr"><i class="pp-pt-dot r"></i>האדומה</span><span class="h hb"><i class="pp-pt-dot b"></i>הכחולה</span>`;
   const cells = [];
   for (let i = 0; i < q.L; i++) {
-    steps.appendChild(h('span', 'k', String(i + 1)));
+    const k = h('span', 'k', String(i + 1));
     const cr = h('span', 'c r', q.wordsR[i]);
     const cb = h('span', 'c b', q.wordsB[i]);
-    steps.append(cr, cb);
+    [k, cr, cb].forEach((e) => e.style.setProperty('--i', String(i)));
+    steps.append(k, cr, cb);
     cells.push([cr, cb]);
   }
   script.appendChild(steps);

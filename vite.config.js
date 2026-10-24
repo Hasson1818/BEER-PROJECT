@@ -21,6 +21,7 @@ export default defineConfig({
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),
+        pilotYarpaA: page('./pilot-path/yarpa-a/index.html'),
       },
     },
   },

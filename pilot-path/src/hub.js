@@ -14,7 +14,7 @@ const DETAILS = {
 };
 
 const route = document.getElementById('route');
-const done = PARTS.filter((p) => partResult(p.id)?.done || (p.id === 'gibbush' && loadResults('gibbush-tayis')));
+const done = PARTS.filter((p) => partResult(p.id)?.passed || (p.id === 'gibbush' && loadResults('gibbush-tayis')));
 
 PARTS.forEach((part, index) => {
   const finished = done.includes(part);

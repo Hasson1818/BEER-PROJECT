@@ -4,6 +4,7 @@ import { engine, speak, tone, noise } from '../fx.js';
 import { Plane, KT } from './plane.js';
 import { createFlightWorld, makeJet } from './world.js';
 import { createControls } from './input.js';
+import { chooseScheme } from './scheme.js';
 import { buildMissions, findRegion, POINTS } from './strike-levels.js';
 
 // The second simulator of ירפ״א ב׳ (navigation and shooting): a cockpit view over aerial-looking terrain, a heading
@@ -1079,7 +1080,9 @@ function start(root, close, helpers, { fx, short }) {
       card.append(list);
       const keys = el('div', 'pp-keys');
       for (const k of [
-        { keys: ['↑', '↓', '←', '→'], text: 'סטיק: עלייה וירידה, גלגול (או העכבר)' },
+        controls.state.scheme === 'keys' && !controls.state.touch
+          ? { keys: ['↑', '↓', '←', '→'], text: 'סטיק: עלייה וירידה, גלגול' }
+          : { keys: ['עכבר'], text: 'סטיק: עלייה וירידה, גלגול' },
         { keys: ['W', 'S'], text: 'מצערת: יותר או פחות מהירות' },
         { keys: ['Space'], text: 'שיגור טיל (אחרי נעילה)' },
         { keys: ['1', '2'], text: 'הגנה אווירית, הגנה קרקעית' },
@@ -1126,6 +1129,7 @@ function start(root, close, helpers, { fx, short }) {
   }
 
   (async () => {
+    await chooseScheme(showCard, controls, fx);
     const chosenShort = import.meta.env.DEV && window.__strikeShort !== undefined ? window.__strikeShort : await chooseLength();
     short = chosenShort;
     missions = buildMissions({ short });

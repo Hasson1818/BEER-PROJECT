@@ -6,6 +6,13 @@
 //             the others call onPress once. They are also drawn as big buttons (always on phones, optionally on desktop).
 
 const INVERT_KEY = 'beer-project-flight-invert';
+const SCHEME_KEY = 'beer-project-flight-scheme';
+
+/** The two ways to fly with a desktop: 'mouse' (mouse = stick, keyboard = throttle) and 'keys' (keyboard only). */
+export const SCHEMES = {
+  mouse: { label: 'עכבר ומקלדת', stick: 'העכבר הוא הסטיק (מרכז המסך = ישר)', throttle: 'המקלדת היא המצערת: W / S' },
+  keys: { label: 'מקלדת בלבד', stick: 'החצים הם הסטיק: ↑ ↓ ← →', throttle: 'המצערת: W / S' },
+};
 
 const STYLE_ID = 'fl-controls-style';
 function injectStyle() {
@@ -42,11 +49,18 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
   } catch {
     // Storage can be blocked.
   }
+  let scheme = 'mouse';
+  try {
+    const saved = localStorage.getItem(SCHEME_KEY);
+    if (saved in SCHEMES) scheme = saved;
+  } catch {
+    // Storage can be blocked.
+  }
   const mouse = { x: 0, y: 0, active: false };
   const touch = { id: null, ox: 0, oy: 0, x: 0, y: 0 };
   const held = {};
   const heldPointer = {};
-  const state = { stick, throttleInput: 0, held, invert, touch: window.matchMedia('(pointer: coarse)').matches, fire: false };
+  const state = { stick, throttleInput: 0, held, invert, scheme, touch: window.matchMedia('(pointer: coarse)').matches, fire: false };
   let throttleSlider = 0; // -1..1 from the slider, held while the thumb is on it
   let wheel = 0;
 
@@ -75,6 +89,7 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
   const rect = () => root.getBoundingClientRect();
   const onMove = (event) => {
     if (event.pointerType === 'touch') return;
+    if (scheme !== 'mouse') return; // keyboard only: the mouse does not touch the plane
     // A cursor parked on a button or a panel is not a stick deflection: it would steer the plane on its own.
     if (event.target.closest?.('button, a, input, .fl-buttons, .fl-touch')) {
       mouse.active = false;
@@ -87,13 +102,13 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
   };
   const onDown = (event) => {
     if (event.pointerType === 'touch') return;
-    if (event.button === 0 && !event.target.closest('button, a')) heldPointer.fire = true;
+    if (scheme === 'mouse' && event.button === 0 && !event.target.closest('button, a')) heldPointer.fire = true;
   };
   const onUp = (event) => {
     if (event.pointerType !== 'touch' && event.button === 0) heldPointer.fire = false;
   };
   const onWheel = (event) => {
-    wheel += Math.sign(-event.deltaY) * 0.5;
+    if (scheme === 'mouse') wheel += Math.sign(-event.deltaY) * 0.5;
     event.preventDefault();
   };
   root.addEventListener('pointermove', onMove);
@@ -186,20 +201,36 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
     }
   }
 
+  function setScheme(value) {
+    if (!(value in SCHEMES)) return;
+    scheme = value;
+    state.scheme = value;
+    mouse.active = false; // the mouse only counts again after it moves in the 'mouse' scheme
+    heldPointer.fire = false;
+    keys.clear();
+    try {
+      localStorage.setItem(SCHEME_KEY, value);
+    } catch {
+      // Storage can be blocked.
+    }
+  }
+
   /** Call once per frame: fills stick / throttleInput / held from whatever the player is using. */
   function poll(dt) {
     let x = 0;
     let y = 0;
-    if (keys.has('ArrowLeft') || keys.has('KeyA')) x -= 1;
-    if (keys.has('ArrowRight') || keys.has('KeyD')) x += 1;
-    if (keys.has('ArrowUp')) y += 1;
-    if (keys.has('ArrowDown')) y -= 1;
+    if (scheme === 'keys') {
+      if (keys.has('ArrowLeft') || keys.has('KeyA')) x -= 1;
+      if (keys.has('ArrowRight') || keys.has('KeyD')) x += 1;
+      if (keys.has('ArrowUp')) y += 1;
+      if (keys.has('ArrowDown')) y -= 1;
+    }
     const keyed = x !== 0 || y !== 0;
     if (!keyed) {
       if (touch.id !== null || touch.x || touch.y) {
         x = touch.x;
         y = touch.y;
-      } else if (mouse.active) {
+      } else if (scheme === 'mouse' && mouse.active) {
         const dead = 0.09;
         const shape = (v) => (Math.abs(v) < dead ? 0 : Math.sign(v) * Math.min(1, ((Math.abs(v) - dead) / (1 - dead)) ** 1.35));
         x = shape(mouse.x);
@@ -235,5 +266,5 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
     ui?.remove();
   }
 
-  return { state, poll, dispose, setInvert, keys };
+  return { state, poll, dispose, setInvert, setScheme, keys };
 }

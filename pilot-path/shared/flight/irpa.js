@@ -1,6 +1,7 @@
 import { showScreen, el, button } from '../screens.js';
 import { engine } from '../fx.js';
 import { createControls } from './input.js';
+import { chooseScheme } from './scheme.js';
 
 // The first simulator of ירפ״א א׳, as candidates and prep sites describe it: a flat blue screen, two target circles,
 // a small enemy plane that moves on the screen only in relation to your own movement, a throttle that sets your
@@ -576,7 +577,9 @@ function start(root, close, helpers, { fx, short }) {
       card.append(list);
       const keys = el('div', 'pp-keys');
       const items = [
-        { keys: ['↑', '↓', '←', '→'], text: 'סטיק: מזיז את האויב על המסך בכיוון ההפוך (או העכבר)' },
+        controls.state.scheme === 'keys' && !controls.state.touch
+          ? { keys: ['↑', '↓', '←', '→'], text: 'סטיק: מזיז את האויב על המסך בכיוון ההפוך' }
+          : { keys: ['עכבר'], text: 'סטיק: מזיז את האויב על המסך בכיוון ההפוך' },
         { keys: ['W', 'S'], text: 'מצערת: דוחפים קדימה או אחורה, והיא נשארת במקום' },
         ...(sp.fire ? [{ keys: ['Space'], text: 'אש (אחרי נעילה)' }] : []),
       ];
@@ -616,6 +619,7 @@ function start(root, close, helpers, { fx, short }) {
 
   (async () => {
     reset(exercises[0]);
+    await chooseScheme(showCard, controls, fx);
     const levels = [];
     for (let i = 0; i < exercises.length; i++) {
       const sp = exercises[i];

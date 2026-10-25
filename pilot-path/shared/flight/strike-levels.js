@@ -9,27 +9,40 @@ import * as THREE from 'three';
 
 export const POINTS = { cone: 30, square: 20, circle: 10 };
 
-/** A stretch of low ground to fly over: the direction (degrees) with the lowest peaks within 12 km. */
+/** Routes are about this much longer than the distances written in the missions below. */
+export const ROUTE_SCALE = 1.6;
+export const MAX_AHEAD = 18500;
+export const scaleD = (d) => Math.min(d * ROUTE_SCALE, MAX_AHEAD);
+
+/**
+ * A long stretch of low ground to fly over: the direction (degrees) with the lowest peaks. The start sits at the
+ * back edge of the terrain so that a route can run about 19 km ahead.
+ */
 export function findRegion(height) {
+  const BACK = 9000;
   let best = null;
   for (let a = 0; a < 360; a += 10) {
     const rad = THREE.MathUtils.degToRad(a);
     const dir = { x: Math.sin(rad), z: -Math.cos(rad) };
     let peak = 0;
-    for (let d = -1500; d <= 12000; d += 250) {
-      for (const off of [-1800, 0, 1800]) {
-        peak = Math.max(peak, height(dir.x * d - dir.z * off, dir.z * d + dir.x * off));
+    for (let d = -1200; d <= 19000; d += 400) {
+      for (const off of [-2500, 0, 2500]) {
+        const x = dir.x * (d - BACK) - dir.z * off;
+        const z = dir.z * (d - BACK) + dir.x * off;
+        peak = Math.max(peak, height(x, z));
       }
     }
     if (!best || peak < best.peak) best = { heading: a, peak, dir };
   }
   const { dir } = best;
+  const start = { x: -dir.x * BACK, z: -dir.z * BACK };
   return {
     heading: best.heading,
     peak: best.peak,
     baseAlt: Math.max(900, best.peak + 420),
+    start,
     /** A point `d` meters ahead and `off` meters to the right of the start. */
-    at: (d, off = 0) => ({ x: dir.x * d - dir.z * off, z: dir.z * d + dir.x * off }),
+    at: (d, off = 0) => ({ x: start.x + dir.x * d - dir.z * off, z: start.z + dir.z * d + dir.x * off }),
   };
 }
 
@@ -76,23 +89,31 @@ const TRAINING = [
     },
   },
   {
-    title: 'המיני־מפה',
-    teaches: 'קריאת המיני־מפה',
-    brief: ['בפינה מיני־מפה. המשולש האפור זה אתה, והיא מסתובבת איתך כך שקדימה זה למעלה.', 'שלושת העיגולים הם קילומטר, שניים ושלושה. הנקודה הבאה מסומנת עליה. נווט לפיה.'],
+    title: 'מפה וציר ניווט',
+    teaches: 'סמלי המפה והציר',
+    brief: [
+      'לפני הטיסה תראה מפה עם סמלים (מסילה, כביש, שביל, נחל, קו מתח, יישוב) ועליה ציר הניווט שלך: הקו הירוק והנקודות המספריות. כל הסמלים נראים גם בנוף.',
+      'בפינה מיני־מפה: המשולש האפור זה אתה, והיא מסתובבת איתך. שלושת העיגולים הם קילומטר, שניים ושלושה.',
+      'אם תתרחק מהציר יישמע צליל סטייה חזק ומציק. תחזור לציר והוא ייפסק.',
+    ],
     make: (m) => {
-      m.nav([{ d: 2400, off: -900 }, { d: 4800, off: 900 }], { hideRings: true });
+      m.nav([{ d: 2600, off: -900 }, { d: 5200, off: 900 }, { d: 7600, off: -300 }], { hideRings: true, corridor: 800, map: 'learn' });
       m.limit = 80;
     },
   },
   {
     title: 'מטרה ראשונה: ריבוע כתום',
     teaches: 'נעילה וירי טיל',
-    brief: ['המטרה (ריבוע כתום) נראית גם בנוף וגם במיני־מפה. כוון את הכוונת אליה והחזק עד שהיא ננעלת, ואז שגר טיל.', 'לפי מועמד שעבר, מטרות שונות שוות ניקוד שונה: כאן מתחילים מהאמצעית.'],
+    brief: [
+      'המטרה (ריבוע כתום) נראית בנוף ובמיני־מפה. הכוונת (עיגול על המסך) לא זזה עם המטוס: מזיזים אותה בנפרד עם Q שמאלה, E ימינה, R למעלה ו־F למטה (או עם הכפתורים בתחתית).',
+      'הטה את המטוס לכיוון המטרה, העבר עליה את הכוונת והחזק עד שהיא ננעלת, ואז שגר טיל (רווח). אחוז הפגיעה על המסך הכי גבוה כשאתה בערך קילומטר מהמטרה.',
+      'לפי מועמד שעבר, מטרות שונות שוות ניקוד שונה: כאן מתחילים מהאמצעית.',
+    ],
     make: (m) => {
       m.target('square', 3200, 150);
       m.missiles = 3;
       m.destroy({ count: 1 });
-      m.limit = 70;
+      m.limit = 90;
     },
   },
   {
@@ -223,11 +244,14 @@ const TRAINING = [
     },
   },
   {
-    title: 'ניווט ותקיפה',
-    teaches: 'לשלב ניווט עם תקיפה',
-    brief: ['נקודה, מטרה ועוד נקודה. הכול באותה משימה.'],
+    title: 'ניווט מהזיכרון',
+    teaches: 'לשנן ציר ולטוס בלעדיו',
+    brief: [
+      'המפה תוצג עד 15 שניות ואז תיעלם. תשנן את הציר: כיוון, כמה זמן בכל קטע, ואילו סמלים עוברים לידו.',
+      'אחר כך טסים לפי הזיכרון. בדרך יש מטרה לתקיפה. אם תסטה מהציר יישמע צליל הסטייה.',
+    ],
     make: (m) => {
-      m.nav([{ d: 2400, off: 0 }, { d: 6600, off: 200 }]);
+      m.nav([{ d: 2600, off: 0 }, { d: 6800, off: 500 }], { memory: true, hideRings: true, corridor: 800, map: 'memory' });
       m.target('square', 4400, -900);
       m.missiles = 2;
       m.destroy({ count: 1 });
@@ -236,12 +260,15 @@ const TRAINING = [
   },
   {
     title: 'קריאת קשר',
-    teaches: 'להגיב להוראות בקשר',
-    brief: ['לפי אתרי הכנה יש רשת קשר, ותגובה שגויה עולה בנקודות. כשתקבל הוראה בקשר, בצע אותה: גובה או כיוון.'],
+    teaches: 'לשמוע ולאשר, ולא לענות לאחרים',
+    brief: [
+      'בקשר יש טייסים בשמות של פירות. סימן הקריאה שלך מופיע בפינה. לא צריך לבצע פעולות: רק לאשר.',
+      'אם אומרים רק את השם שלך: לחץ "קיבלתי קריאה" (Z). אם אומרים את השם שלך והוראה: לחץ "קיבלתי קריאה" וגם "שמעתי הוראה" (X). אם קוראים לפרי אחר: אל תלחץ על כלום.',
+    ],
     make: (m) => {
-      m.nav([{ d: 5200, off: 0 }]);
-      m.radio([{ at: 8, alt: m.region.baseAlt + 500 }, { at: 24, heading: 70 }]);
-      m.limit = 70;
+      m.nav([{ d: 5400, off: 0 }], { corridor: 900 });
+      m.radio([{ at: 8, kind: 'call' }, { at: 26, kind: 'order', instruction: 'עלה לגובה אלף וארבע מאות' }, { at: 46, kind: 'other' }, { at: 64, kind: 'order', instruction: 'פנה ימינה לכיוון שתיים שבעים' }]);
+      m.limit = 90;
     },
   },
   {
@@ -258,8 +285,8 @@ const TRAINING = [
       m.air({ d: 6200, off: 900 });
       m.missiles = 3;
       m.destroy({ points: 30 });
-      m.radio([{ at: 14, alt: m.region.baseAlt + 300 }]);
-      m.limit = 110;
+      m.radio([{ at: 16, kind: 'order', instruction: 'שמור גובה ותמשיך בציר' }, { at: 40, kind: 'other' }]);
+      m.limit = 115;
     },
   },
 ];
@@ -274,21 +301,43 @@ function seeded(i) {
   };
 }
 
+const INSTRUCTIONS = [
+  'עלה לגובה אלף וארבע מאות',
+  'פנה ימינה לכיוון שתיים שבעים',
+  'הקטן מהירות לשלוש מאות',
+  'שמור גובה ותמשיך בציר',
+  'ירד לגובה אלף ומאה',
+  'פנה שמאלה לכיוון שמונים',
+];
+export const FRUITS = ['אפרסק', 'ענבים', 'שזיף', 'תפוז', 'אבטיח', 'תות', 'מלון', 'נקטרינה'];
+
+function radioPlan(rnd, count, firstAt, gap) {
+  const out = [];
+  for (let n = 0; n < count; n++) {
+    const r = rnd();
+    out.push({ at: firstAt + n * gap + R(rnd() * 8), kind: r < 0.3 ? 'call' : r < 0.7 ? 'order' : 'other', instruction: INSTRUCTIONS[Math.floor(rnd() * INSTRUCTIONS.length)] });
+  }
+  return out;
+}
+
 function testMission(i, total) {
   const k = i / Math.max(1, total - 1); // 0 .. 1
   const rnd = seeded(i * 7 + 3);
   const side = () => (rnd() < 0.5 ? -1 : 1) * (350 + rnd() * 900);
+  let lastD = 0;
   return {
+    absLimit: true,
     title: `מבחן ${i + 1}`,
     teaches: k < 0.3 ? 'עדיין מסביר' : k < 0.7 ? 'עומס עולה' : 'כמעט בלי רגע לנשום',
     brief: [
       k < 0.15 ? 'המבחנים בנויים מהכול ביחד, והם הולכים ומתקשים.' : k < 0.5 ? 'יותר איומים, פחות זמן.' : k < 0.85 ? 'העומס גדל. כל התראה מחייבת תגובה.' : 'האחרונים. לפי אתרי הכנה, המטרה לעייף, אבל חייבים להמשיך.',
     ],
     make: (m) => {
-      const wps = 1 + Math.round(k * 3 + rnd());
+      const wps = 2 + Math.round(k * 2.5 + rnd());
       const pts = [];
-      for (let n = 0; n < wps; n++) pts.push({ d: 2200 + n * (1900 + rnd() * 500), off: side() * (0.6 + k * 0.6) });
-      m.nav(pts, { hideRings: k > 0.35, memory: k > 0.55 });
+      for (let n = 0; n < wps; n++) pts.push({ d: 2800 + n * (2200 + rnd() * 400), off: side() * (0.6 + k * 0.6) });
+      lastD = pts[pts.length - 1].d;
+      m.nav(pts, { hideRings: k > 0.3, memory: true, map: 'memory', corridor: Math.round(850 - k * 300) });
       const nTargets = 1 + Math.round(k * 3 * rnd() + k * 2);
       const kinds = ['circle', 'square', 'cone'];
       for (let n = 0; n < nTargets; n++) m.target(kinds[Math.floor(rnd() * 3)], 3000 + n * 1500 + rnd() * 600, side());
@@ -298,9 +347,10 @@ function testMission(i, total) {
       for (let n = 0; n < Math.round(k * 2.4 + rnd() * 0.8); n++) m.air({ d: 4600 + n * 2200, off: side() });
       m.missiles = Math.max(2, nTargets + 1 - Math.round(k * 1.5));
       m.destroy({ points: Math.round(20 + k * 30) });
-      if (k > 0.25) m.radio([{ at: 10 + R(rnd() * 8), alt: m.region.baseAlt + 150 + R(rnd() * 500) }, ...(k > 0.6 ? [{ at: 28 + R(rnd() * 10), heading: R(rnd() * 360) }] : [])]);
+      if (k > 0.12) m.radio(radioPlan(rnd, 1 + Math.round(k * 2.6 + rnd() * 0.8), 12 + R(rnd() * 6), 26));
       m.defense = { air: 6, ground: 6 };
-      m.limit = Math.round(105 - k * 25);
+      // About 130 m/s along the route, plus time for the maneuvers, tighter in the late tests.
+      m.limit = Math.round(scaleD(lastD) / 125 + 55 - k * 15);
     },
   };
 }

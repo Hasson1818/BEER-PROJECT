@@ -266,5 +266,10 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
     ui?.remove();
   }
 
-  return { state, poll, dispose, setInvert, setScheme, keys };
+  /** Lets a custom on-screen button hold one of the `hold` buttons down (pointer id of its own). */
+  const holdPointer = (id, value) => {
+    heldPointer[id] = value;
+  };
+
+  return { state, poll, dispose, setInvert, setScheme, holdPointer, keys };
 }

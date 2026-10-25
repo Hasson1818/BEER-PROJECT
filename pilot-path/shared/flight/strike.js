@@ -5,7 +5,8 @@ import { Plane, KT } from './plane.js';
 import { createFlightWorld, makeJet } from './world.js';
 import { createControls } from './input.js';
 import { chooseScheme } from './scheme.js';
-import { buildMissions, findRegion, POINTS } from './strike-levels.js';
+import { buildMissions, findRegion, POINTS, scaleD, FRUITS } from './strike-levels.js';
+import { makeFeatures, drawNavMap, addFeaturesToWorld, distToSegment, LEGEND, legendIcon } from './navmap.js';
 
 // The second simulator of ירפ״א ב׳ (navigation and shooting): a cockpit view over aerial-looking terrain, a heading
 // tape, a mini-map with three circles (1, 2, 3 km), air and ground threats with alarms and defenses, targets worth
@@ -19,6 +20,15 @@ const ORANGE = '#ffa229';
 const LIME = '#7bf15a';
 const TARGET_COLOR = { cone: CYAN, square: ORANGE, circle: LIME };
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// Aiming: the sight is moved with keys (Q/E/R/F) inside this box, in degrees from the nose. Lock needs the target inside
+// the sight for LOCK_T seconds. The hit chance is best near 1 km and falls on both sides: our numbers, not published.
+const RET_X = 16;
+const RET_Y = 11;
+const RET_RATE = 22;
+const LOCK_T = 1.2;
+const LOCK_ANGLE = 2.4;
+const hitChance = (d) => clamp(d < 1000 ? 0.95 - (1000 - d) * 0.0004 : 0.95 - (d - 1000) * 0.00022, 0.12, 0.95);
 const clamp = THREE.MathUtils.clamp;
 const rad = THREE.MathUtils.degToRad;
 
@@ -48,6 +58,8 @@ function start(root, close, helpers, { fx, short }) {
   bar.innerHTML = `
     <button class="st-def air" data-act="air" type="button"><span>הגנה אווירית</span><b>6</b><kbd>1</kbd><i></i></button>
     <button class="st-def gnd" data-act="ground" type="button"><span>הגנה קרקעית</span><b>6</b><kbd>2</kbd><i></i></button>
+    <div class="st-radio"><button class="st-rb" data-act="radioA" type="button"><span>קיבלתי קריאה</span><kbd>Z</kbd></button><button class="st-rb" data-act="radioB" type="button"><span>שמעתי הוראה</span><kbd>X</kbd></button></div>
+    <div class="st-ret" aria-label="כוונת"><button data-ret="retU" type="button" aria-label="כוונת למעלה"><kbd>R</kbd>▲</button><button data-ret="retL" type="button" aria-label="כוונת שמאלה"><kbd>Q</kbd>◀</button><button data-ret="retD" type="button" aria-label="כוונת למטה"><kbd>F</kbd>▼</button><button data-ret="retR" type="button" aria-label="כוונת ימינה"><kbd>E</kbd>▶</button></div>
     <button class="st-fire" data-act="missile" type="button"><span>שיגור טיל</span><b>13</b><kbd>Space</kbd></button>
     <div class="st-thr"><span>מצערת</span><div><i></i></div></div>`;
   stage.append(canvas3d, hudCanvas, flash, top, subtitle, overlay, bar, cards);
@@ -62,7 +74,8 @@ function start(root, close, helpers, { fx, short }) {
   const camera = new THREE.PerspectiveCamera(70, 1, 1, 32000);
   const world = createFlightWorld(scene, { mountains: 1, aerial: true, time: 'afternoon' });
   const region = findRegion(world.height);
-  const plane = new Plane({ position: V(0, region.baseAlt, 0), speed: 140, assist: 0.6 });
+  const plane = new Plane({ position: V(region.start.x, region.baseAlt, region.start.z), speed: 140, assist: 0.6 });
+  const ret = { x: 0, y: 0 }; // the sight, in degrees from the nose
   const hud = hudCanvas.getContext('2d');
   const sound = engine();
 
@@ -71,16 +84,29 @@ function start(root, close, helpers, { fx, short }) {
     air: () => useDefense('air'),
     ground: () => useDefense('ground'),
     missile: () => fireMissile(),
+    radioA: () => radioPress('a'),
+    radioB: () => radioPress('b'),
   };
   const controls = createControls(stage, {
     renderButtons: false,
     buttons: [
-      { id: 'missile', label: 'שיגור טיל', keys: ['Space', 'KeyF'], onPress: () => act.missile() },
+      { id: 'missile', label: 'שיגור טיל', keys: ['Space', 'Enter'], onPress: () => act.missile() },
+      { id: 'radioA', label: 'קיבלתי קריאה', keys: ['KeyZ'], onPress: () => act.radioA() },
+      { id: 'radioB', label: 'שמעתי הוראה', keys: ['KeyX'], onPress: () => act.radioB() },
+      { id: 'retL', label: 'כוונת שמאלה', keys: ['KeyQ'], hold: true },
+      { id: 'retR', label: 'כוונת ימינה', keys: ['KeyE'], hold: true },
+      { id: 'retU', label: 'כוונת למעלה', keys: ['KeyR'], hold: true },
+      { id: 'retD', label: 'כוונת למטה', keys: ['KeyF'], hold: true },
       { id: 'air', label: 'הגנה אווירית', keys: ['Digit1', 'Numpad1'], onPress: () => act.air() },
       { id: 'ground', label: 'הגנה קרקעית', keys: ['Digit2', 'Numpad2'], onPress: () => act.ground() },
     ],
   });
   for (const b of bar.querySelectorAll('button[data-act]')) b.addEventListener('click', () => act[b.dataset.act]());
+  for (const b of bar.querySelectorAll('button[data-ret]')) {
+    const id = b.dataset.ret;
+    b.addEventListener('pointerdown', () => controls.holdPointer(id, true));
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => controls.holdPointer(id, false));
+  }
 
   // ---------- The mission being flown ----------
   let M = null; // the mission state
@@ -101,6 +127,11 @@ function start(root, close, helpers, { fx, short }) {
       targets: [],
       decoys: [],
       radioList: [],
+      callsign: FRUITS[Math.floor(Math.random() * FRUITS.length)],
+      features: null,
+      offTime: 0,
+      offNow: false,
+      radioWrong: 0,
       limit: 90,
       missiles: 0,
       defense: { air: 6, ground: 6 },
@@ -126,29 +157,30 @@ function start(root, close, helpers, { fx, short }) {
         this.objectives.push({ type: 'hold', ...o, t: 0, done: false });
       },
       nav(points, opts = {}) {
-        this.objectives.push({ type: 'nav', points: points.map((p) => ({ ...region.at(p.d, p.off), alt: region.baseAlt + 150 })), i: 0, done: false, ...opts });
+        const pts = points.map((p) => ({ ...region.at(scaleD(p.d), p.off), alt: region.baseAlt + 150 }));
+        this.objectives.push({ type: 'nav', points: pts, route: [region.start, ...pts], i: 0, done: false, ...opts });
       },
       destroy(o) {
         this.objectives.push({ type: 'destroy', ...o, done: false });
       },
       target(kind, d, off) {
-        const p = region.at(d, off);
+        const p = region.at(scaleD(d), off);
         this.targets.push({ kind, x: p.x, z: p.z, destroyed: false });
       },
       decoy(d, off) {
-        const p = region.at(d, off);
+        const p = region.at(scaleD(d), off);
         this.decoys.push({ x: p.x, z: p.z, destroyed: false });
       },
       site(d, off) {
-        const p = region.at(d, off);
+        const p = region.at(scaleD(d), off);
         this.sites.push({ x: p.x, z: p.z, fireT: 2.5, alive: true });
       },
       vehicle(d, off, { heading = 90 } = {}) {
-        const p = region.at(d, off);
+        const p = region.at(scaleD(d), off);
         this.vehicles.push({ x: p.x, z: p.z, heading: rad(region.heading + heading), speed: 7, fireT: 2.5, alive: true });
       },
       air(o) {
-        const p = region.at(o.d, o.off ?? 0);
+        const p = region.at(scaleD(o.d), o.off ?? 0);
         this.planes.push({ x: p.x, z: p.z, y: region.baseAlt + 100 + (o.dy ?? 0), heading: rad(region.heading + 180), speed: 140, fireT: 3, mode: 'chase' });
       },
       radio(list) {
@@ -156,6 +188,17 @@ function start(root, close, helpers, { fx, short }) {
       },
     };
     spec.make(m);
+    if (!spec.absLimit) m.limit = Math.round(m.limit * 1.75); // the routes are longer than the numbers written in the mission
+    // The map features (rail, road, stream...) around the first navigation route.
+    const nav = m.objectives.find((o) => o.type === 'nav');
+    if (nav) {
+      let seed = 7;
+      for (const ch of String(spec.id ?? spec.title)) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+      m.features = makeFeatures(nav.route, seed);
+    }
+    for (const r of m.radioList) {
+      if (r.kind === 'other') r.fruit = FRUITS.filter((f) => f !== m.callsign)[Math.floor(Math.random() * (FRUITS.length - 1))];
+    }
     return m;
   }
 
@@ -226,6 +269,7 @@ function start(root, close, helpers, { fx, short }) {
       mesh.position.set(a.x, a.y, a.z);
       a.mesh = addMesh(mesh);
     }
+    if (m.features) addFeaturesToWorld(m.features, h, addMesh);
     for (const o of m.objectives) {
       if (o.type === 'nav') {
         o.rings = o.points.map((p) => {
@@ -268,19 +312,28 @@ function start(root, close, helpers, { fx, short }) {
       return;
     }
     const L = M.lock;
-    if (!L.target || L.t < 1) {
-      say('אין נעילה: החזק את הכוונת על מטרה', '#ffb0b0', 1400);
+    if (!L.target || L.t < LOCK_T) {
+      say('אין נעילה: העבר את הכוונת על מטרה והחזק', '#ffb0b0', 1400);
       fx?.bad?.();
       return;
     }
     M.missiles--;
     fx?.gearThump?.();
     const m = world.addMissile(plane.position.clone().add(V(0, -4, 0)), L.target);
-    m.velocity.copy(plane.forwardVector(V(0, 0, 0))).multiplyScalar(260);
+    m.velocity.copy(reticleDir(V(0, 0, 0))).multiplyScalar(260);
     m.speed = 420;
     m.homing = L.target;
+    m.chance = L.chance ?? 0.5;
+    m.willHit = Math.random() < m.chance;
     missileList.push(m);
     say('טיל שוגר', GREEN, 1000);
+  }
+
+  /** The direction the sight points at: the nose turned by the sight's offset. */
+  const eulerTmp = new THREE.Euler(0, 0, 0, 'YXZ');
+  function reticleDir(out) {
+    eulerTmp.set(rad(ret.y), -rad(ret.x), 0, 'YXZ');
+    return out.set(0, 0, -1).applyEuler(eulerTmp).applyQuaternion(plane.quaternion);
   }
 
   function say(text, color = GREEN, ms = 2600) {
@@ -295,6 +348,49 @@ function start(root, close, helpers, { fx, short }) {
     subtitle._t = setTimeout(() => subtitle.classList.remove('on'), 4600);
     fx?.radio?.(1.2);
     speak(text, { rate: 1.05 });
+  }
+
+  // ---------- The radio ----------
+  // Fruit call signs. Only the acknowledgement counts, nothing has to be flown: your own name alone = "received the
+  // call"; your name and an instruction = both buttons; another fruit = press nothing.
+  function radioFail(text) {
+    M.radioMiss++;
+    say(text, '#ffb0b0', 1800);
+    fx?.bad?.();
+  }
+  function radioPress(which) {
+    if (paused || !M || M.finished) return;
+    fx?.click?.();
+    const rn = M.radioNow;
+    if (!rn || rn.done) {
+      if (M.t - (M.radioEnd ?? -99) > 2.5) radioFail('לחצת בלי שקראו לך');
+      return;
+    }
+    if (rn.kind === 'other') {
+      rn.done = true;
+      M.radioNow = null;
+      M.radioEnd = M.t;
+      radioFail(`הקריאה הייתה ל${rn.fruit}, לא אליך`);
+    } else if (rn.kind === 'call') {
+      if (which === 'a') {
+        rn.done = true;
+        M.radioNow = null;
+        M.radioEnd = M.t;
+        M.radioOk++;
+        fx?.ok?.();
+        say('✓ קלט', GREEN, 900);
+      } else radioFail('בקריאה בלבד אין הוראה');
+    } else {
+      rn[which] = true;
+      if (rn.a && rn.b) {
+        rn.done = true;
+        M.radioNow = null;
+        M.radioEnd = M.t;
+        M.radioOk++;
+        fx?.ok?.();
+        say('✓ קלט והוראה', GREEN, 900);
+      } else say(which === 'a' ? 'קריאה התקבלה. מחכה לאישור ההוראה' : 'הוראה התקבלה. מחכה לאישור הקריאה', CYAN, 1200);
+    }
   }
 
   // ---------- Threat bookkeeping ----------
@@ -312,13 +408,26 @@ function start(root, close, helpers, { fx, short }) {
   // the air; within 2 km for the ground, starting to fire at 1 km).
   function alarms(dt) {
     if (!M) return;
+    // Off the navigation axis: a harsher, louder, more annoying sound than the threat alarms.
+    const navObj = M.objectives.find((o) => o.type === 'nav' && !o.done && o.corridor);
+    M.offNow = Boolean(navObj?.off);
+    M.offT = (M.offT ?? 0) - dt;
+    if (M.offNow) {
+      M.offTime += dt;
+      if (M.offT <= 0) {
+        M.offT = 0.2;
+        M.offFlip = !M.offFlip;
+        tone(M.offFlip ? 310 : 520, 0.19, { type: 'square', volume: 0.24 });
+        tone(M.offFlip ? 620 : 233, 0.19, { type: 'sawtooth', volume: 0.1 });
+      }
+    }
     const { airMin, groundMin } = threatInfo(M);
     let kind = null;
     if (airMin < 2000 || groundMin < 2000) kind = 'danger';
     else if (airMin < 3000) kind = 'far';
     M.alarm = kind;
     M.alarmT -= dt;
-    if (kind && M.alarmT <= 0) {
+    if (kind && !M.offNow && M.alarmT <= 0) {
       if (kind === 'far') {
         M.alarmT = 0.17;
         tone(1650, 0.11, { type: 'square', volume: 0.1 });
@@ -424,8 +533,12 @@ function start(root, close, helpers, { fx, short }) {
       } else if (o.type === 'nav') {
         const p = o.points[o.i];
         const d = Math.hypot(plane.position.x - p.x, plane.position.z - p.z);
+        if (o.corridor) {
+          const from = o.i === 0 ? o.route[0] : o.points[o.i - 1];
+          o.off = distToSegment(plane.position.x, plane.position.z, from, p) > o.corridor;
+        }
         o.rings.forEach((r, k) => {
-          const near = d < 1500 && k === o.i;
+          const near = d < (o.memory ? 700 : 1500) && k === o.i;
           r.visible = k === o.i && (!o.hideRings || near);
           r.userData.active = k === o.i;
         });
@@ -446,33 +559,22 @@ function start(root, close, helpers, { fx, short }) {
     for (const r of M.radioList) {
       if (!r.started && M.t >= r.at) {
         r.started = true;
-        r.left = 14;
+        r.left = r.kind === 'order' ? 11 : r.kind === 'call' ? 8 : 6.5;
         M.radioNow = r;
-        const text = r.alt !== undefined ? `כחול אחד, גובה ${Math.round(r.alt / 10) * 10} מטר.` : `כחול אחד, כיוון ${String(Math.round(r.heading)).padStart(3, '0')}.`;
-        radioSay(text);
+        const who = r.kind === 'other' ? r.fruit : M.callsign;
+        const withOrder = r.kind === 'order' || (r.kind === 'other' && r.instruction && r.at % 2 === 0);
+        radioSay(withOrder ? `${who}, ${r.instruction ?? 'שמור על הציר'}.` : `${who}.`);
       }
     }
     const rn = M.radioNow;
     if (rn && !rn.done) {
       rn.left -= dt;
-      const altOk = rn.alt !== undefined && Math.abs(plane.position.y - rn.alt) < 120;
-      const headOk = rn.heading !== undefined && Math.abs(((plane.heading - rn.heading + 540) % 360) - 180) < 12;
-      if (altOk || headOk) {
-        rn.held = (rn.held ?? 0) + dt;
-        if (rn.held > 1.2) {
-          rn.done = true;
-          M.radioOk++;
-          M.radioNow = null;
-          fx?.ok?.();
-          say('קלט', GREEN, 900);
-        }
-      } else rn.held = 0;
-      if (!rn.done && rn.left <= 0) {
+      if (rn.left <= 0) {
         rn.done = true;
-        M.radioMiss++;
         M.radioNow = null;
-        say('ההוראה בקשר לא בוצעה', '#ffb0b0', 1600);
-        fx?.bad?.();
+        M.radioEnd = M.t;
+        if (rn.kind === 'other') M.radioOk++; // you correctly did nothing
+        else radioFail(rn.kind === 'call' ? 'לא אישרת את הקריאה' : 'לא אישרת את הקריאה וההוראה');
       }
     }
     if (allDone && M.objectives.length && M.radioList.every((r) => r.done || !r.started)) finishMission({ ok: true });
@@ -481,9 +583,9 @@ function start(root, close, helpers, { fx, short }) {
   // ---------- Lock-on and missiles ----------
   function updateLock(dt) {
     const L = M.lock;
-    const f = plane.forwardVector(V(0, 0, 0));
+    const f = reticleDir(V(0, 0, 0));
     let best = null;
-    let bestAng = rad(9);
+    let bestAng = rad(LOCK_ANGLE);
     for (const t of M.targets) {
       if (t.destroyed) continue;
       const to = V(t.x - plane.position.x, t.y - plane.position.y, t.z - plane.position.z);
@@ -511,12 +613,13 @@ function start(root, close, helpers, { fx, short }) {
       L.target = best;
       L.t = 0;
     }
-    if (best && L.t >= 1 && !L.beeped) {
+    if (best) L.chance = hitChance(Math.hypot(best.x - plane.position.x, best.y - plane.position.y, best.z - plane.position.z));
+    if (best && L.t >= LOCK_T && !L.beeped) {
       L.beeped = true;
       fx?.lock?.(1);
       tone(1800, 0.12, { volume: 0.07 });
     }
-    if (!best || L.t < 1) L.beeped = false;
+    if (!best || L.t < LOCK_T) L.beeped = false;
   }
 
   function updateMissiles(dt) {
@@ -545,7 +648,11 @@ function start(root, close, helpers, { fx, short }) {
         world.puff(m.group.position.clone().add(V(0, 30, 0)), { size: 200, life: 2.6, color: '#444', opacity: 0.7 });
         fx?.explosion?.();
         shake = Math.max(shake, 0.25);
-        if (M.decoys.includes(tgt)) {
+        if (!m.willHit) {
+          M.misfires++;
+          say(`הטיל החטיא (סיכוי ${Math.round(m.chance * 100)}%)`, '#ffb0b0', 2000);
+          fx?.bad?.();
+        } else if (M.decoys.includes(tgt)) {
           tgt.destroyed = true;
           tgt.mesh.visible = false;
           M.decoyHits++;
@@ -587,7 +694,7 @@ function start(root, close, helpers, { fx, short }) {
       frac = (done + partial.reduce((a, b) => a + b, 0) * 0.7) / objs.length;
     }
     let score = frac * (M.finished?.ok ? 1 : 0.85);
-    score -= M.hits * 0.1 + M.misfires * 0.04 + M.decoyHits * 0.2 + M.wastedDefense * 0.03 + M.radioMiss * 0.06;
+    score -= M.hits * 0.1 + M.misfires * 0.04 + M.decoyHits * 0.2 + M.wastedDefense * 0.03 + M.radioMiss * 0.06 + Math.min(0.3, M.offTime * 0.012);
     if (M.finished && M.finished.ok === false && M.finished.reason === 'המטוס שלך הופל') score *= 0.6;
     return clamp(score, 0, 1);
   }
@@ -601,6 +708,9 @@ function start(root, close, helpers, { fx, short }) {
       plane.update(dt, { x: 0, y: 0 }, 0);
     } else {
       M.t += dt;
+      const hd = controls.state.held;
+      ret.x = clamp(ret.x + ((hd.retR ? 1 : 0) - (hd.retL ? 1 : 0)) * RET_RATE * dt, -RET_X, RET_X);
+      ret.y = clamp(ret.y + ((hd.retU ? 1 : 0) - (hd.retD ? 1 : 0)) * RET_RATE * dt, -RET_Y, RET_Y);
       plane.update(dt, input.stick, input.throttleInput);
       const ground = world.height(plane.position.x, plane.position.z);
       if (plane.position.y - ground < 14) {
@@ -754,14 +864,49 @@ function start(root, close, helpers, { fx, short }) {
     hud.textAlign = 'left';
     hud.fillText('גובה', cx + half + 14, cy + 2);
     hud.restore();
-    // Seeker box (dashed) and the lock.
+    reticle();
+  }
+
+  /** The sight: moved with Q/E/R/F; yellow and solid when locked, with the hit chance. */
+  const sightPos = V(0, 0, 0);
+  function reticle() {
+    reticleDir(sightPos).multiplyScalar(1500).add(camera.position);
+    const p = toScreen(sightPos);
+    if (p.behind) return;
     const L = M?.lock;
+    const locked = Boolean(L?.target && L.t >= LOCK_T);
+    const color = locked ? '#ffe45c' : L?.target ? '#ffffff' : 'rgba(255,255,255,0.85)';
     hud.save();
-    hud.lineWidth = 2;
-    hud.setLineDash(L?.t >= 1 ? [] : [5, 4]);
-    hud.strokeStyle = L?.t >= 1 ? '#ffe45c' : 'rgba(255,255,255,0.85)';
-    const bs = 24;
-    hud.strokeRect(cx - bs, cy + up * 0.2 - bs, bs * 2, bs * 2);
+    hud.lineWidth = 2.5;
+    hud.strokeStyle = color;
+    hud.fillStyle = color;
+    hud.shadowColor = '#000';
+    hud.shadowBlur = 4;
+    hud.beginPath();
+    hud.arc(p.x, p.y, 24, 0, Math.PI * 2);
+    hud.stroke();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      hud.beginPath();
+      hud.moveTo(p.x + dx * 24, p.y + dy * 24);
+      hud.lineTo(p.x + dx * 36, p.y + dy * 36);
+      hud.stroke();
+    }
+    hud.beginPath();
+    hud.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    hud.fill();
+    if (L?.target && !locked) {
+      hud.strokeStyle = '#ffe45c';
+      hud.lineWidth = 4;
+      hud.beginPath();
+      hud.arc(p.x, p.y, 31, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, L.t / LOCK_T));
+      hud.stroke();
+    }
+    if (L?.target) {
+      hud.font = '800 15px ui-monospace, Menlo, monospace';
+      hud.textAlign = 'center';
+      hud.fillStyle = locked ? '#ffe45c' : '#ffffff';
+      hud.fillText(`${locked ? 'נעול · ' : ''}פגיעה ${Math.round((L.chance ?? 0) * 100)}%`, p.x, p.y + 56);
+    }
     hud.restore();
   }
 
@@ -800,9 +945,9 @@ function start(root, close, helpers, { fx, short }) {
     }
     if (extra.lock) {
       const L = M.lock;
-      hud.strokeStyle = L.t >= 1 ? '#ffe45c' : '#fff';
+      hud.strokeStyle = L.t >= LOCK_T ? '#ffe45c' : '#fff';
       hud.beginPath();
-      hud.arc(p.x, p.y, 18, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, L.t));
+      hud.arc(p.x, p.y, 18, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, L.t / LOCK_T));
       hud.stroke();
     }
     hud.restore();
@@ -887,11 +1032,19 @@ function start(root, close, helpers, { fx, short }) {
         tri(p.x, p.y, a.heading - hdg, 11, 3.6, RED);
       }
       for (const o of M.objectives) {
-        if (o.type === 'nav' && !o.done) {
+        if (o.type === 'nav' && !o.done && !o.memory) {
           const p = o.points[o.i];
           const pt = rel(p.x, p.z);
           hud.strokeStyle = '#1c7a38';
           hud.lineWidth = 2;
+          hud.beginPath();
+          hud.moveTo(cx, cy);
+          hud.lineTo(pt.x, pt.y);
+          for (let k = o.i + 1; k < o.points.length; k++) {
+            const q = rel(o.points[k].x, o.points[k].z);
+            hud.lineTo(q.x, q.y);
+          }
+          hud.stroke();
           hud.beginPath();
           hud.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
           hud.stroke();
@@ -941,6 +1094,11 @@ function start(root, close, helpers, { fx, short }) {
       hud.shadowColor = '#000';
       hud.shadowBlur = 5;
       hud.fillText(`${left}`, 16, h - 88);
+      if (M.radioList.length) {
+        hud.font = '800 14px Heebo, sans-serif';
+        hud.fillStyle = '#ffe45c';
+        hud.fillText(`סימן הקריאה שלך: ${M.callsign}`, 16, h - 112);
+      }
       hud.textAlign = 'center';
       hud.font = '700 15px Heebo, sans-serif';
       hud.fillStyle = '#e8ffe0';
@@ -961,6 +1119,17 @@ function start(root, close, helpers, { fx, short }) {
       hud.shadowColor = '#000';
       hud.shadowBlur = 8;
       hud.fillText(message.text, w / 2, h * 0.3);
+      hud.restore();
+    }
+    // Off the navigation axis.
+    if (M?.offNow && Math.floor(time * 5) % 2 === 0) {
+      hud.save();
+      hud.font = '800 26px Heebo, sans-serif';
+      hud.textAlign = 'center';
+      hud.fillStyle = '#ff3b3b';
+      hud.shadowColor = '#000';
+      hud.shadowBlur = 8;
+      hud.fillText('סטייה מהציר! חזור לציר הניווט', w / 2, 134);
       hud.restore();
     }
     // Alarm banner.
@@ -1078,6 +1247,7 @@ function start(root, close, helpers, { fx, short }) {
       const list = el('ul', 'pp-list');
       for (const line of spec.brief) list.append(el('li', '', line));
       card.append(list);
+      if (M.radioList.length) card.append(el('p', 'pp-sub', `סימן הקריאה שלך בקשר: ${M.callsign}`));
       const keys = el('div', 'pp-keys');
       for (const k of [
         controls.state.scheme === 'keys' && !controls.state.touch
@@ -1086,6 +1256,8 @@ function start(root, close, helpers, { fx, short }) {
         { keys: ['W', 'S'], text: 'מצערת: יותר או פחות מהירות' },
         { keys: ['Space'], text: 'שיגור טיל (אחרי נעילה)' },
         { keys: ['1', '2'], text: 'הגנה אווירית, הגנה קרקעית' },
+        { keys: ['Q', 'E', 'R', 'F'], text: 'כוונת: שמאלה, ימינה, למעלה, למטה (לא זזה עם המטוס)' },
+        { keys: ['Z', 'X'], text: 'קשר: קיבלתי קריאה, שמעתי הוראה' },
       ]) {
         const row = el('div', 'pp-key-item');
         const caps = el('span', 'pp-caps');
@@ -1111,7 +1283,9 @@ function start(root, close, helpers, { fx, short }) {
       if (M.hits) bits.push(`פגיעות בך: ${M.hits}`);
       if (M.decoyHits) bits.push(`פגיעות במטרות דמה: ${M.decoyHits}`);
       if (M.wastedDefense) bits.push(`הגנות שהופעלו בלי צורך: ${M.wastedDefense}`);
-      if (M.radioMiss) bits.push(`הוראות קשר שלא בוצעו: ${M.radioMiss}`);
+      if (M.radioMiss) bits.push(`טעויות בקשר: ${M.radioMiss}`);
+      if (M.offTime > 1) bits.push(`זמן מחוץ לציר: ${Math.round(M.offTime)} שנ׳`);
+      if (M.misfires) bits.push(`טילים שהחטיאו: ${M.misfires}`);
       if (bits.length) card.append(el('p', 'pp-sub', bits.join(' · ')));
       card.append(el('p', 'pp-sub', `ציון למשימה: ${Math.round(score * 100)}%`));
       const row = el('div', 'pp-actions');
@@ -1134,7 +1308,7 @@ function start(root, close, helpers, { fx, short }) {
     short = chosenShort;
     missions = buildMissions({ short });
     const levels = [];
-    for (let i = 0; i < missions.length; i++) {
+    for (let i = import.meta.env.DEV ? (window.__strikeFrom ?? 0) : 0; i < missions.length; i++) {
       const spec = missions[i];
       titleEl.textContent = spec.title;
       dots.innerHTML = '';
@@ -1148,7 +1322,9 @@ function start(root, close, helpers, { fx, short }) {
         paused = true;
         clearMission();
         M = newMission(spec);
-        plane.position.set(0, M.region.baseAlt, 0);
+        plane.position.set(M.region.start.x, M.region.baseAlt, M.region.start.z);
+        ret.x = 0;
+        ret.y = 0;
         plane.quaternion.setFromAxisAngle(V(0, 1, 0), -rad(M.region.heading));
         plane.speed = 140;
         plane.throttle = 0.45;
@@ -1158,7 +1334,8 @@ function start(root, close, helpers, { fx, short }) {
         for (let k = 0; k < 15; k++) step(1 / 30);
         await briefCard(spec, i, attempt, missions.length);
         // The map for a few seconds, like the real thing (up to 15 s), in the harder tests.
-        if (spec.phase === 'test' && M.objectives.some((o) => o.type === 'nav' && o.memory)) await mapPreview();
+        const mapObj = M.objectives.find((o) => o.type === 'nav' && o.map);
+        if (mapObj) await mapPreview(mapObj.map);
         paused = false;
         await new Promise((resolve) => {
           ctxFinish = resolve;
@@ -1193,90 +1370,103 @@ function start(root, close, helpers, { fx, short }) {
     close(out);
   })();
 
-  /** The 2D map shown before a test: where the points, threats and targets are (it disappears). */
-  function mapPreview() {
+  /**
+   * The map: 'learn' = with a legend and no time limit (training); 'memory' = up to 15 seconds, then it is gone and
+   * you fly the route you memorized.
+   */
+  function mapPreview(mode) {
     return showCard((card, done) => {
-      card.append(el('p', 'pp-eyebrow', 'מפה'), el('h2', 'pp-title', 'זכור את המפה'));
-      card.append(el('p', 'pp-sub', 'לפי אתרי הכנה, המפה מוצגת עד 15 שניות ואז נעלמת. מנווטים מהזיכרון.'));
+      const nav = M.objectives.find((o) => o.type === 'nav');
+      const learn = mode === 'learn';
+      card.append(el('p', 'pp-eyebrow', learn ? 'לימוד ניווט' : 'ניווט מהזיכרון'), el('h2', 'pp-title', learn ? 'המפה, הסמלים וציר הניווט' : 'שנן את הציר'));
+      card.append(
+        el(
+          'p',
+          'pp-sub',
+          learn
+            ? 'הקו הירוק הוא ציר הניווט, והמספרים הם סדר הנקודות. כל סמל שבמפה נראה גם בנוף, ולכן הם עוזרים לזהות איפה אתה. ככה זה נראה: מפה סכמטית שלנו, כי הסמלים האמיתיים לא פורסמו.'
+            : 'לפי אתרי הכנה, המפה מוצגת עד 15 שניות ואז נעלמת. מנווטים מהזיכרון, וסטייה מהציר מפעילה צליל חזק.',
+        ),
+      );
+      const wrap = el('div', 'st-mapwrap');
       const c = document.createElement('canvas');
-      c.width = 440;
-      c.height = 440;
       c.className = 'st-map';
-      card.append(c);
+      wrap.append(c);
+      const toMap = drawNavMap(c, { route: nav.route, features: M.features ?? [] });
       const g = c.getContext('2d');
-      g.fillStyle = '#dcd6c4';
-      g.fillRect(0, 0, 440, 440);
-      const scale = 200 / 8200;
-      const pt = (x, z) => [220 + (x * scale) * 1.0 - 0, 400 + z * scale * 1.0];
-      // The map is north-up: x east, z south, the start at the bottom center.
-      const mp = (x, z) => [220 + x * scale, 410 + z * scale];
-      g.strokeStyle = '#444';
-      g.lineWidth = 2;
-      for (const o of M.objectives) {
-        if (o.type !== 'nav') continue;
-        g.strokeStyle = '#1c7a38';
-        g.beginPath();
-        g.moveTo(...mp(0, 0));
-        o.points.forEach((p) => g.lineTo(...mp(p.x, p.z)));
-        g.stroke();
-        o.points.forEach((p, i) => {
-          const [x, y] = mp(p.x, p.z);
-          g.fillStyle = '#1c7a38';
-          g.beginPath();
-          g.arc(x, y, 9, 0, Math.PI * 2);
-          g.fill();
-          g.fillStyle = '#fff';
-          g.font = '700 12px Heebo, sans-serif';
-          g.textAlign = 'center';
-          g.fillText(String(i + 1), x, y + 4);
-        });
-      }
+      g.save();
       for (const t of M.targets) {
-        const [x, y] = mp(t.x, t.z);
+        const q = toMap(t);
         g.fillStyle = TARGET_COLOR[t.kind];
-        if (t.kind === 'square') g.fillRect(x - 6, y - 6, 12, 12);
-        else {
+        g.strokeStyle = '#222';
+        g.lineWidth = 1.5;
+        if (t.kind === 'square') {
+          g.fillRect(q.x - 6, q.y - 6, 12, 12);
+          g.strokeRect(q.x - 6, q.y - 6, 12, 12);
+        } else {
           g.beginPath();
-          g.arc(x, y, 6, 0, Math.PI * 2);
+          if (t.kind === 'cone') {
+            g.moveTo(q.x, q.y - 8);
+            g.lineTo(q.x - 7, q.y + 6);
+            g.lineTo(q.x + 7, q.y + 6);
+            g.closePath();
+          } else g.arc(q.x, q.y, 6, 0, Math.PI * 2);
           g.fill();
+          g.stroke();
         }
       }
-      for (const s of [...M.sites, ...M.vehicles]) {
-        const [x, y] = mp(s.x, s.z);
+      for (const e of [...M.sites, ...M.vehicles]) {
+        const q = toMap(e);
         g.fillStyle = RED;
-        g.fillRect(x - 5, y - 5, 10, 10);
+        g.fillRect(q.x - 5, q.y - 5, 10, 10);
       }
       for (const a of M.planes) {
-        const [x, y] = mp(a.x, a.z);
+        const q = toMap(a);
         g.fillStyle = RED;
         g.beginPath();
-        g.moveTo(x, y - 9);
-        g.lineTo(x - 4, y + 7);
-        g.lineTo(x + 4, y + 7);
+        g.moveTo(q.x, q.y - 9);
+        g.lineTo(q.x - 4, q.y + 7);
+        g.lineTo(q.x + 4, q.y + 7);
         g.fill();
       }
-      g.fillStyle = '#555';
-      g.beginPath();
-      g.moveTo(...mp(0, 0));
-      g.lineTo(...mp(-250, 400));
-      g.lineTo(...mp(250, 400));
-      g.fill();
-      void pt;
+      g.restore();
+      card.append(wrap);
+      if (learn) {
+        const legend = el('div', 'st-legend');
+        for (const item of LEGEND) {
+          const row = el('div', 'st-legend-row');
+          row.append(legendIcon(item.id), el('span', '', `${item.label} · ${item.note}`));
+          legend.append(row);
+        }
+        card.append(legend);
+      }
       const left = el('p', 'pp-note', '');
-      card.append(left);
-      const go = button('הבנתי');
+      const bar = el('div', 'st-count');
+      const fill = el('i');
+      bar.append(fill);
+      if (!learn) card.append(bar, left);
+      const go = button(learn ? 'הבנתי, ממשיכים' : 'זכרתי');
       const row = el('div', 'pp-actions');
       row.append(go);
       card.append(row);
-      let n = 15;
-      left.textContent = `המפה תיעלם בעוד ${n} שניות`;
-      const timer = setInterval(() => {
-        n--;
-        left.textContent = `המפה תיעלם בעוד ${n} שניות`;
-        if (n <= 0) go.click();
-      }, 1000);
+      go.focus();
+      let timer = 0;
+      if (!learn) {
+        let n = 15;
+        const tick = () => {
+          left.textContent = `המפה תיעלם בעוד ${n} שניות`;
+          fill.style.width = `${(n / 15) * 100}%`;
+        };
+        tick();
+        timer = setInterval(() => {
+          n--;
+          tick();
+          if (n <= 0) go.click();
+        }, 1000);
+      }
       go.addEventListener('click', () => {
         clearInterval(timer);
+        fx?.click?.();
         done();
       });
     });
@@ -1316,7 +1506,22 @@ function injectStyle() {
     .st-cards { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(4,8,16,.7); backdrop-filter: blur(3px); z-index: 9; }
     .st-cards.on { display: flex; }
     .st-card { width: min(700px, 100%); max-height: 100%; overflow: auto; padding: 22px 26px; border-radius: 18px; background: rgba(14,24,44,.96); color: var(--pp-text); box-shadow: inset 0 0 0 1px var(--pp-line), 0 30px 80px rgba(0,0,0,.6); }
-    .st-map { display: block; width: min(100%, 420px); margin: 10px auto; border-radius: 10px; box-shadow: 0 0 0 3px #0a1120; }
+    .st-map { display: block; width: min(100%, 460px); max-height: 52vh; aspect-ratio: 1 / 1; margin: 10px auto; border-radius: 10px; box-shadow: 0 0 0 3px #0a1120; }
+    .st-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 4px 14px; margin: 8px 0; font: 600 .85rem 'Heebo', sans-serif; }
+    .st-legend-row { display: flex; align-items: center; gap: 10px; }
+    .st-count { height: 6px; border-radius: 3px; background: rgba(255,255,255,.15); overflow: hidden; }
+    .st-count i { display: block; height: 100%; background: #ffe45c; transition: width 1s linear; }
+    .st-radio { display: flex; gap: 6px; }
+    .st-bar .st-rb { background: rgba(255,255,255,.65); box-shadow: inset 0 0 0 1px #888; }
+    .st-bar .st-rb:active { background: #ffe45c; }
+    .st-ret { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 26px); gap: 3px; align-self: center; direction: ltr; }
+    .st-ret button { min-height: 0; padding: 0; justify-content: center; gap: 2px; background: rgba(255,255,255,.65); box-shadow: inset 0 0 0 1px #888; font-size: .7rem; }
+    .st-ret button kbd { font-size: .55rem; padding: 0 3px; }
+    .st-ret [data-ret=retU] { grid-column: 2; grid-row: 1; }
+    .st-ret [data-ret=retL] { grid-column: 1; grid-row: 2; }
+    .st-ret [data-ret=retD] { grid-column: 2; grid-row: 2; }
+    .st-ret [data-ret=retR] { grid-column: 3; grid-row: 2; }
+    .st-ret button:active { background: #ffe45c; }
     .st-stage .fl-pad, .st-stage .fl-throttle { bottom: 70px; }
     @media (max-width: 720px) { .st-bar { flex-wrap: wrap; } .st-bar button { min-height: 44px; } }
   `;

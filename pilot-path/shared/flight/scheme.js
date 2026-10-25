@@ -4,10 +4,11 @@ import { SCHEMES } from './input.js';
 /**
  * The card shown before a simulator: how will you fly? Only the chosen way works afterwards:
  * with the keyboard alone the mouse does nothing to the plane, and with the mouse the arrows do nothing.
- * `showCard(build)` is the simulator's own card function. Phones keep their on-screen stick and skip this.
+ * `showCard(build)` is the simulator's own card function. Phones and tablets keep their on-screen stick and skip this.
  */
 export function chooseScheme(showCard, controls, fx) {
-  if (controls.state.touch) return Promise.resolve(controls.state.scheme);
+  // Only a device with no mouse at all (a phone or a tablet) skips this; a touchscreen laptop still asks.
+  if (!window.matchMedia('(any-pointer: fine)').matches) return Promise.resolve(controls.state.scheme);
   return showCard((card, done) => {
     card.append(el('p', 'pp-eyebrow', 'בקרים'), el('h2', 'pp-title', 'איך תטיס?'));
     card.append(el('p', 'pp-sub', 'בוחרים דרך אחת. הדרך השנייה לא תפריע: עם מקלדת בלבד העכבר לא מזיז את המטוס.'));

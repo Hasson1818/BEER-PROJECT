@@ -7,7 +7,9 @@ import * as THREE from 'three';
 export const KT = 1.94384; // m/s -> knots
 export const G = 9.81;
 
-const FORWARD = new THREE.Vector3(0, 0, -1);
+const SAG = -THREE.MathUtils.degToRad(1.5); // resting pitch of a plane with the stick released
+
+const FORWARD =new THREE.Vector3(0, 0, -1);
 const UP = new THREE.Vector3(0, 1, 0);
 const RIGHT = new THREE.Vector3(1, 0, 0);
 
@@ -84,7 +86,9 @@ export class Plane {
       const roll = THREE.MathUtils.degToRad(this.roll);
       const level = Math.abs(roll) < Math.PI * 0.62; // not when nearly inverted
       if (level) this.rollRate += -Math.sin(roll) * 1.5 * this.assist * idleX * dt * 6;
-      const pitch = THREE.MathUtils.degToRad(this.pitch);
+      // Hands off: wings stay level and the nose settles at a slight dive (about -1.5°), so the plane
+      // sinks gently straight ahead, never sideways. Up and down are up to the player.
+      const pitch = THREE.MathUtils.degToRad(this.pitch) - SAG;
       this.pitchRate += -Math.sin(pitch) * 0.55 * this.assist * idleY * idleX * dt * 6;
     }
 

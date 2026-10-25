@@ -75,6 +75,11 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
   const rect = () => root.getBoundingClientRect();
   const onMove = (event) => {
     if (event.pointerType === 'touch') return;
+    // A cursor parked on a button or a panel is not a stick deflection: it would steer the plane on its own.
+    if (event.target.closest?.('button, a, input, .fl-buttons, .fl-touch')) {
+      mouse.active = false;
+      return;
+    }
     const r = rect();
     mouse.x = (event.clientX - (r.left + r.width / 2)) / (r.width * 0.32);
     mouse.y = -(event.clientY - (r.top + r.height / 2)) / (r.height * 0.32);
@@ -93,6 +98,7 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
   };
   root.addEventListener('pointermove', onMove);
   root.addEventListener('pointerdown', onDown);
+  root.addEventListener('pointerleave', () => (mouse.active = false));
   window.addEventListener('pointerup', onUp);
   root.addEventListener('wheel', onWheel, { passive: false });
 

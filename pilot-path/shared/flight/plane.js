@@ -9,7 +9,7 @@ export const G = 9.81;
 
 const SAG = -THREE.MathUtils.degToRad(1.5); // resting pitch of a plane with the stick released
 
-const FORWARD =new THREE.Vector3(0, 0, -1);
+const FORWARD = new THREE.Vector3(0, 0, -1);
 const UP = new THREE.Vector3(0, 1, 0);
 const RIGHT = new THREE.Vector3(1, 0, 0);
 

@@ -30,7 +30,6 @@ const RET_RATE = 22;
 const AIM_ANGLE = 3;
 const PASS_SCORE = 0.5; // a mission done below this is flown again
 const SKIP_AFTER = 5; // failed attempts before a way to skip appears
-const LOCK_ANGLE = 2.4;
 const hitChance = (d) => clamp(d < 1000 ? 0.95 - (1000 - d) * 0.0004 : 0.95 - (d - 1000) * 0.00022, 0.12, 0.95);
 const clamp = THREE.MathUtils.clamp;
 const rad = THREE.MathUtils.degToRad;
@@ -147,10 +146,9 @@ function start(root, close, helpers, { fx, short }) {
       points: 0,
       destroyed: 0,
       finished: null,
-      lock: { target: null, t: 0 },
+      lock: { target: null, chance: 0 },
       def: { air: 0, ground: 0 },
       health: 3,
-      alarm: null,
       alarmT: 0,
       radioNow: null,
       radioOk: 0,
@@ -432,7 +430,6 @@ function start(root, close, helpers, { fx, short }) {
     if (airMin < 2000) kind = 'air';
     else if (groundMin < 2000) kind = 'ground';
     else if (airMin < 3000) kind = 'far';
-    M.alarm = kind;
     M.alarmT -= dt;
     if (kind && !M.offNow && M.alarmT <= 0) {
       if (kind === 'far') {
@@ -440,8 +437,7 @@ function start(root, close, helpers, { fx, short }) {
         tone(1650, 0.3, { type: 'square', volume: 0.1 });
       } else if (kind === 'air') {
         M.alarmT = 0.3;
-        tone(2100, 0.07, { type: 'square', volume: 0.1 });
-        setTimeout(() => tone(2500, 0.07, { type: 'square', volume: 0.1 }), 100);
+        tone(2100, 0.16, { type: 'square', volume: 0.1, slide: 2700 });
       } else {
         M.alarmT = 0.85;
         tone(360, 0.4, { type: 'triangle', volume: 0.2, slide: 300 });
@@ -511,7 +507,6 @@ function start(root, close, helpers, { fx, short }) {
       a.y = Math.max(a.y, ground + 150);
       a.mesh.position.set(a.x, a.y, a.z);
       a.mesh.quaternion.setFromEuler(new THREE.Euler(0, -a.heading, 0, 'YXZ'));
-      if (Math.floor(time * 12) !== Math.floor((time - dt) * 12)) world.puff(a.mesh.position.clone().add(V(-Math.sin(a.heading) * 40, 0, Math.cos(a.heading) * 40)), { size: 14, life: 2.4, color: '#ffffff', opacity: 0.35 });
     }
     for (const v of M.vehicles) {
       if (!v.alive) continue;
@@ -599,7 +594,7 @@ function start(root, close, helpers, { fx, short }) {
     const f = reticleDir(V(0, 0, 0));
     let best = null;
     let bestAng = rad(AIM_ANGLE);
-    for (const t of [...M.targets, ...M.decoys]) {
+    for (const t of M.targets.concat(M.decoys)) {
       if (t.destroyed) continue;
       const to = V(t.x - plane.position.x, t.y - plane.position.y, t.z - plane.position.z);
       const d = to.length();

@@ -43,26 +43,8 @@ function welcome() {
   });
 }
 
-function summary(result) {
-  return card((box, close) => {
-    box.append(el('p', 'pp-eyebrow', 'סיום הסימולטור'), el('h2', 'pp-title', result.passed ? 'עברת את הסימולטור' : 'הפעם לא עברת'));
-    box.append(el('p', 'pp-sub', `ציון: ${Math.round((result.score ?? 0) * 100)}%. אפשר לנסות שוב כמה פעמים שרוצים.`));
-    const row = el('div', 'pp-actions');
-    const again = button('לנסות שוב');
-    row.append(again);
-    box.append(row);
-    again.focus();
-    again.addEventListener('click', () => {
-      fx.click();
-      close();
-    });
-  });
-}
-
 (async () => {
   await welcome();
-  for (;;) {
-    const result = await runStrikeSimulator(host, { fx });
-    await summary(result);
-  }
+  // The simulator ends with its own result card; after it, a new run starts from the controls card.
+  for (;;) await runStrikeSimulator(host, { fx });
 })();

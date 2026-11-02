@@ -25,6 +25,7 @@ export default defineConfig({
         pilotYarpaB: page('./pilot-path/yarpa-b/index.html'),
         pilotPsychologist: page('./pilot-path/psychologist/index.html'),
         irpaSim: page('./irpa-sim/index.html'),
+        strikeSim: page('./strike-sim/index.html'),
       },
     },
   },

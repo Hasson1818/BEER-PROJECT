@@ -1,5 +1,4 @@
 import { showScreen, el, button } from '../screens.js';
-import { engine } from '../fx.js';
 import { createControls } from './input.js';
 import { chooseScheme } from './scheme.js';
 
@@ -155,7 +154,7 @@ function start(root, close, helpers, { fx, short }) {
       { id: 'less', label: 'מצערת אחורה', keys: [], hold: true, className: 'warn' },
     ],
   });
-  const sound = engine();
+  const sound = { set() {}, stop() {} }; // no engine noise: it was only in the way of the beeps and the radio
 
   let w = 0;
   let h = 0;

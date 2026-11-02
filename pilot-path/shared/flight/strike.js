@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { showScreen, el, button } from '../screens.js';
-import { engine, speak, tone, noise } from '../fx.js';
+import { speak, tone, noise } from '../fx.js';
 import { Plane, KT } from './plane.js';
 import { createFlightWorld, makeJet } from './world.js';
 import { createControls } from './input.js';
@@ -21,12 +21,15 @@ const LIME = '#7bf15a';
 const TARGET_COLOR = { cone: CYAN, square: ORANGE, circle: LIME };
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
-// Aiming: the sight is moved with keys (Q/E/R/F) inside this box, in degrees from the nose. Lock needs the target inside
-// the sight for LOCK_T seconds. The hit chance is best near 1 km and falls on both sides: our numbers, not published.
+// Aiming: the sight is moved with keys (Q/E/R/F) inside this box, in degrees from the nose. There is no lock-on: the
+// hit chance is written under the sight and a missile can be fired any time. It is best near 1 km and falls on both
+// sides: our numbers, not published.
 const RET_X = 16;
 const RET_Y = 11;
 const RET_RATE = 22;
-const LOCK_T = 1.2;
+const AIM_ANGLE = 3;
+const PASS_SCORE = 0.5; // a mission done below this is flown again
+const SKIP_AFTER = 5; // failed attempts before a way to skip appears
 const LOCK_ANGLE = 2.4;
 const hitChance = (d) => clamp(d < 1000 ? 0.95 - (1000 - d) * 0.0004 : 0.95 - (d - 1000) * 0.00022, 0.12, 0.95);
 const clamp = THREE.MathUtils.clamp;
@@ -77,7 +80,7 @@ function start(root, close, helpers, { fx, short }) {
   const plane = new Plane({ position: V(region.start.x, region.baseAlt, region.start.z), speed: 140, assist: 0.6 });
   const ret = { x: 0, y: 0 }; // the sight, in degrees from the nose
   const hud = hudCanvas.getContext('2d');
-  const sound = engine();
+  const sound = { set() {}, stop() {} }; // no engine noise: it was only in the way of the beeps and the radio
 
   // ---------- Controls ----------
   const act = {
@@ -248,6 +251,7 @@ function start(root, close, helpers, { fx, short }) {
       g.position.set(s.x, y, s.z);
       s.y = y + 20;
       s.mesh = addMesh(g);
+      s.mesh.visible = false; // enemies show only on the mini-map
     }
     for (const v of m.vehicles) {
       const y = h(v.x, v.z);
@@ -263,11 +267,13 @@ function start(root, close, helpers, { fx, short }) {
       g.position.set(v.x, y, v.z);
       v.y = y + 16;
       v.mesh = addMesh(g);
+      v.mesh.visible = false;
     }
     for (const a of m.planes) {
       const mesh = makeJet({ body: '#a33a2f', accent: '#ffcc00', scale: 3 });
       mesh.position.set(a.x, a.y, a.z);
       a.mesh = addMesh(mesh);
+      a.mesh.visible = false;
     }
     if (m.features) addFeaturesToWorld(m.features, h, addMesh);
     for (const o of m.objectives) {
@@ -312,19 +318,17 @@ function start(root, close, helpers, { fx, short }) {
       return;
     }
     const L = M.lock;
-    if (!L.target || L.t < LOCK_T) {
-      say('אין נעילה: העבר את הכוונת על מטרה והחזק', '#ffb0b0', 1400);
-      fx?.bad?.();
-      return;
-    }
     M.missiles--;
     fx?.gearThump?.();
-    const m = world.addMissile(plane.position.clone().add(V(0, -4, 0)), L.target);
-    m.velocity.copy(reticleDir(V(0, 0, 0))).multiplyScalar(260);
+    const dir = reticleDir(V(0, 0, 0));
+    // With a target under the sight the missile homes on it; otherwise it flies straight on and misses.
+    const target = L.target ?? { x: plane.position.x + dir.x * 5000, y: plane.position.y + dir.y * 5000, z: plane.position.z + dir.z * 5000, none: true };
+    const m = world.addMissile(plane.position.clone().add(V(0, -4, 0)), target);
+    m.velocity.copy(dir).multiplyScalar(260);
     m.speed = 420;
-    m.homing = L.target;
-    m.chance = L.chance ?? 0.5;
-    m.willHit = Math.random() < m.chance;
+    m.homing = target;
+    m.chance = L.target ? L.chance ?? 0 : 0;
+    m.willHit = L.target ? Math.random() < m.chance : false;
     missileList.push(m);
     say('טיל שוגר', GREEN, 1000);
   }
@@ -404,11 +408,13 @@ function start(root, close, helpers, { fx, short }) {
     return { airMin, groundMin };
   }
 
-  // Two alarm sounds: a loud steady beep (air enemy within 3 km), and a different danger tone (within 2 km for
-  // the air; within 2 km for the ground, starting to fire at 1 km).
+  // Every warning is a sound of its own and nothing is written on the screen:
+  //   off the navigation corridor  - a harsh two-tone square buzz
+  //   air enemy within 3 km        - a steady high beep
+  //   air enemy within 2 km        - fast double chirps going up
+  //   ground enemy within 2 km     - a low slow pulse
   function alarms(dt) {
     if (!M) return;
-    // Off the navigation axis: a harsher, louder, more annoying sound than the threat alarms.
     const navObj = M.objectives.find((o) => o.type === 'nav' && !o.done && o.corridor);
     M.offNow = Boolean(navObj?.off);
     M.offT = (M.offT ?? 0) - dt;
@@ -423,18 +429,22 @@ function start(root, close, helpers, { fx, short }) {
     }
     const { airMin, groundMin } = threatInfo(M);
     let kind = null;
-    if (airMin < 2000 || groundMin < 2000) kind = 'danger';
+    if (airMin < 2000) kind = 'air';
+    else if (groundMin < 2000) kind = 'ground';
     else if (airMin < 3000) kind = 'far';
     M.alarm = kind;
     M.alarmT -= dt;
     if (kind && !M.offNow && M.alarmT <= 0) {
       if (kind === 'far') {
-        M.alarmT = 0.17;
-        tone(1650, 0.11, { type: 'square', volume: 0.1 });
+        M.alarmT = 0.5;
+        tone(1650, 0.3, { type: 'square', volume: 0.1 });
+      } else if (kind === 'air') {
+        M.alarmT = 0.3;
+        tone(2100, 0.07, { type: 'square', volume: 0.1 });
+        setTimeout(() => tone(2500, 0.07, { type: 'square', volume: 0.1 }), 100);
       } else {
-        M.alarmT = 0.34;
-        tone(M.alarmFlip ? 760 : 1010, 0.16, { type: 'sawtooth', volume: 0.09, slide: M.alarmFlip ? 700 : 930 });
-        M.alarmFlip = !M.alarmFlip;
+        M.alarmT = 0.85;
+        tone(360, 0.4, { type: 'triangle', volume: 0.2, slide: 300 });
       }
     }
   }
@@ -580,46 +590,28 @@ function start(root, close, helpers, { fx, short }) {
     if (allDone && M.objectives.length && M.radioList.every((r) => r.done || !r.started)) finishMission({ ok: true });
   }
 
-  // ---------- Lock-on and missiles ----------
-  function updateLock(dt) {
+  // ---------- Hit chance and missiles ----------
+  // No lock-on: whatever is nearest to the sight (inside AIM_ANGLE) is what a missile fired now would go for, and the
+  // chance written next to the sight is the chance of hitting it. It is best at about 1 km and drops the farther the
+  // sight is from the middle of the target.
+  function updateLock() {
     const L = M.lock;
     const f = reticleDir(V(0, 0, 0));
     let best = null;
-    let bestAng = rad(LOCK_ANGLE);
-    for (const t of M.targets) {
+    let bestAng = rad(AIM_ANGLE);
+    for (const t of [...M.targets, ...M.decoys]) {
       if (t.destroyed) continue;
       const to = V(t.x - plane.position.x, t.y - plane.position.y, t.z - plane.position.z);
       const d = to.length();
       if (d > 5200 || d < 150) continue;
-      const ang = Math.acos(clamp(f.dot(to.clone().normalize()), -1, 1));
+      const ang = Math.acos(clamp(f.dot(to.normalize()), -1, 1));
       if (ang < bestAng) {
         bestAng = ang;
         best = t;
       }
     }
-    for (const dcy of M.decoys) {
-      if (dcy.destroyed) continue;
-      const to = V(dcy.x - plane.position.x, dcy.y - plane.position.y, dcy.z - plane.position.z);
-      const d = to.length();
-      if (d > 5200 || d < 150) continue;
-      const ang = Math.acos(clamp(f.dot(to.clone().normalize()), -1, 1));
-      if (ang < bestAng) {
-        bestAng = ang;
-        best = dcy;
-      }
-    }
-    if (best && best === L.target) L.t += dt;
-    else {
-      L.target = best;
-      L.t = 0;
-    }
-    if (best) L.chance = hitChance(Math.hypot(best.x - plane.position.x, best.y - plane.position.y, best.z - plane.position.z));
-    if (best && L.t >= LOCK_T && !L.beeped) {
-      L.beeped = true;
-      fx?.lock?.(1);
-      tone(1800, 0.12, { volume: 0.07 });
-    }
-    if (!best || L.t < LOCK_T) L.beeped = false;
+    L.target = best;
+    L.chance = best ? hitChance(Math.hypot(best.x - plane.position.x, best.y - plane.position.y, best.z - plane.position.z)) * (1 - 0.35 * (bestAng / rad(AIM_ANGLE))) : 0;
   }
 
   function updateMissiles(dt) {
@@ -867,15 +859,14 @@ function start(root, close, helpers, { fx, short }) {
     reticle();
   }
 
-  /** The sight: moved with Q/E/R/F; yellow and solid when locked, with the hit chance. */
+  /** The sight: moved with Q/E/R/F; turns yellow over a target, with the hit chance written under it. */
   const sightPos = V(0, 0, 0);
   function reticle() {
     reticleDir(sightPos).multiplyScalar(1500).add(camera.position);
     const p = toScreen(sightPos);
     if (p.behind) return;
     const L = M?.lock;
-    const locked = Boolean(L?.target && L.t >= LOCK_T);
-    const color = locked ? '#ffe45c' : L?.target ? '#ffffff' : 'rgba(255,255,255,0.85)';
+    const color = L?.target ? '#ffe45c' : 'rgba(255,255,255,0.85)';
     hud.save();
     hud.lineWidth = 2.5;
     hud.strokeStyle = color;
@@ -894,19 +885,10 @@ function start(root, close, helpers, { fx, short }) {
     hud.beginPath();
     hud.arc(p.x, p.y, 2, 0, Math.PI * 2);
     hud.fill();
-    if (L?.target && !locked) {
-      hud.strokeStyle = '#ffe45c';
-      hud.lineWidth = 4;
-      hud.beginPath();
-      hud.arc(p.x, p.y, 31, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, L.t / LOCK_T));
-      hud.stroke();
-    }
-    if (L?.target) {
-      hud.font = '800 15px ui-monospace, Menlo, monospace';
-      hud.textAlign = 'center';
-      hud.fillStyle = locked ? '#ffe45c' : '#ffffff';
-      hud.fillText(`${locked ? 'נעול · ' : ''}פגיעה ${Math.round((L.chance ?? 0) * 100)}%`, p.x, p.y + 56);
-    }
+    hud.font = '800 15px ui-monospace, Menlo, monospace';
+    hud.textAlign = 'center';
+    hud.fillStyle = L?.target ? '#ffe45c' : 'rgba(255,255,255,0.7)';
+    hud.fillText(`פגיעה ${Math.round((L?.chance ?? 0) * 100)}%`, p.x, p.y + 56);
     hud.restore();
   }
 
@@ -942,13 +924,6 @@ function start(root, close, helpers, { fx, short }) {
       hud.textAlign = 'right';
       hud.fillStyle = '#7dff9a';
       hud.fillText(label, p.x - 14, p.y + 5);
-    }
-    if (extra.lock) {
-      const L = M.lock;
-      hud.strokeStyle = L.t >= LOCK_T ? '#ffe45c' : '#fff';
-      hud.beginPath();
-      hud.arc(p.x, p.y, 18, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, L.t / LOCK_T));
-      hud.stroke();
     }
     hud.restore();
   }
@@ -1072,19 +1047,14 @@ function start(root, close, helpers, { fx, short }) {
         if (t.destroyed) continue;
         const d = Math.hypot(t.x - pp.x, t.z - pp.z);
         if (d > 9000) continue;
-        marker(V(t.x, t.y + 30, t.z), t.kind, d < 7000 ? String(Math.round(d)) : '', { lock: M.lock.target === t });
+        marker(V(t.x, t.y + 30, t.z), t.kind, d < 7000 ? String(Math.round(d)) : '');
       }
       for (const dcy of M.decoys) {
         if (dcy.destroyed) continue;
         const d = Math.hypot(dcy.x - pp.x, dcy.z - pp.z);
         if (d > 5200) continue;
-        marker(V(dcy.x, dcy.y + 30, dcy.z), 'decoy', '', { color: '#ccc', lock: M.lock.target === dcy });
+        marker(V(dcy.x, dcy.y + 30, dcy.z), 'decoy', '', { color: '#ccc' });
       }
-      for (const s of [...M.sites, ...M.vehicles]) {
-        if (!s.alive) continue;
-        if (Math.hypot(s.x - pp.x, s.z - pp.z) < 3200) marker(V(s.x, s.y + 40, s.z), 'enemy', '', { color: RED });
-      }
-      for (const a of M.planes) marker(V(a.x, a.y, a.z), 'enemy', '', { color: RED });
       // Timer and objective line.
       const left = Math.max(0, Math.ceil(M.limit - M.t));
       hud.save();
@@ -1119,28 +1089,6 @@ function start(root, close, helpers, { fx, short }) {
       hud.shadowColor = '#000';
       hud.shadowBlur = 8;
       hud.fillText(message.text, w / 2, h * 0.3);
-      hud.restore();
-    }
-    // Off the navigation axis.
-    if (M?.offNow && Math.floor(time * 5) % 2 === 0) {
-      hud.save();
-      hud.font = '800 26px Heebo, sans-serif';
-      hud.textAlign = 'center';
-      hud.fillStyle = '#ff3b3b';
-      hud.shadowColor = '#000';
-      hud.shadowBlur = 8;
-      hud.fillText('סטייה מהציר! חזור לציר הניווט', w / 2, 134);
-      hud.restore();
-    }
-    // Alarm banner.
-    if (M?.alarm && Math.floor(time * 4) % 2 === 0) {
-      hud.save();
-      hud.font = '800 17px Heebo, sans-serif';
-      hud.textAlign = 'center';
-      hud.fillStyle = M.alarm === 'danger' ? '#ff6b6b' : '#ffc857';
-      hud.shadowColor = '#000';
-      hud.shadowBlur = 6;
-      hud.fillText(M.alarm === 'danger' ? 'סכנה: איום בטווח ירי' : 'אויב בטווח שלושה קילומטר', w / 2, 100);
       hud.restore();
     }
   }
@@ -1254,7 +1202,7 @@ function start(root, close, helpers, { fx, short }) {
           ? { keys: ['↑', '↓', '←', '→'], text: 'סטיק: עלייה וירידה, גלגול' }
           : { keys: ['עכבר'], text: 'סטיק: עלייה וירידה, גלגול' },
         { keys: ['W', 'S'], text: 'מצערת: יותר או פחות מהירות' },
-        { keys: ['Space'], text: 'שיגור טיל (אחרי נעילה)' },
+        { keys: ['Space'], text: 'שיגור טיל, מתי שרוצים. אחוז הפגיעה כתוב מתחת לכוונת' },
         { keys: ['1', '2'], text: 'הגנה אווירית, הגנה קרקעית' },
         { keys: ['Q', 'E', 'R', 'F'], text: 'כוונת: שמאלה, ימינה, למעלה, למטה (לא זזה עם המטוס)' },
         { keys: ['Z', 'X'], text: 'קשר: קיבלתי קריאה, שמעתי הוראה' },
@@ -1275,9 +1223,10 @@ function start(root, close, helpers, { fx, short }) {
     });
   }
 
-  function resultCard(spec, res, score, canRetry) {
+  function resultCard(spec, res, score, { retry, skip }) {
+    const passed = res.ok && !retry;
     return showCard((card, done) => {
-      card.append(el('p', 'pp-eyebrow', res.ok ? 'הצלחה' : 'לא הושלם'), el('h2', 'pp-title', res.ok ? 'סיימת את המשימה' : res.reason));
+      card.append(el('p', 'pp-eyebrow', passed ? 'הצלחה' : 'לא הושלם'), el('h2', 'pp-title', passed ? 'סיימת את המשימה' : res.ok ? 'המשימה לא בוצעה כמו שצריך' : res.reason));
       const bits = [];
       if (M.points) bits.push(`ניקוד מטרות: ${M.points}`);
       if (M.hits) bits.push(`פגיעות בך: ${M.hits}`);
@@ -1289,14 +1238,17 @@ function start(root, close, helpers, { fx, short }) {
       if (bits.length) card.append(el('p', 'pp-sub', bits.join(' · ')));
       card.append(el('p', 'pp-sub', `ציון למשימה: ${Math.round(score * 100)}%`));
       const row = el('div', 'pp-actions');
-      if (!res.ok && canRetry) {
-        const again = button('לנסות שוב');
+      if (retry) {
+        card.append(el('p', 'pp-sub', 'צריך לעבור את השלב כדי להמשיך. נטוס אותו שוב.'));
+        const again = button('לטוס שוב');
         again.addEventListener('click', () => (fx?.click?.(), done('retry')));
         row.append(again);
       }
-      const next = button('המשך', !res.ok && canRetry ? 'pp-btn secondary' : 'pp-btn');
-      next.addEventListener('click', () => (fx?.click?.(), done('next')));
-      row.append(next);
+      if (!retry || skip) {
+        const next = button(retry ? 'לדלג בכל זאת' : 'המשך', retry ? 'pp-btn secondary' : 'pp-btn');
+        next.addEventListener('click', () => (fx?.click?.(), done('next')));
+        row.append(next);
+      }
       card.append(row);
       row.firstChild.focus();
     });
@@ -1345,9 +1297,14 @@ function start(root, close, helpers, { fx, short }) {
         score = scoreMission();
         if (res.ok) fx?.done?.();
         else fx?.fail?.();
-        const canRetry = spec.phase === 'training' && attempt < 2;
-        const choice = await resultCard(spec, res, score, canRetry);
-        if (res.ok || choice !== 'retry') break;
+        // Shot down, out of time, or done too badly: the stage is flown again. Only after several failures is there a way on.
+        const passedStage = res.ok && score >= PASS_SCORE;
+        if (passedStage) {
+          await resultCard(spec, res, score, { retry: false, skip: false });
+          break;
+        }
+        const choice = await resultCard(spec, res, score, { retry: true, skip: attempt >= SKIP_AFTER });
+        if (choice === 'next') break;
       }
       levels.push({ id: spec.id, title: spec.title, phase: spec.phase, score, points: M.points, attempts: attempt });
       results.push(levels[levels.length - 1]);

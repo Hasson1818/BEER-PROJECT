@@ -147,6 +147,7 @@ function start(root, close, helpers, { fx, short }) {
   const exercises = short ? EXERCISES.filter((e) => SHORT_IDS.includes(e.id)) : EXERCISES;
 
   const controls = createControls(stage, {
+    letterSteer: false, // keyboard-only here is the arrows plus W / S, so A and D do nothing
     showButtons: true,
     buttons: [
       { id: 'fire', label: 'אש', keys: ['Space'], hold: true },

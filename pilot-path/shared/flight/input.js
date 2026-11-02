@@ -40,7 +40,7 @@ function injectStyle() {
 
 export const DEFAULT_BUTTONS = [{ id: 'fire', label: 'אש', keys: ['Space'], hold: true }];
 
-export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = false, renderButtons = true } = {}) {
+export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = false, renderButtons = true, letterSteer = true } = {}) {
   const stick = { x: 0, y: 0 };
   const keys = new Set();
   let invert = false;
@@ -220,8 +220,8 @@ export function createControls(root, { buttons = DEFAULT_BUTTONS, showButtons = 
     let x = 0;
     let y = 0;
     if (scheme === 'keys') {
-      if (keys.has('ArrowLeft') || keys.has('KeyA')) x -= 1;
-      if (keys.has('ArrowRight') || keys.has('KeyD')) x += 1;
+      if (keys.has('ArrowLeft') || (letterSteer && keys.has('KeyA'))) x -= 1;
+      if (keys.has('ArrowRight') || (letterSteer && keys.has('KeyD'))) x += 1;
       if (keys.has('ArrowUp')) y += 1;
       if (keys.has('ArrowDown')) y -= 1;
     }

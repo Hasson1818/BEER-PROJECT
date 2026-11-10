@@ -225,14 +225,10 @@ async function medical(game) {
   await goToRoom(game, 'measure', staff.measureMedic, 'measure', 'דבר עם החובשת');
   const medic = staff.measureMedic;
   await scene(game, medic, async () => {
-    await ui.talk(medic.name, 'היי! בבדיקות הרפואיות עוברים שלושה חדרים: מדידות, ראייה ורופא. יש לך את השאלון הרפואי החתום ואת בדיקת השתן?');
-    const choice = await ui.talk(medic.name, 'תן לי אותם בבקשה.', ['הנה השאלון והבדיקה', 'השאלון פה, את בדיקת השתן שכחתי…']);
-    if (choice === 1) {
-      await ui.talk(medic.name, 'לא נורא. תיקח כוס, תמסור דגימה בשירותים ותשאיר אותה בחלון. נשלח למעבדה.');
-      game.addMinutes(8);
-    } else {
-      await ui.talk(medic.name, 'מצוין, זה עובר לרופא.');
-    }
+    await ui.talk(medic.name, 'היי! בבדיקות הרפואיות עוברים שלושה חדרים: מדידות, ראייה ורופא. יש לך את השאלון הרפואי החתום?');
+    const choice = await ui.talk(medic.name, 'תן לי אותו בבקשה.', ['הנה השאלון', 'הבאתי גם בדיקת שתן, ליתר ביטחון']);
+    if (choice === 1) await ui.talk(medic.name, 'תודה, אבל כבר לא צריך. בדיקת השתן לפני הצו בוטלה. השאלון החדש מספיק.');
+    else await ui.talk(medic.name, 'מצוין, זה עובר לרופא.');
     await ui.talk(medic.name, 'עכשיו נמדוד. תוריד נעליים ותעלה על המשקל, גב לסרגל.');
     state.results.measurements = await measurements(ui);
   });

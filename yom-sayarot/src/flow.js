@@ -6,6 +6,7 @@ import { mapTask } from '../../shared/engine/map-task.js';
 import { formatTime } from './drills.js';
 import { loadResults, saveResults } from '../../shared/save.js';
 import { unlock } from '../../shared/achievements.js';
+import { partResult } from '../../pilot-path/shared/progress.js';
 
 // Day 1 afternoon → night 1 → day 2 → night 2 → day 3 morning, results by SMS.
 export const STEPS = ['arrive', 'run', 'night1', 'morning', 'stretcher', 'dig', 'team', 'night2', 'home', 'results'];
@@ -59,7 +60,7 @@ async function arrive(game) {
 
   await goTalk(game, people.staff.medic, 'medic', 'גש לחובש', 'בדיקה קצרה לפני הריצה');
   await talkScene(game, people.staff.medic, async () => {
-    await ui.talk(people.staff.medic.name, 'היי. הבאת טופס רפואי חתום? מעולה. אני רק מודד דופק ולחץ דם.');
+    await ui.talk(people.staff.medic.name, 'היי. הבאת אישור רפואי מרופא המשפחה? מעולה. אני רק מודד דופק ולחץ דם.');
     await medicCheck(ui);
     await ui.talk(people.staff.medic.name, 'הכול תקין. תשתה הרבה מים, יהיה חם עד הערב.');
   });
@@ -303,6 +304,12 @@ async function home(game) {
   game.save('home');
 }
 
+/** In the pilot screening: started it, no part failed, and the gibbush not done yet. */
+function inPilotScreening() {
+  const parts = ['home-test', 'yarpa-a', 'yarpa-b', 'psychologist'].map(partResult).filter(Boolean);
+  return parts.length > 0 && parts.every((r) => r.passed) && !loadResults('gibbush-tayis');
+}
+
 function outcomeFor(state, stats) {
   if (state.failedRun) return { total: 0, outcome: OUTCOMES[OUTCOMES.length - 1] };
   const laps = ['combined', 'tzukon'].map((k) => stats[k]).filter(Boolean);
@@ -321,7 +328,11 @@ function outcomeFor(state, stats) {
 async function results(game) {
   const { ui, state, drills } = game;
   const stats = { ...(state.stats ?? {}), ...drills.stats };
-  const { total, outcome } = outcomeFor(state, stats);
+  let { total, outcome } = outcomeFor(state, stats);
+  // Official rule: whoever is in the pilot screening is not called to a gibbush from יום סיירות.
+  if (outcome.title.startsWith('זימון') && inPilotScreening()) {
+    outcome = { ...outcome, detail: `${outcome.detail} אבל אתה באמצע המיון לטיס, ולפי הכלל הרשמי לא תזומן לגיבוש מיום הסיירות כל עוד המיון לטיס נמשך.` };
+  }
   const lines = [];
   if (stats.run) lines.push(['ריצת סף', `${formatTime(stats.run.time)} ${stats.run.passed ? '✓' : '✗'}`]);
   if (stats.combined) lines.push(['מקצה משולב', `${stats.combined.laps} סיבובים (ממוצע ${stats.combined.average})`]);

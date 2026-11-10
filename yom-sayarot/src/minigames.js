@@ -140,7 +140,7 @@ export function medicCheck(ui) {
     for (const [label, value] of [
       ['דופק', String(pulse)],
       ['לחץ דם', `${sys}/${dia}`],
-      ['טופס רפואי', 'חתום ✓'],
+      ['אישור רפואי', 'מרופא המשפחה ✓'],
       ['כשיר למיון', 'כן'],
     ]) {
       const cell = el('div', 'readout');

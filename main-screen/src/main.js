@@ -13,7 +13,7 @@ try {
 }
 
 // Each stage has its own page; the save remembers which one you were in.
-const STAGE_PAGES = { 'tzav-rishon': '../tzav-rishon/', 'yom-sayarot': '../yom-sayarot/', 'gibbush-tayis': '../gibbush-tayis/', 'interview-week': '../interview-week/' };
+const STAGE_PAGES = { 'tzav-rishon': '../tzav-rishon/', 'yom-sayarot': '../yom-sayarot/', 'gibbush-tayis': '../gibbush-tayis/', 'gibbush-matkal': '../gibbush-matkal/', 'interview-week': '../interview-week/' };
 
 const save = loadSave();
 if (save) {
@@ -67,7 +67,7 @@ requestAnimationFrame(() => document.body.classList.add('ready'));
 syncFromResults();
 
 const $ = (id) => document.getElementById(id);
-const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'pilot-path', name: 'המסלול לטיס' }];
+const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'gibbush-matkal', name: 'גיבוש מטכ״ל / שלדג' }, { id: 'pilot-path', name: 'המסלול לטיס' }];
 
 function renderJourney(animate = true) {
   const p = progress();

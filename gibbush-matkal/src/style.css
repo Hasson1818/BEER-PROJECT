@@ -1,0 +1,15 @@
+/* Additions for גיבוש מטכ"ל on top of yom-sayarot/src/style.css. */
+
+body {
+  background: #1d2416;
+}
+
+/* Candidates here wear olive uniforms, so the number card is olive too. */
+.bib {
+  background: #e9ecd8;
+}
+
+/* Numbers in the cut parade that are not yours. */
+.result-tile.dim {
+  opacity: 0.55;
+}

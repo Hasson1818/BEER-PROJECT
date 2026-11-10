@@ -30,6 +30,12 @@ export const ACHIEVEMENTS = [
   { id: 'sayarot-unit', group: 'yom-sayarot', icon: '🎖️', title: 'זימון ליחידה', desc: 'קיבלת זימון לגיבוש היחידה (סיירת מטכ״ל ושלד״ג).', points: 5 },
   { id: 'sayarot-team', group: 'yom-sayarot', icon: '🤝', title: 'שחקן צוות', desc: 'תיאום מעולה במשימות הצוות: מפה ופירמידת שקים.', points: 2 },
 
+  { id: 'matkal-done', group: 'gibbush-matkal', icon: '🦂', title: 'חמישה ימים בחול', desc: 'סיימת את גיבוש מטכ״ל / שלדג עד התוצאות.', points: 6 },
+  { id: 'matkal-cut', group: 'gibbush-matkal', icon: '📋', title: 'המספר הוקרא', desc: 'עברת את הניפויים של יום ג׳.', points: 3 },
+  { id: 'matkal-unit', group: 'gibbush-matkal', icon: '🗡️', title: 'היחידה', desc: 'התקבלת לסיירת מטכ״ל או לשלדג.', points: 6 },
+  { id: 'matkal-honest', group: 'gibbush-matkal', icon: '🧵', title: 'נגעתי', desc: 'דיווחת על הנגיעה בחוט ותיקנת בשקט את מי שרימה בספירה.', points: 3 },
+  { id: 'matkal-weapon', group: 'gibbush-matkal', icon: '🔧', title: 'ידיים יציבות', desc: 'פירקת את שני הנשקים בכל הסבבים בלי טעות.', points: 2 },
+
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },
   { id: 'gibbush-pass', group: 'gibbush-tayis', icon: '🥇', title: 'כנפיים', desc: 'עברת את גיבוש הטיס והוזמנת לקורס.', points: 8 },
   { id: 'gibbush-honest', group: 'gibbush-tayis', icon: '🗣️', title: 'כנות מלאה', desc: 'דיווחת על כלל ששברת, ולא הסתרת דבר שהמ״כים ראו.', points: 3 },

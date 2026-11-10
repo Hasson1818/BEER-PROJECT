@@ -54,7 +54,8 @@ export function height(x, z) {
   return dune + ripples + far;
 }
 
-export function buildWorld(scene) {
+/** options.checkinSign: text on the check-in sign; options.runTrack: false leaves out the threshold-run track. */
+export function buildWorld(scene, { checkinSign = ['קליטה', 'יום שדה · מספרים'], runTrack = true } = {}) {
   const colliders = [];
   const updaters = [];
 
@@ -265,7 +266,7 @@ export function buildWorld(scene) {
   box(SPOTS.checkin.x, SPOTS.checkin.z - 1.2, 2.2, 0.75, 0.8, M.table, { collide: true });
   box(SPOTS.medic.x, SPOTS.medic.z - 1.2, 1.8, 0.75, 0.8, M.table, { collide: true });
   box(SPOTS.medic.x + 0.4, SPOTS.medic.z - 1.2, 0.35, 0.2, 0.25, M.white, { lift: 0.75 });
-  signOnPost(['קליטה', 'יום שדה · מספרים'], SPOTS.checkin.x + 1.8, SPOTS.checkin.z - 2.4, 0, { bg: '#2f3a20' });
+  signOnPost(checkinSign, SPOTS.checkin.x + 1.8, SPOTS.checkin.z - 2.4, 0, { bg: '#2f3a20' });
   signOnPost('מרפאה', SPOTS.medic.x - 1.8, SPOTS.medic.z - 2.4, 0, { bg: '#7f2a24' });
 
   // Water station.
@@ -330,23 +331,25 @@ export function buildWorld(scene) {
 
   // ---------- Threshold-run track ----------
 
-  const banner = makeSign(['זינוק · סיום', 'ריצת 1,200 מטר'], { width: 4, height: 0.8, bg: '#7f2a24' });
-  post(SPOTS.runStart.x, SPOTS.runStart.z - 2.2, 3, M.metal, 0.06);
-  post(SPOTS.runStart.x, SPOTS.runStart.z + 2.2, 3, M.metal, 0.06);
-  banner.rotation.y = -Math.PI / 2;
-  onGround(banner, SPOTS.runStart.x, SPOTS.runStart.z, 2.8);
-  const turnMaterial = M.orange;
-  const cone = new THREE.ConeGeometry(0.25, 0.6, 12);
-  const turnCone = new THREE.Mesh(cone, turnMaterial);
-  onGround(turnCone, SPOTS.runTurn.x, SPOTS.runTurn.z, 0.3);
-  post(SPOTS.runTurn.x - 0.6, SPOTS.runTurn.z, 2.2, M.metal, 0.04);
-  const turnFlag = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshStandardMaterial({ color: '#ff7a1a', side: THREE.DoubleSide }));
-  onGround(turnFlag, SPOTS.runTurn.x - 0.25, SPOTS.runTurn.z, 1.95);
-  for (let x = 26; x > -46; x -= 8) {
-    onGround(new THREE.Mesh(cone, turnMaterial), x, SPOTS.runStart.z - 1.8, 0.3);
-    onGround(new THREE.Mesh(cone, turnMaterial), x, SPOTS.runStart.z + 1.8, 0.3);
+  if (runTrack) {
+    const banner = makeSign(['זינוק · סיום', 'ריצת 1,200 מטר'], { width: 4, height: 0.8, bg: '#7f2a24' });
+    post(SPOTS.runStart.x, SPOTS.runStart.z - 2.2, 3, M.metal, 0.06);
+    post(SPOTS.runStart.x, SPOTS.runStart.z + 2.2, 3, M.metal, 0.06);
+    banner.rotation.y = -Math.PI / 2;
+    onGround(banner, SPOTS.runStart.x, SPOTS.runStart.z, 2.8);
+    const turnMaterial = M.orange;
+    const cone = new THREE.ConeGeometry(0.25, 0.6, 12);
+    const turnCone = new THREE.Mesh(cone, turnMaterial);
+    onGround(turnCone, SPOTS.runTurn.x, SPOTS.runTurn.z, 0.3);
+    post(SPOTS.runTurn.x - 0.6, SPOTS.runTurn.z, 2.2, M.metal, 0.04);
+    const turnFlag = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.45), new THREE.MeshStandardMaterial({ color: '#ff7a1a', side: THREE.DoubleSide }));
+    onGround(turnFlag, SPOTS.runTurn.x - 0.25, SPOTS.runTurn.z, 1.95);
+    for (let x = 26; x > -46; x -= 8) {
+      onGround(new THREE.Mesh(cone, turnMaterial), x, SPOTS.runStart.z - 1.8, 0.3);
+      onGround(new THREE.Mesh(cone, turnMaterial), x, SPOTS.runStart.z + 1.8, 0.3);
+    }
+    signOnPost('600 מ׳ · סיבוב', SPOTS.runTurn.x - 1.2, SPOTS.runTurn.z + 2.6, Math.PI / 2, { bg: '#7f2a24' });
   }
-  signOnPost('600 מ׳ · סיבוב', SPOTS.runTurn.x - 1.2, SPOTS.runTurn.z + 2.6, Math.PI / 2, { bg: '#7f2a24' });
 
   // ---------- Drill dune ----------
 

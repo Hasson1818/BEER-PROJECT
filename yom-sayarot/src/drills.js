@@ -176,10 +176,19 @@ export function createDrills(game) {
 
   // ---------- Lap drills: the combined drill and the tzukon ----------
 
-  async function lapDrill(kind, duration, staffName) {
+  // kind: 'combined' | 'tzukon' | 'sprint' (no load) | 'kitbag' (kitbag in both hands).
+  // stopAt: the drill ends when the leader (you or anyone in the team) finishes that many laps.
+  async function lapDrill(kind, duration, staffName, { stopAt = null, title: customTitle = null } = {}) {
     lineUp();
-    const title = kind === 'combined' ? 'מקצה משולב' : 'צוקון';
-    hud.setDrill(title, kind === 'combined' ? 'זחילה ← שק ← קונוס למעלה ← שק ← ספרינט לקו' : 'שק על השכמות ← קונוס למעלה ← חזרה לקו');
+    const TITLES = { combined: 'מקצה משולב', tzukon: 'צוקון', sprint: 'סדרי הגעה', kitbag: 'מירוץ פילים' };
+    const INFO = {
+      combined: 'זחילה ← שק ← קונוס למעלה ← שק ← ספרינט לקו',
+      tzukon: 'שק על השכמות ← קונוס למעלה ← חזרה לקו',
+      sprint: 'ספרינט עד הקונוס למעלה וחזרה לקו',
+      kitbag: 'קיטבג בידיים ← קונוס למעלה ← חזרה לקו',
+    };
+    const title = customTitle ?? TITLES[kind];
+    hud.setDrill(title, INFO[kind] + (stopAt ? ` · הראשון ל־${stopAt} עוצר את כולם` : ''));
     await countdown('זינוק! ממשיכים עד שאומרים עצור');
 
     let active = true;
@@ -198,10 +207,20 @@ export function createDrills(game) {
               { to: { x, z: DUNE.bagRowZ }, speed: 2.9, carry: 'sandbag' },
               { to: { x, z: DUNE.startZ + 1 }, speed: 4.2 },
             ]
-          : [
-              { to: top, speed: 2.1, carry: 'sandbag' },
-              { to: { x, z: DUNE.startZ + 1 }, speed: 2.8, carry: 'sandbag' },
-            ];
+          : kind === 'sprint'
+            ? [
+                { to: top, speed: 3.5 },
+                { to: { x, z: DUNE.startZ + 1 }, speed: 4.4 },
+              ]
+            : kind === 'kitbag'
+              ? [
+                  { to: top, speed: 2.5, carry: 'kitbag' },
+                  { to: { x, z: DUNE.startZ + 1 }, speed: 3.4, carry: 'kitbag' },
+                ]
+              : [
+                  { to: top, speed: 2.1, carry: 'sandbag' },
+                  { to: { x, z: DUNE.startZ + 1 }, speed: 2.8, carry: 'sandbag' },
+                ];
       const quitter = kind === 'tzukon' && person.info.trait === 'quitter';
       const laps = loop(person, steps, {
         active: () => active,
@@ -218,49 +237,54 @@ export function createDrills(game) {
 
     player.autoRun = true;
     if (kind === 'tzukon') setCarry('sandbag');
+    if (kind === 'kitbag') setCarry('kitbag');
     let lap = 0;
     let timeLeft = duration;
+    let leaderDone = false;
     const reports = [];
     const tick = (dt) => {
       if (ui.modalOpen) return;
       timeLeft -= dt;
-      effort(dt, { staffName });
+      effort(dt, { staffName, drain: kind === 'sprint' ? 2.6 : 3.2 });
+      if (stopAt && !leaderDone && npcLaps.some(({ laps }) => laps() >= stopAt)) leaderDone = true;
     };
+    const over = () => timeLeft <= 0 || leaderDone;
     const until = (cond) => game.waitUntil((dt) => {
       tick(dt);
-      return timeLeft <= 0 || cond();
+      return over() || cond();
     });
 
-    while (timeLeft > 0) {
+    while (!over()) {
       if (kind === 'combined') {
         // Get down and crawl to the end of the crawl lane.
         await until(() => player.z < DUNE.startZ - 0.2);
-        if (timeLeft <= 0) break;
+        if (over()) break;
         setCrawl(true);
         await until(() => player.z <= DUNE.crawlEndZ);
         setCrawl(false);
-        if (timeLeft <= 0) break;
+        if (over()) break;
         await until(() => player.z <= DUNE.bagRowZ + 0.4);
-        if (timeLeft <= 0) break;
+        if (over()) break;
         setCarry('sandbag');
       }
       await until(() => DUNE.cones.some((c) => near(c, 2.2)));
-      if (timeLeft <= 0) break;
+      if (over()) break;
       ui.toast('✓ הקפת את הקונוס. למטה!', 1200);
       if (kind === 'combined') {
         await until(() => player.z >= DUNE.bagRowZ - 0.3);
-        if (timeLeft <= 0) break;
+        if (over()) break;
         setCarry(null);
       }
       await until(() => player.z >= DUNE.startZ);
-      if (timeLeft <= 0) break;
+      if (over()) break;
       lap++;
       reports.push(await report(lap, staffName));
+      if (stopAt && lap >= stopAt) leaderDone = true;
     }
 
     active = false;
     whistle();
-    ui.announce('עצור! סוף מקצה');
+    ui.announce('עצור! סוף מקצה', leaderDone && stopAt ? `הראשון הגיע ל־${stopAt} סבבים` : '');
     resetBody();
     rest(8);
     // Everyone stops where they are and catches their breath.
@@ -271,7 +295,8 @@ export function createDrills(game) {
     }
     const others = npcLaps.filter(({ person }) => person.info.trait !== 'quitter').map(({ laps }) => laps());
     const average = others.reduce((a, b) => a + b, 0) / Math.max(1, others.length);
-    const result = { laps: lap, average: Math.round(average * 10) / 10, correct: reports.filter(Boolean).length, reports: reports.length };
+    const best = Math.max(lap, ...others);
+    const result = { laps: lap, average: Math.round(average * 10) / 10, best, correct: reports.filter(Boolean).length, reports: reports.length };
     stats[kind] = result;
     return result;
   }

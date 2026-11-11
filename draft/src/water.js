@@ -43,7 +43,7 @@ export const sfx = {
 };
 
 /** The water HUD: a title, up to three meters, a hint line and touch buttons. */
-function createPad(game) {
+export function createPad(game) {
   const box = $('water');
   const handlers = new Set();
   const emit = (name) => {

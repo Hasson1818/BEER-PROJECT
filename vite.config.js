@@ -22,6 +22,7 @@ export default defineConfig({
         gibbushMatkal: page('./gibbush-matkal/index.html'),
         draft: page('./draft/index.html'),
         naval: page('./naval/index.html'),
+        shayetet: page('./shayetet/index.html'),
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),

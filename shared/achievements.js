@@ -54,6 +54,11 @@ export const ACHIEVEMENTS = [
   { id: 'naval-raft', group: 'naval', icon: '🤢', title: 'בלי להקיא', desc: 'יצאת מסירת ההקאות בלי להקיא.', points: 2 },
   { id: 'naval-command', group: 'naval', icon: '🧭', title: 'מפקד סירה', desc: 'פיקדת על הסירה בגישה הכי טובה בכל הרגעים.', points: 3 },
 
+  { id: 'shayetet-done', group: 'shayetet', icon: '🦇', title: 'חמישה ימים בעתלית', desc: 'הגעת לסוף גיבוש שייטת 13.', points: 5 },
+  { id: 'shayetet-in', group: 'shayetet', icon: '🔱', title: 'שייטת', desc: 'התקבלת לשייטת 13.', points: 7 },
+  { id: 'shayetet-cut', group: 'shayetet', icon: '📋', title: 'הוקראת', desc: 'עברת את הניפוי של יום ג׳.', points: 3 },
+  { id: 'shayetet-calm', group: 'shayetet', icon: '🫧', title: 'בריכת לחץ', desc: 'נשארת רגוע בבריכת הלחץ עם המשקפות המושחרות.', points: 2 },
+
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },
   { id: 'gibbush-pass', group: 'gibbush-tayis', icon: '🥇', title: 'כנפיים', desc: 'עברת את גיבוש הטיס והוזמנת לקורס.', points: 8 },
   { id: 'gibbush-honest', group: 'gibbush-tayis', icon: '🗣️', title: 'כנות מלאה', desc: 'דיווחת על כלל ששברת, ולא הסתרת דבר שהמ״כים ראו.', points: 3 },

@@ -1,0 +1,28 @@
+/* Additions for the Shayetet gibbush on top of the field-stage styles and the 669 pool-day water HUD. */
+
+body {
+  background: #0d1f2c;
+}
+
+.bib {
+  background: #eef2f6;
+}
+
+.result-tile.dim {
+  opacity: 0.55;
+}
+
+/* The blacked-out mask: you see almost nothing, only a faint glow at the edges. */
+.blind-mask {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(3, 6, 10, 0.97) 55%, rgba(3, 6, 10, 0.86));
+  opacity: 0;
+  transition: opacity 0.4s;
+  z-index: 1;
+}
+
+body.blind .blind-mask {
+  opacity: 1;
+}

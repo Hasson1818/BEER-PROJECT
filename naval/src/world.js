@@ -71,7 +71,12 @@ export function height(x, z) {
   return dune + ripples * (z > -52 ? 1 : 0.3) + beach + far;
 }
 
-export function buildWorld(scene) {
+/**
+ * options.checkinSign: the text on the check-in sign; options.groundHeight: a different ground (the Shayetet
+ * stage adds a pool); options.extra(scene, helpers): more things to build before the static meshes are merged.
+ */
+export function buildWorld(scene, { checkinSign = ['קליטה', 'גיבוש חובלים / צוללות'], groundHeight = null, extra = null } = {}) {
+  const H = groundHeight ?? height;
   const colliders = [];
   const updaters = [];
   const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
@@ -98,7 +103,7 @@ export function buildWorld(scene) {
   };
 
   function onGround(object, x, z, lift = 0) {
-    object.position.set(x, height(x, z) + lift, z);
+    object.position.set(x, H(x, z) + lift, z);
     scene.add(object);
     return object;
   }
@@ -148,7 +153,7 @@ export function buildWorld(scene) {
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i);
     const z = position.getZ(i);
-    const h = height(x, z);
+    const h = H(x, z);
     position.setY(i, h);
     c.copy(sand).offsetHSL(0, 0, (Math.sin(x * 1.7) * Math.cos(z * 1.3) + Math.random() - 0.5) * 0.02);
     if (Math.abs(x) < 14 && z < 2 && z > -32) c.lerp(packed, 0.45);
@@ -228,12 +233,12 @@ export function buildWorld(scene) {
     const head = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 0.3), headMaterial);
     head.userData.dynamic = true;
     onGround(head, x, z, h);
-    head.lookAt(target.x, height(target.x, target.z) + 2, target.z);
+    head.lookAt(target.x, H(target.x, target.z) + 2, target.z);
     let light = null;
     if (withLight) {
       light = new THREE.SpotLight('#fff1d0', 0, 120, 0.75, 0.6, 1);
-      light.position.set(x, height(x, z) + h, z);
-      light.target.position.set(target.x, height(target.x, target.z), target.z);
+      light.position.set(x, H(x, z) + h, z);
+      light.target.position.set(target.x, H(target.x, target.z), target.z);
       scene.add(light, light.target);
     }
     towers.push({ headMaterial, light });
@@ -243,7 +248,7 @@ export function buildWorld(scene) {
   tower(-6, 34, { x: -10, z: 40 }, false);
   tower(16, -48, { x: 0, z: -58 }, true);
   const campLight = new THREE.PointLight('#ffcf8a', 0, 30, 1.5);
-  campLight.position.set(SPOTS.circle.x, height(SPOTS.circle.x, SPOTS.circle.z) + 1.2, SPOTS.circle.z);
+  campLight.position.set(SPOTS.circle.x, H(SPOTS.circle.x, SPOTS.circle.z) + 1.2, SPOTS.circle.z);
   scene.add(campLight);
   const floodlights = {
     setPower(power) {
@@ -338,7 +343,7 @@ export function buildWorld(scene) {
   ]) post(px, pz, 2.6, M.metal, 0.05);
   box(SPOTS.checkin.x, SPOTS.checkin.z - 1.2, 2.2, 0.75, 0.8, M.table, { collide: true });
   box(SPOTS.medic.x, SPOTS.medic.z - 1.2, 1.8, 0.75, 0.8, M.table, { collide: true });
-  signOnPost(['קליטה', 'גיבוש חובלים / צוללות'], SPOTS.checkin.x + 1.8, SPOTS.checkin.z - 2.4, 0, { bg: '#1f3b73' });
+  signOnPost(checkinSign, SPOTS.checkin.x + 1.8, SPOTS.checkin.z - 2.4, 0, { bg: '#1f3b73' });
   signOnPost('מרפאה', SPOTS.medic.x - 1.8, SPOTS.medic.z - 2.4, 0, { bg: '#7f2a24' });
   box(SPOTS.water.x, SPOTS.water.z, 2, 0.8, 0.8, M.table, { collide: true });
   signOnPost('תחנת מים', SPOTS.water.x + 1.4, SPOTS.water.z - 0.8, 0, { bg: '#1f3b73' });
@@ -377,7 +382,7 @@ export function buildWorld(scene) {
   function tape(x1, z1, x2, z2) {
     const length = Math.hypot(x2 - x1, z2 - z1);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(length, 0.02, 0.08), M.tape);
-    mesh.position.set((x1 + x2) / 2, (height(x1, z1) + height(x2, z2)) / 2 + 0.06, (z1 + z2) / 2);
+    mesh.position.set((x1 + x2) / 2, (H(x1, z1) + H(x2, z2)) / 2 + 0.06, (z1 + z2) / 2);
     mesh.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
     scene.add(mesh);
   }
@@ -423,7 +428,7 @@ export function buildWorld(scene) {
   }
   const boats = [makeBoat('#2e3134'), makeBoat('#3b4148'), makeBoat('#2e3134')];
   boats.forEach((b, i) => {
-    b.position.set(SPOTS.boats.x - 4 + i * 4, height(SPOTS.boats.x, SPOTS.boats.z) + 0.25, SPOTS.boats.z);
+    b.position.set(SPOTS.boats.x - 4 + i * 4, H(SPOTS.boats.x, SPOTS.boats.z) + 0.25, SPOTS.boats.z);
   });
   signOnPost('סירות', SPOTS.boats.x + 7, SPOTS.boats.z + 2, Math.PI, { bg: '#1f3b73' });
 
@@ -618,6 +623,7 @@ export function buildWorld(scene) {
   subSign.rotation.y = -Math.PI / 2;
   scene.add(subSign);
 
+  const built = extra?.(scene, { box, post, signOnPost, onGround, colliders, updaters, M }) ?? {};
   mergeStatic(scene);
 
   return {
@@ -632,6 +638,7 @@ export function buildWorld(scene) {
     metalMaterial: M.metal,
     oliveMaterial: M.olive,
     subLamps: lamps,
+    ...built,
     update(t) {
       for (const fn of updaters) fn(t);
     },

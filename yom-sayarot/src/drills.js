@@ -569,7 +569,8 @@ export function createDrills(game) {
       if (!changed && task === 'pit' && depth >= 0.55) {
         changed = true;
         busy = true;
-        onChange().then(() => {
+        // The staff change the task halfway (a trench instead of the pit); a stage may add its own scene here.
+        Promise.resolve(onChange?.()).then(() => {
           task = 'trench';
           busy = false;
           hud.setDrill('חפירה: משימה חדשה', `${target()} · לחץ "פעולה" / E`);

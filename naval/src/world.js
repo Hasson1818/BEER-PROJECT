@@ -189,7 +189,7 @@ export function buildWorld(scene) {
           vec3 deep = vec3(0.05, 0.27, 0.45);
           vec3 col = mix(shallow, deep, far) + w * 0.03;
           // Foam where the waves meet the sand.
-          float foam = smoothstep(-58.5, -61.5, p.y) * (1.0 - smoothstep(-61.5, -64.0, p.y)) * (0.6 + 0.4 * sin(p.x * 0.6 + time * 2.0));
+          float foam = smoothstep(-54.5, -56.5, p.y) * (1.0 - smoothstep(-56.5, -59.5, p.y)) * (0.6 + 0.4 * sin(p.x * 0.6 + time * 2.0));
           col = mix(col, vec3(0.95), foam * 0.55);
           float sparkle = pow(max(0.0, w), 6.0) * 0.25;
           gl_FragColor = vec4(col + sparkle, 0.9);
@@ -200,7 +200,8 @@ export function buildWorld(scene) {
     }),
   );
   sea.rotation.x = -Math.PI / 2;
-  sea.position.set(0, SEA.level, -60 - 150);
+  // The ground goes under the water at about z = -56; the sea starts just before that.
+  sea.position.set(0, SEA.level, -52 - 150);
   sea.userData.dynamic = true;
   sea.renderOrder = 1;
   scene.add(sea);

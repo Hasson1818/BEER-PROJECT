@@ -67,7 +67,7 @@ requestAnimationFrame(() => document.body.classList.add('ready'));
 syncFromResults();
 
 const $ = (id) => document.getElementById(id);
-const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'gibbush-matkal', name: 'גיבוש מטכ״ל / שלדג' }, { id: 'draft', name: 'הדראפט: 669 / קומנדו' }, { id: 'pilot-path', name: 'המסלול לטיס' }];
+const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'yom-hamaa', name: 'יום המא״ה' }, { id: 'gibbush-matkal', name: 'גיבוש מטכ״ל / שלדג' }, { id: 'draft', name: 'הדראפט: 669 / קומנדו' }, { id: 'pilot-path', name: 'המסלול לטיס' }];
 
 function renderJourney(animate = true) {
   const p = progress();

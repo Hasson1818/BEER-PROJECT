@@ -16,6 +16,7 @@ export default defineConfig({
         index: page('./index.html'),
         mainScreen: page('./main-screen/index.html'),
         tzavRishon: page('./tzav-rishon/index.html'),
+        yomHamaa: page('./yom-hamaa/index.html'),
         yomSayarot: page('./yom-sayarot/index.html'),
         gibbushTayis: page('./gibbush-tayis/index.html'),
         gibbushMatkal: page('./gibbush-matkal/index.html'),

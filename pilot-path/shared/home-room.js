@@ -107,7 +107,12 @@ function drawOutside(ctx, w, h, mode) {
   }
 }
 
-export function buildHomeRoom(scene, { outside = 'night' } = {}) {
+/**
+ * options.theme: 'pilot' (model planes, a wings poster) or 'general' (any other stage: posters and sign from
+ * options.posters / options.sign, no planes).
+ */
+export function buildHomeRoom(scene, { outside = 'night', theme = 'pilot', sign = ['ירפ״א', 'עוד שבועיים'], posters = null, screenTitle = 'בוחן מקוון · חיל האוויר' } = {}) {
+  const pilot = theme === 'pilot';
   const colliders = [];
   const blockers = [];
   const updaters = [];
@@ -272,7 +277,7 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   const lidShell = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.27, 0.012), M.metal);
   lidShell.position.set(0, 0.135, 0);
   lid.add(lidShell);
-  const screenTexture = canvasTexture(640, 400, (ctx, w, h) => drawLaptopIdle(ctx, w, h, 0));
+  const screenTexture = canvasTexture(640, 400, (ctx, w, h) => drawLaptopIdle(ctx, w, h, 0, screenTitle));
   const screenMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.37, 0.235), new THREE.MeshBasicMaterial({ map: screenTexture, toneMapped: false }));
   screenMesh.position.set(0, 0.135, 0.0075);
   screenMesh.userData.dynamic = true;
@@ -280,7 +285,7 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   let screenState = 'idle';
   const setScreen = (state) => {
     screenState = state;
-    redraw(screenTexture, (ctx, w, h) => drawLaptopIdle(ctx, w, h, state === 'on' ? 1 : state === 'call' ? 2 : 0));
+    redraw(screenTexture, (ctx, w, h) => drawLaptopIdle(ctx, w, h, state === 'on' ? 1 : state === 'call' ? 2 : 0, screenTitle));
   };
   const laptopGlow = new THREE.PointLight('#8ab8ff', 0.8, 2.2, 1.8);
   laptopGlow.position.set(1.45, 1.0, -2.55);
@@ -294,10 +299,12 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.035, 0.09, 10), M.darkWood);
   cup.position.set(0.8, 0.8, -2.55);
   scene.add(cup);
-  const deskPlane = makeModelPlane(M, 0.22);
-  deskPlane.position.set(2.0, 0.84, -3.05);
-  deskPlane.rotation.y = -0.6;
-  scene.add(deskPlane);
+  if (pilot) {
+    const deskPlane = makeModelPlane(M, 0.22);
+    deskPlane.position.set(2.0, 0.84, -3.05);
+    deskPlane.rotation.y = -0.6;
+    scene.add(deskPlane);
+  }
   // Desk lamp.
   box(0.78, 0.77, -3.1, 0.12, 0.03, 0.12, M.black);
   const lampArm = box(0.78, 1.0, -3.1, 0.02, 0.45, 0.02, M.black);
@@ -337,16 +344,24 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
     const book = box(x2 - 0.2, 1.64, -0.55 + i * 0.1, 0.22, 0.2 + (i % 3) * 0.03, 0.07, M.book[i % M.book.length]);
     book.position.y = 1.56 + book.geometry.parameters.height / 2;
   }
-  [[0.55, 0.9], [0.95, 0.9], [1.1, 0.4]].forEach(([z, s], i) => {
-    const p = makeModelPlane(M, 0.18 * s);
-    p.position.set(x2 - 0.2, 1.94 + 0.03, z - 0.4);
-    p.rotation.y = Math.PI / 2 + i * 0.4;
-    scene.add(p);
-  });
-  const dreamPlane = makeModelPlane(M, 0.3);
-  dreamPlane.position.set(x2 - 0.2, 1.24, 0.3);
-  dreamPlane.rotation.y = Math.PI / 2;
-  scene.add(dreamPlane);
+  if (pilot) {
+    [[0.55, 0.9], [0.95, 0.9], [1.1, 0.4]].forEach(([z, s], i) => {
+      const p = makeModelPlane(M, 0.18 * s);
+      p.position.set(x2 - 0.2, 1.94 + 0.03, z - 0.4);
+      p.rotation.y = Math.PI / 2 + i * 0.4;
+      scene.add(p);
+    });
+    const dreamPlane = makeModelPlane(M, 0.3);
+    dreamPlane.position.set(x2 - 0.2, 1.24, 0.3);
+    dreamPlane.rotation.y = Math.PI / 2;
+    scene.add(dreamPlane);
+  } else {
+    // A ball and a stack of books on the lower shelf instead of the model planes.
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 12), new THREE.MeshStandardMaterial({ color: '#e07a2a', roughness: 0.7 }));
+    ball.position.set(x2 - 0.2, 1.33, 0.6);
+    scene.add(ball);
+    for (let i = 0; i < 4; i++) box(x2 - 0.2, 1.24 + i * 0.05, 0.05, 0.24, 0.045, 0.32, M.book[(i + 2) % M.book.length]);
+  }
   // A small table with a water bottle (you take it before the test).
   box(2.6, 0.3, 1.55, 0.5, 0.6, 0.5, M.wood, { collide: true, block: true });
   const tableBottle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.24, 12), new THREE.MeshStandardMaterial({ color: '#8fc6e8', transparent: true, opacity: 0.7 }));
@@ -356,11 +371,15 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   box(2.55, 1.1, 2.55, 0.9, 2.2, 0.55, M.wood, { collide: true, block: true });
   box(2.55, 1.1, 2.26, 0.02, 2.0, 0.02, M.darkWood);
   // Posters and a clock.
-  const posterA = makePoster('חלום', ['כנפי טיס', 'עוד לא ויתרתי'], { width: 0.7, height: 0.95, color: '#1f3b73' });
+  const [pa, pb] = posters ?? [
+    ['חלום', ['כנפי טיס', 'עוד לא ויתרתי'], '#1f3b73'],
+    ['F-35', ['אדיר', 'חיל האוויר'], '#2f3a20'],
+  ];
+  const posterA = makePoster(pa[0], pa[1], { width: 0.7, height: 0.95, color: pa[2] });
   posterA.position.set(x1 + 0.08, 1.55, -1.2);
   posterA.rotation.y = Math.PI / 2;
   scene.add(posterA);
-  const posterB = makePoster('F-35', ['אדיר', 'חיל האוויר'], { width: 0.9, height: 0.6, color: '#2f3a20' });
+  const posterB = makePoster(pb[0], pb[1], { width: 0.9, height: 0.6, color: pb[2] });
   posterB.position.set(x1 + 0.08, 1.55, 0.2);
   posterB.rotation.y = Math.PI / 2;
   scene.add(posterB);
@@ -390,7 +409,7 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   clock.position.set(0.1, 2.2, z2 - 0.11);
   clock.rotation.y = Math.PI;
   scene.add(clock);
-  const signBoard = makeSign(['ירפ״א', 'עוד שבועיים'], { width: 0.7, height: 0.25, bg: '#2f3a20' });
+  const signBoard = makeSign(sign, { width: 0.7, height: 0.25, bg: '#2f3a20' });
   signBoard.position.set(-1.0, 1.9, z2 - 0.11);
   signBoard.rotation.y = Math.PI;
   scene.add(signBoard);
@@ -439,7 +458,7 @@ export function buildHomeRoom(scene, { outside = 'night' } = {}) {
   };
 }
 
-function drawLaptopIdle(ctx, w, h, mode) {
+function drawLaptopIdle(ctx, w, h, mode, title) {
   // 0: a quiet lock screen, 1: the exam portal's blue page, 2: video call grid.
   const g = ctx.createLinearGradient(0, 0, w, h);
   g.addColorStop(0, mode === 2 ? '#10161f' : '#16305c');
@@ -461,7 +480,7 @@ function drawLaptopIdle(ctx, w, h, mode) {
     ctx.fillRect(40, 110, 220, 24);
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '700 34px Heebo, sans-serif';
-    ctx.fillText('בוחן מקוון · חיל האוויר', w / 2, 220);
+    ctx.fillText(title, w / 2, 220);
   } else {
     for (let i = 0; i < 4; i++) {
       ctx.fillStyle = i === 0 ? '#2f4a6a' : '#233046';

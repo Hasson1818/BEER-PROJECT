@@ -24,6 +24,12 @@ export const ACHIEVEMENTS = [
   { id: 'dapar-70', group: 'tzav-rishon', icon: '🧠', title: 'ראש חד', desc: 'דפ״ר 70 ומעלה.', points: 3 },
   { id: 'profile-97', group: 'tzav-rishon', icon: '💪', title: 'פרופיל מלא', desc: 'פרופיל 97 בצו הראשון.', points: 2 },
 
+  { id: 'maa-done', group: 'yom-hamaa', icon: '🖥️', title: 'מיון, איתור והתאמה', desc: 'סיימת את יום המא״ה ומילאת את שאלון ההעדפות.', points: 5 },
+  { id: 'maa-ready', group: 'yom-hamaa', icon: '🧹', title: 'חדר מוכן', desc: 'הכנת את החדר לפני שהתיישבת: חלון, טלפון, מים, דף ותעודה.', points: 1 },
+  { id: 'maa-turn', group: 'yom-hamaa', icon: '💬', title: 'לא פספסתי את התור', desc: 'ראית בצ׳אט שהגיע תורך להציג, ולחצת בזמן.', points: 2 },
+  { id: 'maa-five', group: 'yom-hamaa', icon: '5️⃣', title: 'חמש', desc: 'קיבלת ציון 5 לפחות בסביבת עבודה אחת.', points: 2 },
+  { id: 'maa-appeal', group: 'yom-hamaa', icon: '📝', title: 'ערעור שהתקבל', desc: 'הגשת ערעור מנומק והוא אושר.', points: 2 },
+
   { id: 'sayarot-done', group: 'yom-sayarot', icon: '🏜️', title: 'שרדת את הדיונה', desc: 'סיימת את יום סיירות וקיבלת תשובה.', points: 6 },
   { id: 'sayarot-run', group: 'yom-sayarot', icon: '⏱️', title: 'עמדת ברף', desc: 'עברת את ריצת הסף בניסיון הראשון.', points: 3 },
   { id: 'sayarot-steady', group: 'yom-sayarot', icon: '🔥', title: 'לא עוצרים', desc: 'המגבשים צעקו עליך פעמיים או פחות לאורך היום.', points: 3 },

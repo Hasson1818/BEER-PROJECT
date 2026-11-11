@@ -1,0 +1,13 @@
+/* Additions for יום המא״ה on top of the shared game styles and the pilot-path screens. */
+
+body {
+  background: #0c1424;
+}
+
+.clock .day {
+  margin-inline-end: 6px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--yellow);
+}

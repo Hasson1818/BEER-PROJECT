@@ -543,7 +543,7 @@ export function learnMore(ui, results) {
         grid.append(card);
       }
       const actions = el('div', 'actions');
-      const nextStage = button('לשלב הבא: יום סיירות');
+      const nextStage = button('לשלב הבא: יום המא״ה');
       const menu = button('לתפריט הראשי', 'button secondary');
       const again = button('לנסות שוב', 'button secondary');
       nextStage.addEventListener('click', () => close('next'));

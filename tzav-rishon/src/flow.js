@@ -341,7 +341,7 @@ async function results(game) {
   if (choice === 'again') {
     unlock('persistence');
     window.location.href = './?new=1';
-  } else if (choice === 'next') window.location.href = '../yom-sayarot/?new=1';
+  } else if (choice === 'next') window.location.href = '../yom-hamaa/?new=1';
   else window.location.href = '../main-screen/';
 }
 

@@ -48,6 +48,12 @@ export const ACHIEVEMENTS = [
   { id: 'draft-ring', group: 'draft', icon: '⭕', title: 'הטבעת לא נפתחה', desc: 'נשארת רגוע בטבעת הלחץ והחזקת את מי שנלחץ לידך.', points: 3 },
   { id: 'draft-honest', group: 'draft', icon: '👂', title: 'בלי להסתיר', desc: 'סיפרת על האוזן בשאלון הבריאות, והחזרת בשקט את מי שנתלה על הקיר.', points: 2 },
 
+  { id: 'naval-done', group: 'naval', icon: '⚓', title: 'חמישה ימים בעתלית', desc: 'הגעת לסוף המיון של ענף ים.', points: 5 },
+  { id: 'naval-hovel', group: 'naval', icon: '🚢', title: 'חובל', desc: 'התקבלת לקורס חובלים.', points: 6 },
+  { id: 'naval-sub', group: 'naval', icon: '🐋', title: 'צוללן', desc: 'נבחרת למסלול הצוללות.', points: 6 },
+  { id: 'naval-raft', group: 'naval', icon: '🤢', title: 'בלי להקיא', desc: 'יצאת מסירת ההקאות בלי להקיא.', points: 2 },
+  { id: 'naval-command', group: 'naval', icon: '🧭', title: 'מפקד סירה', desc: 'פיקדת על הסירה בגישה הכי טובה בכל הרגעים.', points: 3 },
+
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },
   { id: 'gibbush-pass', group: 'gibbush-tayis', icon: '🥇', title: 'כנפיים', desc: 'עברת את גיבוש הטיס והוזמנת לקורס.', points: 8 },
   { id: 'gibbush-honest', group: 'gibbush-tayis', icon: '🗣️', title: 'כנות מלאה', desc: 'דיווחת על כלל ששברת, ולא הסתרת דבר שהמ״כים ראו.', points: 3 },

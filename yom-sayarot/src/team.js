@@ -93,8 +93,8 @@ export function laneX(index) {
   return lanes[index % lanes.length];
 }
 
-export function nearestCone(x) {
-  return DUNE.cones.reduce((best, c) => (Math.abs(c.x - x) < Math.abs(best.x - x) ? c : best));
+export function nearestCone(x, cones = DUNE.cones) {
+  return cones.reduce((best, c) => (Math.abs(c.x - x) < Math.abs(best.x - x) ? c : best));
 }
 
 /**

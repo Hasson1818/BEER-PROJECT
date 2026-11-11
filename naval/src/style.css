@@ -1,0 +1,179 @@
+/* Additions for the naval gibbush on top of the field-stage styles. */
+
+body {
+  background: #0f2233;
+}
+
+.bib {
+  background: #eef2f6;
+}
+
+.result-tile.dim {
+  opacity: 0.55;
+}
+
+.nv-h3 {
+  margin: 10px 0 2px;
+  font-size: 1rem;
+  color: var(--blue);
+}
+
+/* The hydraulics video and the engineering drawing. */
+.nv-flow {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 12px 0;
+}
+.nv-flow.row {
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  overflow-x: auto;
+}
+.nv-step {
+  position: relative;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #e4e9ef;
+  color: #23303e;
+  font-weight: 700;
+  transition: background 0.3s, transform 0.3s;
+}
+.nv-step.on {
+  background: #1f3b73;
+  color: #fff;
+  transform: scale(1.04);
+}
+
+/* The closed raft. */
+.panel.raft {
+  background: #1d1408;
+  color: #f6e3c8;
+}
+.panel.raft .eyebrow,
+.panel.raft .note {
+  color: #e8c79d;
+}
+.nv-raft {
+  display: grid;
+  place-items: center;
+  height: 160px;
+  margin: 10px 0;
+  border-radius: 50% 50% 14px 14px;
+  background: radial-gradient(circle at 50% 40%, #ff9a3a, #a8460f 70%, #4a1e06);
+  transition: transform 0.1s linear;
+}
+.nv-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #fff6e8;
+  transition: transform 0.1s linear;
+}
+.nv-dot.ready {
+  background: #7fd36b;
+}
+.nv-bar {
+  display: grid;
+  grid-template-columns: 5em 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.nv-bar i {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e05a47, #f2c94c);
+  transform-origin: right;
+  transform: scaleX(0);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+.nv-bar.breath i {
+  background: #5fd0e8;
+}
+
+/* Tug-of-war. */
+.nv-tug {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  margin: 12px 0;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e9dcc0, #d9c49a);
+  font-weight: 800;
+}
+.nv-tug::before {
+  content: '';
+  position: absolute;
+  inset: 28px 40px auto;
+  height: 6px;
+  border-radius: 3px;
+  background: #b98b45;
+}
+.nv-knot {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: #c0392b;
+  transition: transform 0.1s linear;
+}
+.nv-side {
+  position: relative;
+  z-index: 1;
+}
+
+/* The interception simulator. */
+.panel.intercept {
+  max-width: 640px;
+}
+.nv-field {
+  position: relative;
+  height: 300px;
+  margin: 10px 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(#08142a, #12355a 80%, #1e5a7a);
+  touch-action: none;
+}
+.nv-ship {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+}
+.nv-ship.hit {
+  animation: nv-hit 0.4s;
+}
+@keyframes nv-hit {
+  50% {
+    filter: drop-shadow(0 0 12px #ff5a3a);
+  }
+}
+.nv-missile {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 90, 58, 0.25);
+  color: #ffb08a;
+  font-size: 1.2rem;
+  cursor: crosshair;
+}
+.nv-score {
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+}

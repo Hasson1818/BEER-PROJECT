@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DUNE, SPOTS, height } from './world.js';
+import * as DUNE_WORLD from './world.js';
 import { laneX, nearestCone, loop } from './team.js';
 import { SHOUTS } from './content.js';
 import { chime, click } from '../../shared/engine/audio.js';
@@ -14,7 +14,12 @@ const shuffle = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0
  * carrying, crawling or going uphill), standing restores it, and a tired
  * player slows down. Standing still too long gets you shouted at.
  */
+/**
+ * `game.terrain` ({ DUNE, SPOTS, height }) lets another stage run the same drills on its own ground (the naval
+ * stage's beach); without it the drills use the יום סיירות dune.
+ */
 export function createDrills(game) {
+  const { DUNE, SPOTS, height } = game.terrain ?? DUNE_WORLD;
   const { player, ui, people, world, hud } = game;
   const stats = { stops: 0 };
   let stamina = 100;
@@ -124,11 +129,12 @@ export function createDrills(game) {
 
   // ---------- Threshold run (1,200 m) ----------
 
-  async function thresholdRun() {
+  /** options: the naval stage runs a shorter "ריצת סינון" with its own (game) limit. */
+  async function thresholdRun({ title = 'ריצת סף', total = 1200, limit = 300 } = {}) {
     const start = SPOTS.runStart;
     const turn = SPOTS.runTurn;
-    const scale = 1200 / (2 * Math.abs(start.x - turn.x)); // Game meters → real meters.
-    const limit = 300; // 5:00 for 1,200 m.
+    const scale = total / (2 * Math.abs(start.x - turn.x)); // Game meters → real meters.
+    const label = `${title} · ${total.toLocaleString('en-US')} מ׳`;
 
     player.teleport(start.x - 0.8, start.z, Math.PI / 2);
     const runners = [...people.others.slice(0, 8), ...people.teammates.slice(0, 6)];
@@ -139,7 +145,7 @@ export function createDrills(game) {
       person.place(start.x - 0.8 + (i % 2) * 0.6, start.z - 1.4 + (i % 7) * 0.45, -Math.PI / 2);
     });
 
-    hud.setDrill('ריצת סף · 1,200 מ׳', 'ריצה עד הדגל הכתום וחזרה');
+    hud.setDrill(label, 'ריצה עד הדגל הכתום וחזרה');
     await countdown();
     player.autoRun = true;
     runners.forEach((person) => {
@@ -158,12 +164,12 @@ export function createDrills(game) {
       effort(dt, { drain: 2.1, staffName: 'המגבש הראשי', idleLimit: 6 });
       if (!turned && near(turn, 3)) {
         turned = true;
-        ui.toast('600 מטר. עכשיו חזרה!', 1500);
+        ui.toast(`${total / 2} מטר. עכשיו חזרה!`, 1500);
       }
-      const covered = turned ? 600 + (player.x - turn.x) * scale : (start.x - player.x) * scale;
-      const meters = THREE.MathUtils.clamp(Math.round(covered / 10) * 10, 0, 1200);
+      const covered = turned ? total / 2 + (player.x - turn.x) * scale : (start.x - player.x) * scale;
+      const meters = THREE.MathUtils.clamp(Math.round(covered / 10) * 10, 0, total);
       const shown = time * scale;
-      hud.setDrill('ריצת סף · 1,200 מ׳', `${meters} מ׳ · ${formatTime(shown)}`);
+      hud.setDrill(label, `${meters} מ׳ · ${formatTime(shown)}`);
       return turned && player.x >= start.x - 0.5;
     });
 
@@ -196,7 +202,7 @@ export function createDrills(game) {
     people.teammates.forEach((person, i) => {
       if (person.info.out) return;
       const x = laneX(i);
-      const cone = nearestCone(x);
+      const cone = nearestCone(x, DUNE.cones);
       const top = { x: cone.x + (x > cone.x ? 0.9 : -0.9), z: cone.z - 0.6 };
       const steps =
         kind === 'combined'
@@ -339,7 +345,7 @@ export function createDrills(game) {
       const runners = people.teammates.filter((p) => !p.info.out);
       runners.forEach((person) => {
         const x = laneX(people.teammates.indexOf(person));
-        const cone = nearestCone(x);
+        const cone = nearestCone(x, DUNE.cones);
         const speed = between(3.2, 4.4) * person.fitness;
         person.walkTo([{ x: cone.x + (x > cone.x ? 0.9 : -0.9), z: cone.z - 0.5 }, { x, z: DUNE.startZ + 1 }], {
           speed,
@@ -395,13 +401,13 @@ export function createDrills(game) {
 
       canCarriers.forEach((person) => {
         const x = person.position.x;
-        const cone = nearestCone(x);
+        const cone = nearestCone(x, DUNE.cones);
         person.carry('jerrycan');
         person.walkTo([{ x: cone.x + 0.9, z: cone.z - 0.5 }, { x, z: DUNE.startZ + 1 }], { speed: 2.4 * person.fitness, pose: 'hands-on-knees' });
       });
       stragglers.forEach((person) => {
         const x = person.position.x;
-        const cone = nearestCone(x);
+        const cone = nearestCone(x, DUNE.cones);
         person.carry(null);
         person.walkTo([{ x: cone.x - 0.9, z: cone.z - 0.5 }, { x, z: DUNE.startZ + 1 }], { speed: 3.0 * person.fitness, pose: 'hands-on-knees' });
       });

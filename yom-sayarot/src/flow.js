@@ -354,12 +354,13 @@ async function results(game) {
   game.save('results');
   await ui.interlude('יום 3 · אחר הצהריים. הטלפון רוטט…', 2200);
   const toUnit = outcome.title.includes('היחידה') && !state.failedRun;
-  const choice = await resultsSms(ui, { bib: state.bib, outcome, lines, nextLabel: toUnit ? 'לשלב הבא: גיבוש היחידה' : undefined });
+  const toNavy = outcome.title.includes('חובלים') && !state.failedRun;
+  const choice = await resultsSms(ui, { bib: state.bib, outcome, lines, nextLabel: toUnit ? 'לשלב הבא: גיבוש היחידה' : toNavy ? 'לשלב הבא: מיון ענף ים' : undefined });
   await ui.fact(FACTS.end.title, FACTS.end.points);
   if (choice === 'again') {
     unlock('persistence');
     window.location.href = './?new=1';
-  } else if (choice === 'next') window.location.href = toUnit ? '../gibbush-matkal/?new=1' : '../gibbush-tayis/?new=1';
+  } else if (choice === 'next') window.location.href = toUnit ? '../gibbush-matkal/?new=1' : toNavy ? '../naval/?new=1' : '../gibbush-tayis/?new=1';
   else window.location.href = '../main-screen/';
 }
 

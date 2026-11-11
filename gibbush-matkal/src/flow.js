@@ -514,7 +514,14 @@ async function results(game) {
   }
   game.save('results');
   await ui.interlude(state.quit || state.cut ? 'האוטובוס יוצא לתחנת הרכבת...' : 'יום ה׳ · 13:05. הטלפון חזר אליך. הוא רוטט...', 2200);
-  const next = outcome === OUTCOMES.interviews ? { label: 'לשבוע ראיונות', href: '../interview-week/?new=1' } : null;
+  const next =
+    outcome === OUTCOMES.interviews
+      ? { label: 'לשבוע ראיונות', href: '../interview-week/?new=1' }
+      : outcome === OUTCOMES.draft669
+        ? { label: 'ליום הבריכה של 669', href: '../draft/?new=1&path=669' }
+        : outcome === OUTCOMES.commando
+          ? { label: 'לשיבוץ בקומנדו', href: '../draft/?new=1&path=commando' }
+          : null;
   const time = state.quit ? 'יום ב׳ · 23:40' : state.cut ? 'יום ג׳ · 06:30' : 'יום ה׳ · 13:05';
   const choice = await resultsCard(ui, { bib: state.bib, outcome, lines, next, time });
   await ui.fact(FACTS.end.title, FACTS.end.points);

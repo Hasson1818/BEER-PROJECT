@@ -1,0 +1,206 @@
+/* Additions for the draft stage (669 pool day / commando placement) on top of the field-stage styles. */
+
+body {
+  background: #12324a;
+}
+
+/* Under water: a blue tint over the whole view. */
+.underwater-tint {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(40, 150, 190, 0.25), rgba(8, 60, 90, 0.6));
+  opacity: 0;
+  transition: opacity 0.25s;
+  z-index: 1;
+}
+
+body.underwater .underwater-tint {
+  opacity: 1;
+}
+
+/* The water HUD: meters and the stroke buttons, bottom center. */
+.water {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(440px, calc(100% - 32px));
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  background: rgba(10, 34, 52, 0.84);
+  color: #e8f5fb;
+  pointer-events: auto;
+}
+
+.water > strong {
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.water-meter {
+  display: grid;
+  grid-template-columns: 7.5em 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.water-meter .track {
+  position: relative;
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.water-meter .fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5fd0e8, #2a8fd0);
+  transform-origin: right;
+  transition: transform 0.1s linear;
+}
+
+.water-meter .zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-inline: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.water-meter.low .fill {
+  background: #e05a47;
+}
+
+.water-meter.ready .fill {
+  background: #7fd36b;
+}
+
+.water-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.water-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.water-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.water-buttons button:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.water-buttons kbd {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: inherit;
+  font-size: 0.72rem;
+}
+
+body.touch .water-buttons kbd {
+  display: none;
+}
+
+body.touch .water-buttons button {
+  min-height: 56px;
+  min-width: 72px;
+  justify-content: center;
+}
+
+/* On touch screens the stroke buttons replace the joystick while in the water. */
+body.touch:has(.water:not([hidden])) .joystick,
+body.touch:has(.water:not([hidden])) .action-button {
+  display: none;
+}
+
+/* Unit cards in the commando ranking. */
+.unit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.unit-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 2px solid var(--khaki-300);
+  border-radius: 12px;
+  background: #fbf7ea;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.unit-card strong {
+  font-size: 1.15rem;
+}
+
+.unit-card span:not(.unit-rank) {
+  font-size: 0.85rem;
+}
+
+.unit-card small {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.unit-card.packed {
+  border-color: var(--olive-600);
+  background: #eef0d9;
+}
+
+.unit-rank {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 10px;
+  font-family: 'Secular One', 'Heebo', sans-serif;
+  font-size: 1.4rem;
+  color: var(--olive-600);
+}
+
+/* An incoming call. */
+.phone-screen.call {
+  align-items: center;
+  text-align: center;
+}
+
+.call-label {
+  margin: 24px 0 4px;
+  opacity: 0.7;
+}
+
+/* The bib here is written on the shoulder, so it is a plain white tag. */
+.bib {
+  background: #f4f8fa;
+}

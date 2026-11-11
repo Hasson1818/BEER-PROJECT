@@ -36,6 +36,12 @@ export const ACHIEVEMENTS = [
   { id: 'matkal-honest', group: 'gibbush-matkal', icon: '🧵', title: 'נגעתי', desc: 'דיווחת על הנגיעה בחוט ותיקנת בשקט את מי שרימה בספירה.', points: 3 },
   { id: 'matkal-weapon', group: 'gibbush-matkal', icon: '🔧', title: 'ידיים יציבות', desc: 'פירקת את שני הנשקים בכל הסבבים בלי טעות.', points: 2 },
 
+  { id: 'draft-done', group: 'draft', icon: '📨', title: 'הדראפט', desc: 'הגעת לסוף המסלול של 669 או של חטיבת הקומנדו.', points: 5 },
+  { id: 'draft-669', group: 'draft', icon: '🚁', title: 'כדי שאחרים יחיו', desc: 'נמצאת מתאים ל־669 אחרי יום הבריכה.', points: 6 },
+  { id: 'draft-commando', group: 'draft', icon: '🦎', title: 'קומנדו', desc: 'אישרת שיבוץ ליחידה בחטיבת הקומנדו.', points: 4 },
+  { id: 'draft-ring', group: 'draft', icon: '⭕', title: 'הטבעת לא נפתחה', desc: 'נשארת רגוע בטבעת הלחץ והחזקת את מי שנלחץ לידך.', points: 3 },
+  { id: 'draft-honest', group: 'draft', icon: '👂', title: 'בלי להסתיר', desc: 'סיפרת על האוזן בשאלון הבריאות, והחזרת בשקט את מי שנתלה על הקיר.', points: 2 },
+
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },
   { id: 'gibbush-pass', group: 'gibbush-tayis', icon: '🥇', title: 'כנפיים', desc: 'עברת את גיבוש הטיס והוזמנת לקורס.', points: 8 },
   { id: 'gibbush-honest', group: 'gibbush-tayis', icon: '🗣️', title: 'כנות מלאה', desc: 'דיווחת על כלל ששברת, ולא הסתרת דבר שהמ״כים ראו.', points: 3 },

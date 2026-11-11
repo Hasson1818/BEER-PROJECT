@@ -19,6 +19,7 @@ export default defineConfig({
         yomSayarot: page('./yom-sayarot/index.html'),
         gibbushTayis: page('./gibbush-tayis/index.html'),
         gibbushMatkal: page('./gibbush-matkal/index.html'),
+        draft: page('./draft/index.html'),
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),

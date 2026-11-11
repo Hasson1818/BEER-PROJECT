@@ -123,7 +123,7 @@ export class Person {
       this.part('thigh', look.pants, hip);
       const knee = new THREE.Group();
       knee.position.y = -0.44;
-      this.part('shin', look.pants, knee);
+      this.part('shin', look.shins ?? look.pants, knee); // `shins`: bare legs under swim shorts
       this.part('shoe', look.shoes, knee).position.set(0, -0.42, 0.04);
       hip.add(knee);
       this.body.add(hip);
@@ -648,6 +648,82 @@ export class Person {
           arm.elbow.rotation.x = -1.6;
           arm.elbow.rotation.y = arm.side * 0.9;
         }
+        break;
+      // ---------- In the water (the caller puts the feet low enough that the head stays out) ----------
+      case 'tread':
+      case 'tread-high':
+      case 'ring':
+      case 'hold-up': {
+        // Treading water: legs cycling, the body bobbing a little.
+        const phase = t * (this.pose === 'tread-high' ? 5 : 3.4);
+        for (const leg of this.legs) {
+          const s = Math.sin(phase + leg.hip.position.x * 20);
+          leg.hip.rotation.x = -0.45 + s * 0.4;
+          leg.knee.rotation.x = 0.7 + s * 0.45;
+        }
+        this.body.position.y = Math.sin(phase * 0.5) * 0.035;
+        for (const arm of this.arms) {
+          if (this.pose === 'tread') {
+            // Hands sculling at chest height.
+            arm.shoulder.rotation.set(-0.55, Math.sin(t * 4 + arm.side) * 0.35, arm.side * 0.85);
+            arm.elbow.rotation.x = -0.7;
+          } else if (this.pose === 'tread-high') {
+            // Elbows out of the water: upper arms to the side, forearms up.
+            arm.shoulder.rotation.set(0, 0, arm.side * 1.5);
+            arm.elbow.rotation.set(0, 0, arm.side * (1.25 + Math.sin(t * 6) * 0.08));
+          } else if (this.pose === 'ring') {
+            // Hands on the shoulders of the people on both sides.
+            arm.shoulder.rotation.set(-0.35, 0, arm.side * 1.3);
+            arm.elbow.rotation.x = -0.15;
+          } else {
+            // Holding something above the head.
+            arm.shoulder.rotation.set(-2.95, 0, arm.side * 0.32);
+            arm.elbow.rotation.x = -0.35;
+          }
+        }
+        break;
+      }
+      case 'swim':
+      case 'breast': {
+        // Face down at the surface.
+        this.body.rotation.x = Math.PI / 2;
+        this.body.position.set(0, 1.26, -0.9);
+        if (this.pose === 'swim') {
+          // Front crawl: arms turning over in turns, small fast kicks.
+          const phase = t * 4.2;
+          armL.shoulder.rotation.set(-phase % (Math.PI * 2), 0, 0.2);
+          armR.shoulder.rotation.set(-(phase + Math.PI) % (Math.PI * 2), 0, -0.2);
+          armL.elbow.rotation.x = -0.35;
+          armR.elbow.rotation.x = -0.35;
+          legL.hip.rotation.x = Math.sin(t * 13) * 0.25;
+          legR.hip.rotation.x = -Math.sin(t * 13) * 0.25;
+          this.body.rotation.y = Math.sin(phase) * 0.25;
+          this.head.rotation.set(-1.2, Math.max(0, Math.sin(phase * 0.5)) * 0.9, 0);
+        } else {
+          // Breaststroke: arms forward and around, a frog kick, then the glide.
+          const c = (t * 1.6) % 1;
+          const pull = c < 0.4 ? c / 0.4 : 0;
+          for (const arm of this.arms) {
+            arm.shoulder.rotation.set(-2.9 + pull * 1.2, 0, arm.side * (0.2 + pull * 0.9));
+            arm.elbow.rotation.x = -pull * 1.2;
+          }
+          const kick = c > 0.35 && c < 0.75 ? Math.sin(((c - 0.35) / 0.4) * Math.PI) : 0;
+          for (const leg of this.legs) {
+            leg.hip.rotation.set(-kick * 0.6, 0, -leg.hip.position.x * 4 * kick);
+            leg.knee.rotation.x = kick * 1.6;
+          }
+          this.head.rotation.x = -1.2 + pull * 0.5;
+        }
+        headFree = false;
+        break;
+      }
+      case 'float-back':
+        // On the back, as someone being rescued.
+        this.body.rotation.x = -Math.PI / 2;
+        this.body.position.set(0, 1.42, 0.9);
+        for (const arm of this.arms) arm.shoulder.rotation.set(0, 0, arm.side * 0.5);
+        this.head.rotation.x = 0.3;
+        headFree = false;
         break;
       case 'stand':
       default:

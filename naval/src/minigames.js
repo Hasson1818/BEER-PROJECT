@@ -152,11 +152,16 @@ export function raftEndurance(ui, seconds = 40) {
     };
     document.addEventListener('keydown', onKey);
     cleanup(() => document.removeEventListener('keydown', onKey));
+    let lastTick = performance.now();
     const id = setInterval(() => {
-      t += 0.1;
-      cycle = Math.min(1, cycle + 0.1 / 3.5);
+      // Real elapsed time (a background tab slows timers down), in steps of 0.1 s so the rates below stay right.
+      const now = performance.now();
+      const steps = Math.max(1, Math.min(10, Math.round((now - lastTick) / (0.1 * 1000))));
+      lastTick = now;
+      t += 0.1 * steps;
+      cycle = Math.min(1, cycle + (0.1 * steps) / 3.5);
       // About 0.04 a second: slow, steady breaths (one every 3.5 s, -0.12 each) keep it down; gasping doesn't.
-      level = Math.min(1, level + 0.0032 + Math.max(0, Math.sin(t * 1.3)) * 0.0025);
+      level = Math.min(1, level + (0.0032 + Math.max(0, Math.sin(t * 1.3)) * 0.0025) * steps);
       view.style.transform = `rotate(${Math.sin(t * 1.4) * 6}deg) translateY(${Math.sin(t * 2.1) * 6}px)`;
       dot.style.transform = `scale(${0.6 + cycle * 0.6})`;
       dot.classList.toggle('ready', cycle > 0.8);
@@ -210,10 +215,15 @@ export function tugOfWar(ui, seconds = 25) {
     };
     document.addEventListener('keydown', onKey);
     cleanup(() => document.removeEventListener('keydown', onKey));
+    let lastTick = performance.now();
     const id = setInterval(() => {
-      t += 0.1;
-      c = (c + 0.1 / 1.2) % 1;
-      pos += 0.006; // The other side pulls all the time.
+      // Real elapsed time (a background tab slows timers down), in steps of 0.1 s so the rates below stay right.
+      const now = performance.now();
+      const steps = Math.max(1, Math.min(10, Math.round((now - lastTick) / (0.1 * 1000))));
+      lastTick = now;
+      t += 0.1 * steps;
+      c = (c + (0.1 * steps) / 1.2) % 1;
+      pos += 0.006 * steps; // The other side pulls all the time.
       callFill.style.transform = `scaleX(${c})`;
       knot.style.transform = `translateX(${Math.max(-1, Math.min(1, pos)) * 120}px)`;
       if (t >= seconds || Math.abs(pos) >= 1) {
@@ -267,11 +277,16 @@ export function interceptSim(ui, seconds = 25) {
       field.append(m);
       missiles.add(m);
     };
+    let lastTick = performance.now();
     const id = setInterval(() => {
-      t += 0.05;
+      // Real elapsed time (a background tab slows timers down), in steps of 0.05 s so the rates below stay right.
+      const now = performance.now();
+      const steps = Math.max(1, Math.min(10, Math.round((now - lastTick) / (0.05 * 1000))));
+      lastTick = now;
+      t += 0.05 * steps;
       if (Math.random() < 0.05 + t / 600) spawn();
       for (const m of [...missiles]) {
-        const y = Number(m.dataset.y) + Number(m.dataset.v) * 0.05 * 22;
+        const y = Number(m.dataset.y) + Number(m.dataset.v) * 0.05 * 22 * steps;
         m.dataset.y = String(y);
         m.style.top = `${y}%`;
         if (y > 86) {

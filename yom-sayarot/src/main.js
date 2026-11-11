@@ -385,7 +385,7 @@ async function start() {
   }
 
   preload(['whistle', 'sms', 'achievement', 'dig1', 'dig2']);
-  if (import.meta.env.DEV) window.__sayarot = { game, player, people, advance, renderer, pending };
+  if (import.meta.env.DEV) window.__sayarot = { game, player, people, advance, renderer, pending, target: () => (typeof target === 'function' ? target() : target) };
 
   await runFlow(game, startStep);
 }

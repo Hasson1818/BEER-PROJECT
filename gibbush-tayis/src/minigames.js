@@ -43,7 +43,8 @@ function timer(parent, seconds, onEnd) {
       onEnd();
       return;
     }
-    requestAnimationFrame(tick);
+    // A timer, not requestAnimationFrame: that one stops while the tab is in the background.
+    setTimeout(tick, 50);
   };
   tick();
   return {

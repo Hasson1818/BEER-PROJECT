@@ -419,7 +419,7 @@ async function start() {
   }
 
   preload(['sms', 'achievement']);
-  if (import.meta.env.DEV) window.__tzav = { game, player, world, queue, hall, staff, interactions, pending, advance, renderer };
+  if (import.meta.env.DEV) window.__tzav = { game, player, world, queue, hall, staff, interactions, pending, advance, renderer, target: () => (typeof target === 'function' ? target() : target) };
 
   await runFlow(game, startStep);
 }

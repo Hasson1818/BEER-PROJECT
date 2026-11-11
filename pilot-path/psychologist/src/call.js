@@ -138,7 +138,8 @@ async function say(ui, office, lines, { hold = 700 } = {}) {
         const k = Math.min(1, (performance.now() - start) / ms);
         ui.caption.textContent = line.slice(0, Math.ceil(line.length * k));
         if (k >= 1) resolve();
-        else requestAnimationFrame(tick);
+        // A timer, not requestAnimationFrame: that one stops while the tab is in the background.
+        else setTimeout(tick, 30);
       };
       tick();
     });

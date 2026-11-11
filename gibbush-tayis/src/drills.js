@@ -955,6 +955,7 @@ export function createDrills(game) {
     });
     game.onAction = null;
     resetBody();
+    hud.setDrill(null);
     stats.fence = { restarts: attempts, digs };
     return stats.fence;
   }

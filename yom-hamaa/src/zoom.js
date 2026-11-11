@@ -200,7 +200,8 @@ export function zoomSession(game, { title, members }, script) {
             caption.innerHTML = '';
             caption.append(el('b', '', `${name}: `), text.slice(0, Math.ceil(text.length * k)));
             if (k >= 1) resolve();
-            else requestAnimationFrame(tick);
+            // A timer, not requestAnimationFrame: that one stops when the tab is in the background.
+            else setTimeout(tick, 30);
           };
           tick();
         });

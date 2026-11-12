@@ -1,0 +1,9 @@
+/* Additions for מסלול לוחמות. */
+.lo-blocked {
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
+.bag-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

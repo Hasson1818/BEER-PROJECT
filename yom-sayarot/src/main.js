@@ -160,6 +160,8 @@ async function start() {
     bib: save?.state?.bib ?? String(100 + Math.floor(Math.random() * 180)),
     ...(save?.state ?? {}),
   };
+  // From מסלול לוחמות: the women's field day for 669, Yahalom and the Matkal pilot.
+  if (params.has('women')) state.women = true;
   const pending = new Map();
   const tickers = new Set();
   let target = null;

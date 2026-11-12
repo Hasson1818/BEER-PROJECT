@@ -67,6 +67,9 @@ export const ACHIEVEMENTS = [
   { id: 'yechatiyot-done', group: 'yechatiyot', icon: '🧢', title: 'שלושה לילות', desc: 'סיימת גיבוש יחט״יות בלי לפרוש.', points: 5 },
   { id: 'yechatiyot-sayeret', group: 'yechatiyot', icon: '🦅', title: 'לסיירת', desc: 'הוקראת לסיירת במסדר.', points: 5 },
   { id: 'yechatiyot-honest', group: 'yechatiyot', icon: '💧', title: 'מימייה ריקה', desc: 'שפכת את כל המים ונעמדת במקום שלך בשורה.', points: 2 },
+  { id: 'lochamot-done', group: 'lochamot', icon: '🎖️', title: 'יום מיון לוחמות', desc: 'סיימת את יום המיון וקיבלת שיבוץ.', points: 5 },
+  { id: 'lochamot-all', group: 'lochamot', icon: '🗣️', title: 'שמעתי את כולן', desc: 'דיברת עם כל ארבע הלוחמות ביום המיון.', points: 2 },
+  { id: 'lochamot-field', group: 'lochamot', icon: '🏜️', title: 'זימון ליום שדה', desc: 'שובצת ליום השדה של היחידות המובחרות.', points: 3 },
   { id: 'yechatiyot-flagged', group: 'yechatiyot', icon: '🔖', title: 'מאותר', desc: 'הגעת לגיבוש עם סימון מגיבוש הצנחנים.', points: 1 },
 
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },

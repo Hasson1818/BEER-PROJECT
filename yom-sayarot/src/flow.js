@@ -44,6 +44,13 @@ async function arrive(game) {
   player.teleport(SPOTS.arrival.x, SPOTS.arrival.z, Math.PI / 2 + 0.4);
   ui.setObjective('קרא את הזימון');
   await ui.fadeIn();
+  if (state.women) {
+    await ui.fact('יום שדה ללוחמות', [
+      'חדשות (Davar, 07.2024): ימי שדה ללוחמות ל־669 ולמטכ״ל. בנובמבר 2023 הגיעו 141 ועברו 6, בינואר 2024 הגיעו 567 ועברו 17.',
+      'לפי צה״ל (mako, 06.2023), הקריטריונים זהים לאלה של הבנים. לפי אתרי הכנה, גם יהל״ם ממיין ביום הזה.',
+      'במשחק זה אותו יום סיירות, עם אותם אקטים. הטקסטים בשלב הזה כתובים בלשון זכר, כי הוא נכתב קודם לשלב הלוחמות.',
+    ]);
+  }
   await summons(ui, loadResults('tzav-rishon'));
   await bagCheck(ui);
   await ui.fact(FACTS.before.title, FACTS.before.points);

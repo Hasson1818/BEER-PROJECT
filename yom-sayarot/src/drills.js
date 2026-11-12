@@ -679,6 +679,7 @@ export function createDrills(game) {
     stretcherDrill,
     digDrill,
     pyramid,
+    countdown,
     resetBody,
     rest,
     stats,

@@ -278,7 +278,7 @@ async function opened(game) {
     items.push(['זימון ליום סיירות', 'רשמי: פרופיל 82 ודפ״ר 50 ומעלה מזמנים אוטומטית. היום הוא צומת של כל מסלולי העילית.', '../yom-sayarot/?new=1', 'ליום הסיירות']);
   }
   if (data.dapar >= 60) items.push(['מסלול טיס: בוחן מקוון', 'לפי הודעת צה״ל (2025) מי שעומד בתנאים מוזמן אוטומטית. לפי אתר הכנה: דפ״ר 60 ופרופיל מתאים.', '../pilot-path/', 'למסלול לטיס']);
-  if (fight >= 3 && (g.prescreen ?? 0) >= 3 && (a.units.tzanhanim ?? 0) >= 3 && data.profile >= 82) items.push(['גיבוש צנחנים', 'חטיבה התנדבותית, ולכן יש לה גיבוש לפני הגיוס. לפי תחקיר משתתף (01/2025) הוא יום אחד עם מבחן בִּיפ, ספרינטים ואלונקה. השלב הזה עוד לא במשחק.', null]);
+  if (fight >= 3 && (g.prescreen ?? 0) >= 3 && (a.units.tzanhanim ?? 0) >= 3 && data.profile >= 82) items.push(['גיבוש צנחנים', 'חטיבה התנדבותית, ולכן יש לה גיבוש לפני הגיוס. לפי תחקיר משתתף (01/2025) הוא יום אחד עם מבחן בִּיפ, ספרינטים ואלונקה.', '../tzanhanim/?new=1', 'לגיבוש הצנחנים']);
   const field = Object.entries(a.units)
     .filter(([id, n]) => !['sayarot', 'tzanhanim'].includes(id) && n >= 4)
     .map(([id]) => QUESTIONNAIRE.units.find((u) => u.id === id).name);

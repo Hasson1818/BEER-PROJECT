@@ -59,6 +59,12 @@ export const ACHIEVEMENTS = [
   { id: 'shayetet-cut', group: 'shayetet', icon: '📋', title: 'הוקראת', desc: 'עברת את הניפוי של יום ג׳.', points: 3 },
   { id: 'shayetet-calm', group: 'shayetet', icon: '🫧', title: 'בריכת לחץ', desc: 'נשארת רגוע בבריכת הלחץ עם המשקפות המושחרות.', points: 2 },
 
+  { id: 'tzanhanim-done', group: 'tzanhanim', icon: '🪂', title: 'יום בבא״ח', desc: 'הגעת לסוף גיבוש הצנחנים.', points: 5 },
+  { id: 'tzanhanim-beep', group: 'tzanhanim', icon: '🔔', title: '6:30', desc: 'עברת את המינימום במבחן הביפ.', points: 2 },
+  { id: 'tzanhanim-max', group: 'tzanhanim', icon: '🏃', title: 'עד הסוף', desc: 'החזקת בביפ עד 8:00, כשהמבחן נעצר.', points: 3 },
+  { id: 'tzanhanim-honest', group: 'tzanhanim', icon: '📝', title: 'כמו בטופס', desc: 'בראיון ענית בדיוק כמו בטופס האישי.', points: 2 },
+  { id: 'tzanhanim-in', group: 'tzanhanim', icon: '🟥', title: 'כומתה אדומה', desc: 'עברת את גיבוש הצנחנים.', points: 5 },
+
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },
   { id: 'gibbush-pass', group: 'gibbush-tayis', icon: '🥇', title: 'כנפיים', desc: 'עברת את גיבוש הטיס והוזמנת לקורס.', points: 8 },
   { id: 'gibbush-honest', group: 'gibbush-tayis', icon: '🗣️', title: 'כנות מלאה', desc: 'דיווחת על כלל ששברת, ולא הסתרת דבר שהמ״כים ראו.', points: 3 },

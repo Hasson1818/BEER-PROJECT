@@ -23,6 +23,7 @@ export default defineConfig({
         draft: page('./draft/index.html'),
         naval: page('./naval/index.html'),
         shayetet: page('./shayetet/index.html'),
+        tzanhanim: page('./tzanhanim/index.html'),
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),

@@ -24,6 +24,7 @@ export default defineConfig({
         naval: page('./naval/index.html'),
         shayetet: page('./shayetet/index.html'),
         tzanhanim: page('./tzanhanim/index.html'),
+        yechatiyot: page('./yechatiyot/index.html'),
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),

@@ -210,13 +210,16 @@ async function results(game) {
   if (outcome === OUTCOMES.passed || outcome === OUTCOMES.flagged) unlock('tzanhanim-in');
   game.save('results');
   if (state.outcome !== 'beep') await ui.interlude('כשבועיים אחר כך…', 1800);
-  const choice = await resultsCard(ui, { bib: state.bib, outcome, lines, next: null, time: state.outcome === 'beep' ? '11:20' : 'שבועיים אחרי · 17:30' });
+  const passed = outcome === OUTCOMES.passed || outcome === OUTCOMES.flagged;
+  const next = passed ? { label: 'לטירונות: גיבוש יחט״יות', href: '../yechatiyot/?new=1&brigade=tzanhanim' } : null;
+  const choice = await resultsCard(ui, { bib: state.bib, outcome, lines, next, time: state.outcome === 'beep' ? '11:20' : 'שבועיים אחרי · 17:30' });
   await ui.fact(FACTS.results.title, FACTS.results.points);
   await ui.fact(FACTS.women.title, FACTS.women.points);
   if (choice === 'again') {
     unlock('persistence');
     window.location.href = './?new=1';
-  } else window.location.href = '../main-screen/';
+  } else if (choice === 'next' && next) window.location.href = next.href;
+  else window.location.href = '../main-screen/';
 }
 
 export const HANDLERS = { arrive, beep, wait, interview, field, results };

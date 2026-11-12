@@ -1,0 +1,62 @@
+/* Additions for גיבוש יחט"יות on top of yom-sayarot/src/style.css. */
+
+body {
+  background: #1d2416;
+}
+
+.bib {
+  background: #e9ecd8;
+}
+
+.result-tile.dim {
+  opacity: 0.55;
+}
+
+.result-tile span {
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.tz-q {
+  margin: 12px 0 6px;
+  font-size: 1rem;
+}
+
+.yt-lines {
+  margin: 6px 0 10px;
+  padding-inline-start: 20px;
+  line-height: 1.6;
+}
+
+.tz-map {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.tz-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #efe6cf;
+}
+
+.tz-point b {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #4a5a2a;
+  color: #fff;
+}
+
+@media (max-width: 560px) {
+  .tz-map {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -26,6 +26,7 @@ export default defineConfig({
         tzanhanim: page('./tzanhanim/index.html'),
         yechatiyot: page('./yechatiyot/index.html'),
         lochamot: page('./lochamot/index.html'),
+        oketz: page('./oketz/index.html'),
         interviewWeek: page('./interview-week/index.html'),
         pilotPath: page('./pilot-path/index.html'),
         pilotHomeTest: page('./pilot-path/home-test/index.html'),

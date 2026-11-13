@@ -108,13 +108,13 @@ export function baseTargets(ui) {
  * The minefield: a grid with sacks; the team may step only on sacks. Click a path of sacks from the bottom row to
  * the top row, each step to a neighbor (not diagonal). Two attempts. Resolves to { solved, attempts }.
  */
-export function minefield(ui) {
+export function minefield(ui, { eyebrow = 'שדה מוקשים · שתי אלונקות ושני ג׳ריקנים (לפי העדות מ־2025)', note = 'הלוח של המשחק. במציאות השקים מפוזרים על החול והצוות מעביר עליהם ציוד.' } = {}) {
   const W = 6;
   const H = 7;
   // A fixed field with one safe path and dead ends (the game's own layout).
   const sacks = new Set(['0,2', '1,2', '1,3', '2,3', '3,3', '3,4', '3,5', '4,5', '5,5', '6,5', '2,1', '2,0', '4,2', '4,1', '5,1', '5,0', '1,4', '0,4', '6,2', '5,2']);
   return ui.panel('fact', (panel, close) => {
-    panel.append(el('p', 'eyebrow', 'שדה מוקשים · שתי אלונקות ושני ג׳ריקנים (לפי העדות מ־2025)'), el('h2', '', 'מעבר רק על השקים'));
+    panel.append(el('p', 'eyebrow', eyebrow), el('h2', '', 'מעבר רק על השקים'));
     panel.append(el('p', '', 'לחץ על השקים לפי הסדר, מהשורה העליונה (נקודת היציאה) עד התחתונה, כל פעם לשק צמוד (לא באלכסון). דריכה מחוץ לשק: הצוות חוזר להתחלה. שני ניסיונות.'));
     const grid = el('div', 'tz-mines');
     const info = el('p', 'note', 'ניסיון 1 מתוך 2');
@@ -159,6 +159,6 @@ export function minefield(ui) {
         grid.append(c);
       }
     }
-    panel.append(grid, info, el('p', 'note', 'הלוח של המשחק. במציאות השקים מפוזרים על החול והצוות מעביר עליהם ציוד.'));
+    panel.append(grid, info, el('p', 'note', note));
   });
 }

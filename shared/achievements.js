@@ -70,6 +70,10 @@ export const ACHIEVEMENTS = [
   { id: 'lochamot-done', group: 'lochamot', icon: '🎖️', title: 'יום מיון לוחמות', desc: 'סיימת את יום המיון וקיבלת שיבוץ.', points: 5 },
   { id: 'lochamot-all', group: 'lochamot', icon: '🗣️', title: 'שמעתי את כולן', desc: 'דיברת עם כל ארבע הלוחמות ביום המיון.', points: 2 },
   { id: 'lochamot-field', group: 'lochamot', icon: '🏜️', title: 'זימון ליום שדה', desc: 'שובצת ליום השדה של היחידות המובחרות.', points: 3 },
+  { id: 'oketz-done', group: 'oketz', icon: '🐾', title: 'עד הסוף במתקן אדם', desc: 'סיימת את גיבוש עוקץ בלי לפרוש ובלי להיות מנופה.', points: 5 },
+  { id: 'oketz-in', group: 'oketz', icon: '🐕', title: 'עוקץ', desc: 'התקבלת לעוקץ.', points: 5 },
+  { id: 'oketz-honest', group: 'oketz', icon: '🤫', title: 'מסדר שקט', desc: 'במסדר השקט אמרת את האמת.', points: 2 },
+  { id: 'oketz-dog', group: 'oketz', icon: '🦴', title: 'הכיסוי ירד', desc: 'פגשת את הכלב שלך.', points: 3 },
   { id: 'yechatiyot-flagged', group: 'yechatiyot', icon: '🔖', title: 'מאותר', desc: 'הגעת לגיבוש עם סימון מגיבוש הצנחנים.', points: 1 },
 
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },

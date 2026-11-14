@@ -55,6 +55,8 @@ export class Player {
     });
 
     if (this.touch) this.setupTouch();
+    this.wantLock = false;
+    this.watchLock();
   }
 
   get locked() {
@@ -62,6 +64,7 @@ export class Player {
   }
 
   lock() {
+    this.wantLock = true;
     if (this.touch || this.locked) return;
     try {
       const result = this.canvas.requestPointerLock();
@@ -72,7 +75,19 @@ export class Player {
   }
 
   unlock() {
+    this.wantLock = false;
     if (this.locked) document.exitPointerLock();
+  }
+
+  /**
+   * requestPointerLock is asynchronous: when a dialogue closes and the next one opens right away, unlock() runs
+   * before the lock arrives, and the lock then hides the mouse over the open dialogue. So when a lock arrives that
+   * is no longer wanted (or the player is disabled by an open dialogue), release it again.
+   */
+  watchLock() {
+    document.addEventListener('pointerlockchange', () => {
+      if (this.locked && (!this.wantLock || !this.enabled)) document.exitPointerLock();
+    });
   }
 
   look(dx, dy) {

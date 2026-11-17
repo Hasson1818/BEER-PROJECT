@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מחשבון צה״ל · BEER PROJECT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Secular+One&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="calc">
+      <header class="calc-head">
+        <a class="back" href="../main-screen/">← לתפריט</a>
+        <p class="eyebrow">BEER PROJECT · כלי עזר</p>
+        <h1>מחשבון צה״ל</h1>
+        <p class="lead">מכניסים פרופיל, דפ״ר וציונים, ורואים לאילו יחידות ותפקידים אפשר להגיע. אחר כך שאלון קצר, ובסוף חמש היחידות שהכי מתאימות לך.</p>
+        <p class="disclaimer" id="disclaimer"></p>
+      </header>
+
+      <section class="card" aria-labelledby="s1">
+        <div class="card-head"><span class="num">1</span><h2 id="s1">הנתונים שלי</h2></div>
+        <div class="fields">
+          <div class="field">
+            <span class="label">מגדר</span>
+            <div class="seg" id="gender" role="radiogroup" aria-label="מגדר">
+              <button type="button" data-v="m" role="radio">מתגייס</button>
+              <button type="button" data-v="f" role="radio">מתגייסת</button>
+            </div>
+          </div>
+          <label class="field"><span class="label">פרופיל</span><select id="profile"></select></label>
+          <label class="field"><span class="label">דפ״ר</span><select id="dapar"></select></label>
+          <label class="field"><span class="label">קב״א</span><select id="kaba"></select></label>
+          <label class="field"><span class="label">ציון עברית</span><select id="hebrew"></select></label>
+        </div>
+        <details class="maa" id="maa-box">
+          <summary><span>ציוני יום המא״ה</span> <small id="maa-state">לא הוזנו · תפקידים שתלויים בהם יסומנו "תלוי"</small></summary>
+          <label class="check"><input type="checkbox" id="maa-on" /> יש לי ציונים מיום המא״ה (1–5 לכל סביבה)</label>
+          <div class="maa-grid" id="maa-grid"></div>
+        </details>
+        <div class="row-actions">
+          <button type="button" class="btn" id="fill">מילוי מהמשחק</button>
+          <span class="hint" id="fill-hint"></span>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="s2">
+        <div class="card-head"><span class="num">2</span><h2 id="s2">לאן אפשר להגיע</h2></div>
+        <p class="summary" id="summary"></p>
+        <details class="grid-box" open>
+          <summary>כמה יחידות נפתחות לכל פרופיל ודפ״ר <small>לחיצה על משבצת בוחרת אותה</small></summary>
+          <div class="grid-scroll"><table class="heat" id="heat"></table></div>
+        </details>
+        <div class="filters" id="filters"></div>
+        <div class="units" id="units"></div>
+        <details class="closed-box" id="closed-box">
+          <summary id="closed-title"></summary>
+          <div class="units" id="closed"></div>
+        </details>
+      </section>
+
+      <section class="card" aria-labelledby="s3">
+        <div class="card-head"><span class="num">3</span><h2 id="s3">שאלון התאמה</h2></div>
+        <div id="quiz"></div>
+      </section>
+
+      <section class="card result-card" aria-labelledby="s4" id="result" hidden>
+        <div class="card-head"><span class="num">★</span><h2 id="s4">חמש היחידות שהכי מתאימות לך</h2></div>
+        <ol class="top" id="top"></ol>
+        <p class="note" id="top-note"></p>
+        <div class="row-actions"><button type="button" class="btn ghost" id="redo">לענות שוב</button></div>
+      </section>
+
+      <footer class="calc-foot" id="sources"></footer>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

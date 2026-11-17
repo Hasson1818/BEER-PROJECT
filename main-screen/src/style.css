@@ -167,6 +167,11 @@ h1 {
     box-shadow 0.15s ease;
 }
 
+a.btn {
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
 .btn-label {
   font-size: 1.2rem;
   font-weight: 800;

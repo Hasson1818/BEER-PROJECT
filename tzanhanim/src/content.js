@@ -1,7 +1,7 @@
 // Texts for "גיבוש צנחנים" (the pre-enlistment paratroopers gibbush). From the research
 // (reports/גיבוש צנחנים 2026.md):
 // - Official (IDF Q&A 12/2024, read only as a search snippet; mitgaisim pages from 2021): a volunteer brigade, anyone
-//   who wants may ask; profile 82, KABA 47; no phones, sleep 7 hours before; once accepted you can't refuse; SMS
+//   who wants may ask; profile 82; no phones, sleep 7 hours before; once accepted you can't refuse; SMS
 //   weeks later; recruitment in March, July/August and November.
 // - Participant accounts (2022 – 02/2026; the fullest is the one of 29.01.2025): the day hour by hour, the beep test
 //   (20 m, 6:30 minimum, stops at 8:00), the wait with a map to memorize, the interview with two reservists, the
@@ -13,7 +13,7 @@ export const FACTS = {
     title: 'איך מגיעים לגיבוש צנחנים',
     points: [
       'רשמי (שו״ת צה״ל, 12/2024; נקרא רק מתקציר): הצנחנים היא חטיבה התנדבותית, וכל מי שרוצה זכאי לגיבוש ורק צריך לבקש. בלי טלפונים, ולישון שבע שעות בלילה שלפני, אחרת שולחים הביתה.',
-      'רשמי (2021): מזמינים דרך דירוג גבוה בשאלון ההעדפות. התנאי: פרופיל 82 ומעלה וקב״א 47 ומעלה. לבוא לא חובה, אבל מי שהתקבל לא יכול לוותר.',
+      'רשמי (2021): מזמינים דרך דירוג גבוה בשאלון ההעדפות. התנאי: פרופיל 82 ומעלה. לבוא לא חובה, אבל מי שהתקבל לא יכול לוותר.',
       'רשמי (2021): גם מי שסיים מיון אחר ולא עבר (טיס, חובלים, יום סיירות) יכול להגיע לראיון בצנחנים.',
     ],
   },

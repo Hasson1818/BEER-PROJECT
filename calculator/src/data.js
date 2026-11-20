@@ -2,8 +2,7 @@
 //
 // Requirements come from the research "דרישות סף ליחידות צהל 2026" (read 17.11.2026): mostly the official role pages
 // on mitgaisim.idf.il (undated, so "as read in 11.2026"), and prep sites where there is no official number. Every
-// unit says where its numbers come from (`src`). KABA appears on no official combat page any more; the few KABA
-// numbers here are from prep sites. Missing numbers are left out rather than guessed.
+// unit says where its numbers come from (`src`). Missing numbers are left out rather than guessed.
 //
 // `traits` (0..3, domain = land/sea/air/cyber) are the game's own judgement, built from the facts (service length,
 // keva years, base, physical demand) for the fit questionnaire. They are not an official rating.
@@ -12,8 +11,7 @@ import { ENVIRONMENTS } from '../../yom-hamaa/src/content.js';
 export const MAA_ENVS = ENVIRONMENTS;
 export const PROFILES = [97, 82, 72, 64, 45, 25, 21];
 export const DAPARS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-export const KABAS = [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56];
-export const HEBREWS = [5, 6, 7, 8, 9];
+export const HEBREWS = [5, 6, 7, 8];
 
 export const CATEGORIES = {
   elite: 'יחידות מובחרות',
@@ -51,14 +49,14 @@ export const UNITS = [
   { id: 'shayetet', cat: 'elite', name: 'שייטת 13', req: { profile: 82, dapar: 50, hebrew: 8 }, gender: M, selection: 'יום סיירות או גדנ״ע צלילה, וגיבוש שייטת', src: OFF, note: 'הדף הרשמי סותר את עצמו: פרופיל "97 או 82", ועברית 8 או 7.', stage: '../shayetet/?new=1', traits: T(3, 3, 3, 2, 0, 1, 1, 2, 'sea', 3, 1, 2) },
   { id: 'shaldag', cat: 'elite', name: 'שלדג', req: { profile: 82, dapar: 50 }, gender: M, selection: 'יום סיירות, מיון גופני וגיבוש', src: OFF, note: 'רשמי 82; יש אתרים שכותבים 97 ודפ״ר 80.', stage: '../gibbush-matkal/?new=1', traits: T(3, 3, 3, 2, 0, 1, 1, 2, ['land', 'air'], 3, 1, 2) },
   { id: 'u669', cat: 'elite', name: '669 · חילוץ והצלה מוטס', req: { profile: 97, dapar: 50 }, gender: MF, selection: 'יום סיירות או יום שדה, וגיבוש / דראפט', src: OFF, note: 'ללוחמות: פיילוט מ־11.2023.', stage: '../draft/?new=1&path=669', traits: T(3, 3, 3, 2, 0, 1, 3, 2, ['air', 'land'], 3, 2, 2) },
-  { id: 'commando', cat: 'elite', name: 'חטיבת הקומנדו (מגלן, אגוז, דובדבן)', req: { profile: 82 }, gender: M, selection: 'יום סיירות, גיבוש או דראפט', src: OFF, note: 'דף רשמי אחד לכל יחידות הקומנדו. קב״א 51 לדובדבן לפי אתר הכנה.', stage: '../draft/?new=1&path=commando', traits: T(3, 3, 2.5, 1, 0, 0, 1, 1, 'land', 3, 0, 2) },
+  { id: 'commando', cat: 'elite', name: 'חטיבת הקומנדו (מגלן, אגוז, דובדבן)', req: { profile: 82 }, gender: M, selection: 'יום סיירות, גיבוש או דראפט', src: OFF, note: 'דף רשמי אחד לכל יחידות הקומנדו.', stage: '../draft/?new=1&path=commando', traits: T(3, 3, 2.5, 1, 0, 0, 1, 1, 'land', 3, 0, 2) },
   { id: 'oketz', cat: 'elite', name: 'עוקץ · יחידת הכלבנים', req: { profile: 82 }, gender: MF, selection: 'גיבוש עוקץ (לוחמות: דרך גדוד גבול)', src: OFF, note: 'לוחמים מתחייבים לשנת קבע.', stage: '../oketz/?new=1', traits: T(3, 3, 2.5, 1, 0, 1, 2, 1, 'land', 3, 1, 1) },
-  { id: 'yahalom', cat: 'elite', name: 'יהל״ם', req: { profile: 82, dapar: 50 }, gender: MF, selection: 'גיבוש יהל״ם', src: OFF, note: 'קב״א 52 לפי אתר הכנה. ללוחמות קבוע מ־12.2025.', traits: T(3, 3, 2.5, 1, 0, 3, 1, 2, 'land', 3, 2, 1) },
-  { id: 'yaltam', cat: 'elite', name: 'ילת״ם', req: { profile: 82, dapar: 50 }, gender: MF, selection: 'מיון ייעודי', src: OFF, note: 'קב״א 51 לפי אתר הכנה.', traits: T(3, 3, 2.5, 1, 0, 2, 1, 2, 'sea', 3, 1, 1) },
+  { id: 'yahalom', cat: 'elite', name: 'יהל״ם', req: { profile: 82, dapar: 50 }, gender: MF, selection: 'גיבוש יהל״ם', src: OFF, note: 'ללוחמות קבוע מ־12.2025.', traits: T(3, 3, 2.5, 1, 0, 3, 1, 2, 'land', 3, 2, 1) },
+  { id: 'yaltam', cat: 'elite', name: 'ילת״ם', req: { profile: 82, dapar: 50 }, gender: MF, selection: 'מיון ייעודי', src: OFF, traits: T(3, 3, 2.5, 1, 0, 2, 1, 2, 'sea', 3, 1, 1) },
 
   // ---------- Infantry ----------
   { id: 'golani', cat: 'infantry', name: 'גולני', req: { profile: 82 }, gender: M, src: OFF, note: 'לסיירת: גיבוש יחט״יות בטירונות.', stage: '../yechatiyot/?new=1', traits: T(3, 3, 1, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
-  { id: 'tzanhanim', cat: 'infantry', name: 'צנחנים', req: { profile: 82 }, gender: M, selection: 'גיבוש צנחנים לפני הגיוס', src: MIX, note: 'פרופיל 82 וקב״א 47 (מתגייסים 2021).', stage: '../tzanhanim/?new=1', traits: T(3, 3, 1.5, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
+  { id: 'tzanhanim', cat: 'infantry', name: 'צנחנים', req: { profile: 82 }, gender: M, selection: 'גיבוש צנחנים לפני הגיוס', src: MIX, stage: '../tzanhanim/?new=1', traits: T(3, 3, 1.5, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
   { id: 'givati', cat: 'infantry', name: 'גבעתי', req: { profile: 82 }, gender: M, src: OFF, note: 'לסיירת: גיבוש יחט״יות בטירונות.', stage: '../yechatiyot/?new=1', traits: T(3, 3, 1, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
   { id: 'nahal', cat: 'infantry', name: 'נח״ל', req: { profile: 82 }, gender: M, src: OFF, note: 'לסיירת: גיבוש יחט״יות בטירונות.', stage: '../yechatiyot/?new=1', traits: T(3, 3, 1, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
   { id: 'kfir', cat: 'infantry', name: 'כפיר', req: { profile: 82 }, gender: M, src: OFF, note: 'לחרוב וללוט״ר: גיבוש יחט״יות.', stage: '../yechatiyot/?new=1', traits: T(3, 3, 1, 0, 1, 0, 1, 1, 'land', 3, 0, 2) },
@@ -86,7 +84,7 @@ export const UNITS = [
   // ---------- Navy ----------
   { id: 'hovlim', cat: 'navy', name: 'קורס חובלים', req: { profile: 82, dapar: 60, maa: { tech: 3, info: 2, command: 4, team: 2, maturity: 2, effort: 2 } }, gender: MF, selection: 'יום גיבוש ימי, מיון מקוון וגיבוש של 5 ימים בעתלית', src: OFF, note: 'ציוני המא״ה רק לבנות. כ־2.5 שנות קורס ו־5 שנות קבע. העברית בדף סותרת (8 או 5).', stage: '../naval/?new=1', traits: T(2, 2, 3, 3, 0, 2, 1, 3, 'sea', 2, 2, 3) },
   { id: 'subs', cat: 'navy', name: 'צוללות', req: { profile: 82, dapar: 60, hebrew: 8 }, gender: M, selection: 'גיבוש של 5 ימים', src: OFF, note: 'קורס של כ־14 חודשים.', stage: '../naval/?new=1', traits: T(2, 1, 2, 1, 0, 3, 1, 2, 'sea', 1, 2, 1) },
-  { id: 'snapir', cat: 'navy', name: 'לוחם/ת ים (סנפיר ועוד)', req: { profile: 72, dapar: 30, kaba: 47 }, gender: MF, selection: 'גיבוש של יומיים בחיפה', src: OFF, note: 'הדפ״ר בדף סותר (30 או 50). אתר הכנה: 30 לבנים, 50 לבנות.', traits: T(2.5, 2, 0.5, 0, 1, 1, 1, 1, 'sea', 3, 0, 1) },
+  { id: 'snapir', cat: 'navy', name: 'לוחם/ת ים (סנפיר ועוד)', req: { profile: 72, dapar: 30 }, gender: MF, selection: 'גיבוש של יומיים בחיפה', src: OFF, note: 'הדפ״ר בדף סותר (30 או 50). אתר הכנה: 30 לבנים, 50 לבנות.', traits: T(2.5, 2, 0.5, 0, 1, 1, 1, 1, 'sea', 3, 0, 1) },
   { id: 'navytech', cat: 'navy', name: 'טכנאי/ת אלקטרוניקה ימית', req: { profile: 72, maa: { tech: 2, info: 2 } }, gender: MF, src: 'רשמי (מתקציר חיפוש)', note: 'ציוני המא״ה לבנות.', traits: T(0.5, 1, 0, 0, 1, 3, 0, 1, 'sea', 1, 3, 0) },
 
   // ---------- Intelligence ----------

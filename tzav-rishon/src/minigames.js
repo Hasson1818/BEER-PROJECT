@@ -499,7 +499,6 @@ export function resultsPhone(ui, results) {
     const tiles = [
       ['פרופיל רפואי', results.profile, '21–97'],
       ['דפ״ר', results.dapar, '10–90'],
-      ['קב״א', results.kaba, '41–56'],
       ['ציון עברית', results.hebrew, '5–8'],
     ];
     for (const [label, value, range] of tiles) {
@@ -507,7 +506,7 @@ export function resultsPhone(ui, results) {
       tile.append(el('span', '', label), el('strong', '', String(value)), el('small', '', `טווח: ${range}`));
       grid.append(tile);
     }
-    const note = el('p', 'note', 'במשחק החישוב פשוט יותר מבמציאות. הקב״א מחושב מהדפ״ר, ההשכלה והראיון. בקשות לערעור ושינויים עוברים דרך אתר מתגייסים.');
+    const note = el('p', 'note', 'במשחק החישוב פשוט יותר מבמציאות. בקשות לערעור ושינויים עוברים דרך אתר מתגייסים.');
     const actions = el('div', 'actions');
     const next = button('מה המספרים האלה אומרים?');
     actions.append(next);

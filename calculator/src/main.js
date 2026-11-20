@@ -1,7 +1,7 @@
 import './style.css';
 import { loadResults } from '../../shared/save.js';
 import { unlock } from '../../shared/achievements.js';
-import { UNITS, PROFILES, DAPARS, KABAS, HEBREWS, MAA_ENVS, CATEGORIES, DISCLAIMER, SOURCES } from './data.js';
+import { UNITS, PROFILES, DAPARS, HEBREWS, MAA_ENVS, CATEGORIES, DISCLAIMER, SOURCES } from './data.js';
 import { QUESTIONS, TRAITS } from './questions.js';
 import { evaluate, grid, top } from './engine.js';
 
@@ -23,7 +23,10 @@ const saved = (() => {
     return null;
   }
 })();
-const input = saved?.input ?? { gender: 'm', profile: 97, dapar: 60, kaba: 52, hebrew: 9, maa: null };
+const input = saved?.input ?? { gender: 'm', profile: 97, dapar: 60, hebrew: 8, maa: null };
+// Older saves may hold a KABA (no longer exists) or a Hebrew score above 8.
+delete input.kaba;
+if (input.hebrew > 8) input.hebrew = 8;
 let answers = saved?.answers ?? {};
 let quizIndex = 0;
 let filter = 'all';
@@ -45,7 +48,6 @@ const fillSelect = (select, values, label = (v) => String(v), extra = null) => {
 };
 fillSelect($('profile'), PROFILES);
 fillSelect($('dapar'), DAPARS);
-fillSelect($('kaba'), KABAS, String, { label: 'לא יודע/ת', value: '' });
 fillSelect($('hebrew'), HEBREWS, String, { label: 'לא יודע/ת', value: '' });
 
 const maaGrid = $('maa-grid');
@@ -68,7 +70,6 @@ function syncInputs() {
   for (const b of $('gender').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.v === input.gender));
   $('profile').value = String(input.profile);
   $('dapar').value = String(input.dapar);
-  $('kaba').value = input.kaba == null ? '' : String(input.kaba);
   $('hebrew').value = input.hebrew == null ? '' : String(input.hebrew);
   $('maa-on').checked = Boolean(input.maa);
   maaGrid.classList.toggle('off', !input.maa);
@@ -90,10 +91,6 @@ $('dapar').addEventListener('change', () => {
   input.dapar = Number($('dapar').value);
   update();
 });
-$('kaba').addEventListener('change', () => {
-  input.kaba = $('kaba').value ? Number($('kaba').value) : null;
-  update();
-});
 $('hebrew').addEventListener('change', () => {
   input.hebrew = $('hebrew').value ? Number($('hebrew').value) : null;
   update();
@@ -111,8 +108,7 @@ $('fill').addEventListener('click', () => {
   if (tzav) {
     if (tzav.profile) input.profile = tzav.profile;
     if (tzav.dapar) input.dapar = Math.min(90, Math.max(10, Math.round(tzav.dapar / 10) * 10));
-    if (tzav.kaba) input.kaba = tzav.kaba;
-    if (tzav.hebrew) input.hebrew = tzav.hebrew;
+    if (tzav.hebrew) input.hebrew = Math.min(8, tzav.hebrew);
     got.push('צו ראשון');
   }
   if (maa?.scores) {
@@ -130,7 +126,6 @@ function req(unit) {
   const parts = [];
   if (r.profile) parts.push(`פרופיל ${r.profile}+`);
   if (r.dapar) parts.push(`דפ״ר ${r.dapar}+`);
-  if (r.kaba) parts.push(`קב״א ${r.kaba}+`);
   if (r.hebrew) parts.push(`עברית ${r.hebrew}+`);
   if (r.maa) for (const [env, min] of Object.entries(r.maa)) parts.push(`${MAA_ENVS.find((e) => e.id === env)?.name ?? env} ${min}+`);
   return parts;

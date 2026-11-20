@@ -4,7 +4,7 @@ import { QUESTIONS, TRAITS } from './questions.js';
 
 /**
  * Can this player get into the unit by the numbers alone?
- * input: { gender: 'm'|'f', profile, dapar, kaba, hebrew, maa: { envId: 1..5 } | null }
+ * input: { gender: 'm'|'f', profile, dapar, hebrew, maa: { envId: 1..5 } | null }
  * Returns { ok, reasons: [text], pending: [text] }: reasons = what blocks, pending = what depends on data the player
  * didn't give (e.g. Yom HaMa'a scores) or on a selection still ahead.
  */
@@ -19,7 +19,6 @@ export function check(unit, input) {
   if (r.profile && input.profile < r.profile) reasons.push(`פרופיל ${r.profile}+`);
   const dapar = combatMan && r.daparCombatMen ? r.daparCombatMen : r.dapar;
   if (dapar && input.dapar < dapar) reasons.push(`דפ״ר ${dapar}+`);
-  if (r.kaba && input.kaba != null && input.kaba < r.kaba) reasons.push(`קב״א ${r.kaba}+`);
   if (r.hebrew && input.hebrew != null && input.hebrew < r.hebrew) reasons.push(`עברית ${r.hebrew}+`);
   // Yom HaMa'a is taken by women and by men without a combat profile (official, 2024–2026), so its minimums only
   // apply to them; a combat-profile man is sorted by the צו ראשון data and the selections.

@@ -323,9 +323,6 @@ async function checkout(game) {
 async function results(game) {
   const { ui, state } = game;
   const r = state.results;
-  const d = ((r.dapar ?? 50) - 10) / 80;
-  const k = 0.5 * d + 0.17 * (r.education ?? 0.7) + 0.33 * (r.interview ?? 0.6);
-  r.kaba = Math.round(41 + k * 15);
   r.hebrew = r.hebrew ?? 8;
   r.profile = r.profile ?? 97;
   game.save('results');
@@ -334,7 +331,7 @@ async function results(game) {
   if (r.dapar >= 70) unlock('dapar-70');
   if (r.profile === 97) unlock('profile-97');
   await ui.interlude('שבועיים אחר כך…', 2200);
-  const shown = { profile: r.profile, dapar: r.dapar ?? '—', kaba: r.kaba, hebrew: r.hebrew };
+  const shown = { profile: r.profile, dapar: r.dapar ?? '—', hebrew: r.hebrew };
   await resultsPhone(ui, shown);
   await ui.fact(FACTS.end.title, FACTS.end.points);
   const choice = await learnMore(ui, shown);

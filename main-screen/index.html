@@ -44,15 +44,41 @@
             </button>
           </nav>
 
+          <nav class="groups" id="groups" aria-label="סוג השירות" hidden>
+            <p class="picker-title">בחרו סוג שירות</p>
+            <button class="group" type="button" data-pick="combat">
+              <span class="group-name">קרבי</span>
+              <small>סיירות וקומנדו, חי״ר וחטיבות, לוחמות, חיל הים וחיל האוויר</small>
+            </button>
+            <button class="group" type="button" data-pick="support">
+              <span class="group-name">תומך לחימה</span>
+              <small>תפקידים לצד הלוחמים</small>
+              <span class="stage-tag soon">בקרוב</span>
+            </button>
+            <button class="group" type="button" data-pick="noncombat">
+              <span class="group-name">לא קרבי</span>
+              <small>מודיעין, תקשוב, סייבר, חינוך, עורף ועוד</small>
+              <span class="stage-tag soon">בקרוב</span>
+            </button>
+            <div class="group-common" id="group-common"></div>
+            <button id="back-groups" class="btn-back" type="button">← חזרה</button>
+          </nav>
+
           <nav class="stages" id="stages" aria-label="בחירת שלב" hidden>
-            <a class="stage" href="../tzav-rishon/?new=1">
+            <h2 class="picker-title" id="stages-title"></h2>
+            <div id="stage-view"></div>
+            <button id="back" class="btn-back" type="button">← חזרה לסוגי השירות</button>
+          </nav>
+
+          <div id="stage-pool" hidden>
+            <a class="stage" data-group="all" data-row="שלבים לכולם" href="../tzav-rishon/?new=1">
               <span class="stage-number">1</span>
               <span class="stage-text">
                 <strong>צו ראשון</strong>
                 <small>לשכת הגיוס: ניתוב, מבחן ממוחשב, רפואי וראיון</small>
               </span>
             </a>
-            <a class="stage" href="../yom-hamaa/?new=1">
+            <a class="stage" data-group="all" data-row="שלבים לכולם" href="../yom-hamaa/?new=1">
               <span class="stage-number">1+</span>
               <span class="stage-text">
                 <strong>יום המא״ה ושאלון ההעדפות</strong>
@@ -60,7 +86,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../lochamot/?new=1">
+            <a class="stage" data-group="combat" data-row="לוחמות" href="../lochamot/?new=1">
               <span class="stage-number">1·ל</span>
               <span class="stage-text">
                 <strong>מסלול לוחמות</strong>
@@ -68,7 +94,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../oketz/?new=1">
+            <a class="stage" data-group="combat" data-row="סיירות וקומנדו" href="../oketz/?new=1">
               <span class="stage-number">2·ע</span>
               <span class="stage-text">
                 <strong>גיבוש עוקץ</strong>
@@ -76,7 +102,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../yom-sayarot/?new=1">
+            <a class="stage" data-group="combat" data-row="סיירות וקומנדו" href="../yom-sayarot/?new=1">
               <span class="stage-number">2</span>
               <span class="stage-text">
                 <strong>יום סיירות · אוקטובר</strong>
@@ -84,7 +110,7 @@
               </span>
               <span class="stage-tag">טיוטה</span>
             </a>
-            <a class="stage" href="../gibbush-matkal/?new=1">
+            <a class="stage" data-group="combat" data-row="סיירות וקומנדו" href="../gibbush-matkal/?new=1">
               <span class="stage-number">2+</span>
               <span class="stage-text">
                 <strong>גיבוש מטכ״ל / שלדג</strong>
@@ -92,7 +118,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../draft/?new=1">
+            <a class="stage" data-group="combat" data-row="סיירות וקומנדו" href="../draft/?new=1">
               <span class="stage-number">2++</span>
               <span class="stage-text">
                 <strong>הדראפט · 669 / קומנדו</strong>
@@ -100,7 +126,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../naval/?new=1">
+            <a class="stage" data-group="combat" data-row="חיל הים" href="../naval/?new=1">
               <span class="stage-number">2·ים</span>
               <span class="stage-text">
                 <strong>ענף ים · חובלים / צוללות</strong>
@@ -108,7 +134,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../shayetet/?new=1">
+            <a class="stage" data-group="combat" data-row="חיל הים" href="../shayetet/?new=1">
               <span class="stage-number">2·ש</span>
               <span class="stage-text">
                 <strong>גיבוש שייטת 13</strong>
@@ -116,7 +142,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../tzanhanim/?new=1">
+            <a class="stage" data-group="combat" data-row="חי״ר וחטיבות" href="../tzanhanim/?new=1">
               <span class="stage-number">2·צ</span>
               <span class="stage-text">
                 <strong>גיבוש צנחנים</strong>
@@ -124,7 +150,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../yechatiyot/?new=1">
+            <a class="stage" data-group="combat" data-row="חי״ר וחטיבות" href="../yechatiyot/?new=1">
               <span class="stage-number">2·י</span>
               <span class="stage-text">
                 <strong>גיבוש יחט״יות</strong>
@@ -132,7 +158,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../gibbush-tayis/?new=1">
+            <a class="stage" data-group="combat" data-row="חיל האוויר" href="../gibbush-tayis/?new=1">
               <span class="stage-number">3</span>
               <span class="stage-text">
                 <strong>גיבוש טייס</strong>
@@ -140,7 +166,7 @@
               </span>
               <span class="stage-tag">טיוטה</span>
             </a>
-            <a class="stage" href="../interview-week/?new=1">
+            <a class="stage" data-group="all" data-row="שלבים לכולם" href="../interview-week/?new=1">
               <span class="stage-number">4</span>
               <span class="stage-text">
                 <strong>שבוע ראיונות</strong>
@@ -148,7 +174,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <a class="stage" href="../pilot-path/">
+            <a class="stage" data-group="combat" data-row="חיל האוויר" href="../pilot-path/">
               <span class="stage-number">✈</span>
               <span class="stage-text">
                 <strong>המסלול לטיס</strong>
@@ -156,8 +182,7 @@
               </span>
               <span class="stage-tag">חדש</span>
             </a>
-            <button id="back" class="btn-back" type="button">← חזרה</button>
-          </nav>
+          </div>
         </div>
 
         <footer class="folder-foot">

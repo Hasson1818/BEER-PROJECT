@@ -21,14 +21,68 @@ if (save) {
 }
 
 const mainActions = document.getElementById('main-actions');
+const groups = document.getElementById('groups');
 const stages = document.getElementById('stages');
-function showStages(show) {
-  mainActions.hidden = show;
-  stages.hidden = !show;
-  (show ? stages.querySelector('.stage') : document.getElementById('choose')).focus();
+const pool = document.getElementById('stage-pool');
+const view = document.getElementById('stage-view');
+
+// The stage picker has two levels: the kind of service (combat / combat support / non-combat), then the stages of
+// that kind in rows by category. Every stage link lives once in #stage-pool (with data-group and data-row); the
+// views are built from copies of them. Groups without stages yet say so and point at the calculator.
+const GROUP_INFO = {
+  combat: { title: 'קרבי', rows: ['סיירות וקומנדו', 'חי״ר וחטיבות', 'לוחמות', 'חיל הים', 'חיל האוויר'] },
+  support: { title: 'תומך לחימה', rows: [] },
+  noncombat: { title: 'לא קרבי · מודיעין, תקשוב, סייבר ועוד', rows: [] },
+};
+// Rows follow the order of the journey, not the order of the links in the page.
+const ORDER = ['tzav-rishon', 'yom-hamaa', 'lochamot', 'yom-sayarot', 'gibbush-matkal', 'draft', 'oketz', 'tzanhanim', 'yechatiyot', 'naval', 'shayetet', 'gibbush-tayis', 'pilot-path', 'interview-week'];
+const stageId = (a) => a.getAttribute('href').split('/')[1];
+const poolStages = (group) => [...pool.querySelectorAll(`.stage[data-group="${group}"]`)].sort((x, y) => ORDER.indexOf(stageId(x)) - ORDER.indexOf(stageId(y)));
+
+function level(name) {
+  mainActions.hidden = name !== 'main';
+  groups.hidden = name !== 'groups';
+  stages.hidden = name !== 'stages';
+  const focus = { main: document.getElementById('choose'), groups: groups.querySelector('.group'), stages: stages.querySelector('.stage, .btn-back') };
+  focus[name]?.focus();
 }
-document.getElementById('choose').addEventListener('click', () => showStages(true));
-document.getElementById('back').addEventListener('click', () => showStages(false));
+
+function openGroup(id) {
+  const info = GROUP_INFO[id];
+  document.getElementById('stages-title').textContent = info.title;
+  view.innerHTML = '';
+  const items = poolStages(id);
+  if (!items.length) {
+    const empty = document.createElement('p');
+    empty.className = 'picker-empty';
+    empty.innerHTML = 'עדיין אין כאן שלבים. בינתיים אפשר לראות אילו תפקידים פתוחים לך ב<a href="../calculator/">מחשבון צה״ל</a>.';
+    view.append(empty);
+  }
+  for (const row of info.rows) {
+    const inRow = items.filter((a) => a.dataset.row === row);
+    if (!inRow.length) continue;
+    const section = document.createElement('section');
+    section.className = 'stage-row';
+    const title = document.createElement('h3');
+    title.textContent = row;
+    section.append(title);
+    for (const a of inRow) section.append(a.cloneNode(true));
+    view.append(section);
+  }
+  level('stages');
+}
+
+// "For everyone" (first order, Yom HaMa'a, interview week) sits under the three tiles.
+const common = document.getElementById('group-common');
+const commonTitle = document.createElement('h3');
+commonTitle.textContent = 'שלבים לכולם';
+common.append(commonTitle);
+for (const a of poolStages('all')) common.append(a.cloneNode(true));
+
+document.getElementById('choose').addEventListener('click', () => level('groups'));
+document.getElementById('back-groups').addEventListener('click', () => level('main'));
+document.getElementById('back').addEventListener('click', () => level('groups'));
+for (const b of groups.querySelectorAll('[data-pick]')) b.addEventListener('click', () => openGroup(b.dataset.pick));
 
 const toast = document.getElementById('toast');
 let toastTimer;

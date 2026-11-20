@@ -32,10 +32,10 @@ const view = document.getElementById('stage-view');
 const GROUP_INFO = {
   combat: { title: 'קרבי', rows: ['סיירות וקומנדו', 'חי״ר וחטיבות', 'לוחמות', 'חיל הים', 'חיל האוויר'] },
   support: { title: 'תומך לחימה', rows: [] },
-  noncombat: { title: 'לא קרבי · מודיעין, תקשוב, סייבר ועוד', rows: [] },
+  noncombat: { title: 'לא קרבי · מודיעין, תקשוב, סייבר ועוד', rows: ['מודיעין'] },
 };
 // Rows follow the order of the journey, not the order of the links in the page.
-const ORDER = ['tzav-rishon', 'yom-hamaa', 'lochamot', 'yom-sayarot', 'gibbush-matkal', 'draft', 'oketz', 'tzanhanim', 'yechatiyot', 'naval', 'shayetet', 'gibbush-tayis', 'pilot-path', 'interview-week'];
+const ORDER = ['tzav-rishon', 'yom-hamaa', 'lochamot', 'yom-sayarot', 'gibbush-matkal', 'draft', 'oketz', 'tzanhanim', 'yechatiyot', 'naval', 'shayetet', 'gibbush-tayis', 'pilot-path', 'interview-week', 'klal-haman'];
 const stageId = (a) => a.getAttribute('href').split('/')[1];
 const poolStages = (group) => [...pool.querySelectorAll(`.stage[data-group="${group}"]`)].sort((x, y) => ORDER.indexOf(stageId(x)) - ORDER.indexOf(stageId(y)));
 
@@ -121,7 +121,7 @@ requestAnimationFrame(() => document.body.classList.add('ready'));
 syncFromResults();
 
 const $ = (id) => document.getElementById(id);
-const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'yom-hamaa', name: 'יום המא״ה' }, { id: 'gibbush-matkal', name: 'גיבוש מטכ״ל / שלדג' }, { id: 'draft', name: 'הדראפט: 669 / קומנדו' }, { id: 'naval', name: 'ענף ים' }, { id: 'shayetet', name: 'גיבוש שייטת' }, { id: 'tzanhanim', name: 'גיבוש צנחנים' }, { id: 'yechatiyot', name: 'גיבוש יחט״יות' }, { id: 'lochamot', name: 'מסלול לוחמות' }, { id: 'oketz', name: 'גיבוש עוקץ' }, { id: 'pilot-path', name: 'המסלול לטיס' }];
+const GROUPS = [{ id: 'all', name: 'כל המסע' }, ...STAGES.map((s) => ({ id: s.id, name: s.name })), { id: 'yom-hamaa', name: 'יום המא״ה' }, { id: 'gibbush-matkal', name: 'גיבוש מטכ״ל / שלדג' }, { id: 'draft', name: 'הדראפט: 669 / קומנדו' }, { id: 'naval', name: 'ענף ים' }, { id: 'shayetet', name: 'גיבוש שייטת' }, { id: 'tzanhanim', name: 'גיבוש צנחנים' }, { id: 'yechatiyot', name: 'גיבוש יחט״יות' }, { id: 'lochamot', name: 'מסלול לוחמות' }, { id: 'oketz', name: 'גיבוש עוקץ' }, { id: 'klal-haman', name: 'מיון כלל חמ״ן' }, { id: 'pilot-path', name: 'המסלול לטיס' }];
 
 function renderJourney(animate = true) {
   const p = progress();

@@ -1,0 +1,308 @@
+/* מיון כלל חמ״ן: on top of the shared game styles and the pilot-path screens (and the mt-* test look). */
+
+body {
+  background: #0c1424;
+}
+
+.clock .day {
+  margin-inline-end: 6px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.kh-logo {
+  background: linear-gradient(140deg, #2d5a4f, #12352c);
+  box-shadow: 0 10px 30px rgba(30, 110, 90, 0.45);
+}
+
+.kh-brief-lines {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: start;
+  color: #e4ecfb;
+  line-height: 1.55;
+}
+
+.kh-brief-lines p {
+  margin: 0;
+  min-height: 1.5em;
+}
+
+/* Tests */
+
+.kh-pair {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.kh-pair span {
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: #1b2740;
+  color: #fff;
+  font: 700 1.5rem ui-monospace, Menlo, monospace;
+  letter-spacing: 0.18em;
+  direction: ltr;
+}
+
+.kh-series {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  direction: ltr;
+}
+
+.kh-series span {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: #24406b;
+  color: #fff;
+  font: 800 1.35rem 'Heebo', sans-serif;
+}
+
+.kh-series span.q {
+  background: transparent;
+  border: 2px dashed #4ea1ff;
+  color: #9fd0ff;
+}
+
+.kh-note {
+  margin: 0;
+  color: #9fb3d6;
+}
+
+.kh-clues {
+  margin: 0;
+  padding: 10px 28px 10px 14px;
+  border-radius: 12px;
+  background: #1b2740;
+  color: #eef3ff;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.kh-analogy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font: 800 1.3rem 'Heebo', sans-serif;
+}
+
+.kh-analogy span {
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #24406b;
+}
+
+.kh-analogy b {
+  color: #f2c94c;
+}
+
+.kh-sheet {
+  width: min(680px, 100%);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f4efe0;
+  color: #2a2d1d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.kh-sheet p {
+  margin: 4px 0;
+  font-weight: 700;
+}
+
+.kh-sheet ol {
+  margin: 0;
+  padding-inline-start: 20px;
+}
+
+/* Questionnaire */
+
+.kh-q {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.kh-timebar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.kh-timebar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #4ea1ff;
+}
+
+.kh-statement {
+  margin: 8px 0;
+  color: #fff;
+  font: 700 1.3rem 'Heebo', sans-serif;
+  text-align: center;
+}
+
+.kh-scale {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.kh-form-row {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  color: #e4ecfb;
+}
+
+.kh-form-row p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.kh-inline {
+  display: flex;
+  gap: 8px;
+}
+
+.kh-inline .mt-choice {
+  flex: 1;
+}
+
+.kh-list {
+  display: grid;
+  gap: 6px;
+}
+
+.mt-choice.kh-on {
+  background: #2f6d5c;
+  box-shadow: inset 0 0 0 2px #5be0a8;
+}
+
+.kh-wide {
+  width: 100%;
+}
+
+/* The rooms at "מתקן רמות" */
+
+.kh-room-screen {
+  display: grid;
+}
+
+.kh-room {
+  position: relative;
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 18px;
+  background:
+    linear-gradient(180deg, rgba(10, 16, 28, 0.2), rgba(10, 16, 28, 0.85)),
+    repeating-linear-gradient(90deg, #cfd6dc 0 120px, #c3cbd2 120px 122px),
+    #cfd6dc;
+}
+
+.kh-place {
+  justify-self: start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10, 16, 28, 0.75);
+  color: #f2c94c;
+  font-weight: 800;
+}
+
+.kh-person {
+  align-self: end;
+  justify-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.kh-face {
+  display: grid;
+  place-items: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6f2e6, #b9b2a0);
+  font-size: 4.6rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.kh-who {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(10, 16, 28, 0.8);
+  color: #fff;
+  font-weight: 700;
+}
+
+.kh-dialogue {
+  width: min(820px, 100%);
+  justify-self: center;
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(14, 22, 38, 0.94);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.kh-speaker {
+  color: #f2c94c;
+  font-weight: 800;
+}
+
+.kh-text {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.kh-choices {
+  display: grid;
+  gap: 8px;
+}
+
+.kh-next {
+  justify-self: end;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #4ea1ff;
+  color: #06142c;
+  font: 800 1rem 'Heebo', sans-serif;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .kh-scale {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kh-face {
+    width: 96px;
+    height: 96px;
+    font-size: 3rem;
+  }
+}

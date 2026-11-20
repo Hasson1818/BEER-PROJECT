@@ -75,6 +75,10 @@ export const ACHIEVEMENTS = [
   { id: 'oketz-in', group: 'oketz', icon: '🐕', title: 'עוקץ', desc: 'התקבלת לעוקץ.', points: 5 },
   { id: 'oketz-honest', group: 'oketz', icon: '🤫', title: 'מסדר שקט', desc: 'במסדר השקט אמרת את האמת.', points: 2 },
   { id: 'oketz-dog', group: 'oketz', icon: '🦴', title: 'הכיסוי ירד', desc: 'פגשת את הכלב שלך.', points: 3 },
+  { id: 'haman-done', group: 'klal-haman', icon: '🛰️', title: 'מיון כלל חמ״ן', desc: 'עברת את כל שלבי המיון וקיבלת תשובה.', points: 5 },
+  { id: 'haman-placed', group: 'klal-haman', icon: '🗝️', title: 'שובצת במודיעין', desc: 'קיבלת שיבוץ למסלול בחיל המודיעין.', points: 4 },
+  { id: 'haman-honest', group: 'klal-haman', icon: '🧾', title: 'אין מה להסתיר', desc: 'שאלון עקבי ותחקיר ביטחוני עם אמת בלבד.', points: 2 },
+  { id: 'haman-language', group: 'klal-haman', icon: '🔤', title: 'בלשן/ית', desc: 'הצלחת 80% ומעלה במבחן השפה המומצאת.', points: 2 },
   { id: 'yechatiyot-flagged', group: 'yechatiyot', icon: '🔖', title: 'מאותר', desc: 'הגעת לגיבוש עם סימון מגיבוש הצנחנים.', points: 1 },
 
   { id: 'gibbush-done', group: 'gibbush-tayis', icon: '✈️', title: 'חמישה ימים בחצרים', desc: 'סיימת את גיבוש הטיס.', points: 6 },

@@ -16,20 +16,25 @@ export function check(unit, input) {
   if (input.profile <= 21) reasons.push('פרופיל 21: פטור משירות');
   if (unit.gender && !unit.gender.includes(input.gender)) reasons.push(input.gender === 'f' ? 'לא פתוח לחיילות' : 'פתוח רק לחיילות');
   if (r.notCombatMen && combatMan) reasons.push('לא פתוח לבנים שמיועדים ללחימה');
-  if (r.profile && input.profile < r.profile) reasons.push(`פרופיל ${r.profile}+`);
+  // Profile 70 (new, 09.2026) may try some combat roles that ask for 72, with a screening; whether it is already in
+  // force is disputed, so it stays "pending".
+  const try70 = input.profile === 70 && unit.profile70 && r.profile === 72;
+  if (r.profile && input.profile < r.profile && !try70) reasons.push(`פרופיל ${r.profile}+`);
+  if (try70) pending.push('פרופיל 70 (חדש מ־09.2026): מיון מיוחד, ולא ודאי שכבר בתוקף');
   const dapar = combatMan && r.daparCombatMen ? r.daparCombatMen : r.dapar;
   if (dapar && input.dapar < dapar) reasons.push(`דפ״ר ${dapar}+`);
   if (r.hebrew && input.hebrew != null && input.hebrew < r.hebrew) reasons.push(`עברית ${r.hebrew}+`);
-  // Yom HaMa'a is taken by women and by men without a combat profile (official, 2024–2026), so its minimums only
-  // apply to them; a combat-profile man is sorted by the צו ראשון data and the selections.
-  const takesMaa = input.gender === 'f' || input.profile < 72;
-  if (r.maa && takesMaa) {
+  // Everyone takes Yom HaMa'a since 2021, but each role page says who its minimums are for: most mark them
+  // "לבנות בלבד" (the default here), a few apply them to all (`maaFor: 'all'`). Research 20.11.2026.
+  const maaApplies = (unit.maaFor ?? 'f') === 'all' || input.gender === 'f';
+  if (r.maa && maaApplies) {
     for (const [env, min] of Object.entries(r.maa)) {
       const name = MAA_ENVS.find((e) => e.id === env)?.name ?? env;
       if (!input.maa) pending.push(`יום המא״ה: ${name} ${min}+`);
       else if ((input.maa[env] ?? 0) < min) reasons.push(`${name} ${min}+ ביום המא״ה`);
     }
   }
+  if (unit.womenCombat && input.gender === 'f') pending.push('יום מיון לוחמות וטופס 16א (32 חודשי שירות)');
   if (unit.selection) pending.push(unit.selection);
   return { ok: reasons.length === 0, reasons, pending };
 }

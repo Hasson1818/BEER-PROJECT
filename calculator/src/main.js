@@ -46,7 +46,7 @@ const fillSelect = (select, values, label = (v) => String(v), extra = null) => {
   if (extra) select.append(new Option(extra.label, extra.value));
   for (const v of values) select.append(new Option(label(v), String(v)));
 };
-fillSelect($('profile'), PROFILES);
+fillSelect($('profile'), PROFILES, (p) => (p === 70 ? '70 (חדש)' : String(p)));
 fillSelect($('dapar'), DAPARS);
 fillSelect($('hebrew'), HEBREWS, String, { label: 'לא יודע/ת', value: '' });
 

@@ -290,14 +290,14 @@ export const QUESTIONNAIRE = {
   units: [
     { id: 'sayarot', name: 'יחידות מיוחדות (דרך יום סיירות)', needs: 'פרופיל 82 · דפ״ר 50' },
     { id: 'tzanhanim', name: 'צנחנים (גיבוש לפני הגיוס)', needs: 'פרופיל 82' },
-    { id: 'golani', name: 'גולני', needs: 'פרופיל 72' },
-    { id: 'givati', name: 'גבעתי', needs: 'פרופיל 72' },
-    { id: 'nahal', name: 'נח״ל', needs: 'פרופיל 72' },
-    { id: 'kfir', name: 'כפיר', needs: 'פרופיל 72' },
+    { id: 'golani', name: 'גולני', needs: 'פרופיל 82' },
+    { id: 'givati', name: 'גבעתי', needs: 'פרופיל 82' },
+    { id: 'nahal', name: 'נח״ל', needs: 'פרופיל 82' },
+    { id: 'kfir', name: 'כפיר', needs: 'פרופיל 82' },
     { id: 'shiryon', name: 'שריון', needs: 'פרופיל 72' },
     { id: 'tothanim', name: 'תותחנים', needs: 'פרופיל 72' },
-    { id: 'handasa', name: 'הנדסה קרבית', needs: 'פרופיל 72' },
-    { id: 'isuf', name: 'איסוף קרבי', needs: 'פרופיל 72' },
+    { id: 'handasa', name: 'הנדסה קרבית', needs: 'פרופיל 82' },
+    { id: 'isuf', name: 'איסוף קרבי', needs: 'פרופיל 82 (או 72 עם סעיפים)' },
   ],
 };
 
